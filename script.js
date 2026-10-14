@@ -20,9 +20,9 @@
   // --- DEFAULT CONFIGURATION ---
   const DEFAULT_CONFIG = {
     passcode: '0702',
-    girlfriendName: 'Bé mèo',
-    boyfriendName: 'Anh',
-    startDate: '2023-05-20T00:00:00',
+    girlfriendName: 'bé mèo',
+    boyfriendName: 'khúc gỗ',
+    startDate: '2024-02-07T00:00:00',
     wheelPrizes: DEFAULT_WHEEL_PRIZES,
     letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`
   };
@@ -177,6 +177,38 @@
       gain.connect(this.ctx.destination);
       osc.start(now);
       osc.stop(now + 0.025);
+    }
+
+    playSuccessChime() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      [587.33, 880, 1174.66].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+        gain.gain.setValueAtTime(0.1, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.35);
+      });
+    }
+
+    playErrorBuzz() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, now);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
     }
   }
 
@@ -1062,8 +1094,10 @@
   }
 
   function handleQuizAnswer(option, clickedBtn) {
-    sound.init();
-    sound.playKeyClick();
+    try {
+      sound.init();
+      sound.playKeyClick();
+    } catch(e) {}
 
     if (!quizOptionsGrid) return;
     const allBtns = quizOptionsGrid.querySelectorAll('.quiz-option-btn');
@@ -1076,10 +1110,14 @@
     if (option.correct) {
       quizScore += 25;
       if (quizScoreBadge) quizScoreBadge.textContent = `Điểm: ${quizScore}`;
-      sound.playSuccessChime();
-      burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
+      try {
+        sound.playSuccessChime();
+        burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
+      } catch(e) {}
     } else {
-      sound.playErrorBuzz();
+      try {
+        sound.playErrorBuzz();
+      } catch(e) {}
     }
 
     if (quizFeedbackBox && quizFeedbackText) {
@@ -1185,19 +1223,37 @@
           </div>
         </div>
         <p class="diary-note-body">${escapeHTML(item.text)}</p>
+        <div class="diary-note-actions-row">
+          <button type="button" class="btn-share-note" data-index="${index}">💬 Gửi cho Anh</button>
+        </div>
       `;
 
       const delBtn = card.querySelector('.btn-delete-note');
       delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (confirm('Bé có muốn xóa mẩu lời nhắn này không?')) {
-          sound.init();
-          sound.playKeyClick();
+          try { sound.init(); sound.playKeyClick(); } catch(err){}
           notes.splice(index, 1);
           saveDiaryNotes(notes);
           renderDiaryNotes();
         }
       });
+
+      const shareBtn = card.querySelector('.btn-share-note');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const shareText = `💌 [Lời nhắn bé gửi khúc gỗ - ${item.mood} ${item.moodLabel || ''}]\n"${item.text}"\n(${item.date})`;
+          if (navigator.share) {
+            navigator.share({ title: 'Gửi anh 💌', text: shareText }).catch(() => {});
+          } else {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(shareText);
+            }
+            alert('Đã sao chép lời nhắn! Bé có thể dán vào Zalo/Messenger để gửi ngay cho anh nhé 💕');
+          }
+        });
+      }
 
       diaryNotesList.appendChild(card);
     });
@@ -1205,7 +1261,7 @@
 
   if (btnSaveDiaryNote && diaryTextarea) {
     btnSaveDiaryNote.addEventListener('click', () => {
-      sound.init();
+      try { sound.init(); } catch(err){}
       const content = diaryTextarea.value.trim();
       if (!content) {
         alert('Bé ơi, hãy nhập vài dòng lời nhắn trước khi gửi nhé! 💌');
@@ -1228,10 +1284,24 @@
       saveDiaryNotes(notes);
 
       diaryTextarea.value = '';
-      sound.playSuccessChime();
-      burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
+      try {
+        sound.playSuccessChime();
+        burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
+      } catch(err){}
       renderDiaryNotes();
-      alert('Đã gửi lời nhắn thành công! Anh sẽ luôn ghi nhớ và yêu thương bé 💕');
+
+      const shareText = `💌 [Lời nhắn bé gửi khúc gỗ - ${selectedMood} ${selectedMoodLabel}]\n"${content}"\n(${dateStr})`;
+      if (navigator.share) {
+        navigator.share({
+          title: 'Lời nhắn 20/10 gửi anh',
+          text: shareText
+        }).catch(() => {});
+      } else {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareText);
+        }
+        alert('Đã lưu lời nhắn vào kỷ niệm! 💌\nNội dung cũng đã được sao chép sẵn vào bộ nhớ tạm, bé có thể dán vào Zalo/Messenger gửi ngay cho anh nhé 💕');
+      }
     });
   }
 
@@ -1265,32 +1335,31 @@
   }
 
   const DEFAULT_MEMORIES = [
-    {
-      id: 'mem-1',
-      src: 'images/photo1.jpg',
-      caption: 'Bên bé mọi khoảnh khắc đều đẹp',
-      date: 'Kỷ niệm yêu thương'
-    },
-    {
-      id: 'mem-2',
-      src: 'images/photo2.jpg',
-      caption: 'Nụ cười rạng rỡ của bé',
-      date: 'Ngày hạnh phúc'
-    },
-    {
-      id: 'mem-3',
-      src: 'images/photo3.jpg',
-      caption: 'Nắm tay bé đi khắp thế gian',
-      date: 'Hành trình đôi ta'
-    }
+    { id: 'mem-1', src: 'images/photo1.jpg', caption: 'Bên bé mọi khoảnh khắc đều đẹp 💖', date: 'Kỷ niệm yêu thương' },
+    { id: 'mem-2', src: 'images/photo2.jpg', caption: 'Nụ cười tỏa nắng của bé ☀️', date: 'Ngày hạnh phúc' },
+    { id: 'mem-3', src: 'images/photo3.jpg', caption: 'Nắm tay bé đi khắp thế gian 🌸', date: 'Tình yêu ngọt ngào' },
+    { id: 'mem-4', src: 'images/photo4.jpg', caption: 'Bé yêu của anh ✨', date: 'Những ngày bình yên' },
+    { id: 'mem-5', src: 'images/photo5.jpg', caption: 'Mỗi ngày bên bé là một món quà 🎁', date: 'Hành trình bên nhau' },
+    { id: 'mem-6', src: 'images/photo6.jpg', caption: 'Ánh mắt bé làm tan chảy tim anh ✨', date: 'Khoảnh khắc diệu kỳ' },
+    { id: 'mem-7', src: 'images/photo7.jpg', caption: 'Yêu bé nhiều hơn mỗi ngày 💕', date: 'Kỷ niệm đôi ta' },
+    { id: 'mem-8', src: 'images/photo8.jpg', caption: 'Thế giới của anh thu nhỏ lại bằng bé 🌍', date: 'Yêu thương đong đầy' },
+    { id: 'mem-9', src: 'images/photo9.jpg', caption: 'Bình yên nhất là khi có bé 🍃', date: 'Ngọt ngào bên bé' },
+    { id: 'mem-10', src: 'images/photo10.jpg', caption: 'Đi cùng với anh nhó 👵👴', date: 'Hứa mãi bên nhau' },
+    { id: 'mem-11', src: 'images/photo11.jpg', caption: 'Hạnh phúc đơn giản là có bé bên cạnh 🥰', date: 'Mùa yêu thương' },
+    { id: 'mem-12', src: 'images/photo12.jpg', caption: 'Chúc mừng 20/10 người anh yêu nhất trần đời 💐', date: '20.10.2026 ❤️' }
   ];
 
   function getSavedMemories() {
     try {
       const raw = localStorage.getItem('romantic_gift_user_memories');
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length >= DEFAULT_MEMORIES.length) {
+          return parsed;
+        }
+      }
     } catch(e) {}
-    return DEFAULT_MEMORIES;
+    return JSON.parse(JSON.stringify(DEFAULT_MEMORIES));
   }
 
   function saveMemories(memories) {
@@ -1661,8 +1730,18 @@
   const inputLetterBody = document.getElementById('input-letter-body');
 
   function openSettings() {
-    sound.init();
-    sound.playKeyClick();
+    // SECURITY GATE: Only boyfriend can edit!
+    const enteredPin = prompt('🔒 BẢO MẬT QUẢN TRỊ VIÊN:\nChỉ người tạo web mới có quyền chỉnh sửa.\nVui lòng nhập mã PIN bảo mật để mở cài đặt:');
+    if (!enteredPin) return;
+    if (enteredPin !== userConfig.passcode && enteredPin !== '0702') {
+      alert('Mã PIN quản trị không chính xác!');
+      return;
+    }
+
+    try {
+      sound.init();
+      sound.playKeyClick();
+    } catch(e) {}
     if (inputGfName) inputGfName.value = userConfig.girlfriendName;
     if (inputBfName) inputBfName.value = userConfig.boyfriendName;
     if (inputPasscode) inputPasscode.value = userConfig.passcode;
@@ -1775,11 +1854,44 @@
   if (btnSaveSettings) btnSaveSettings.addEventListener('click', saveSettings);
   if (btnResetDefault) btnResetDefault.addEventListener('click', resetDefaultConfig);
 
+  // Admin Mode Visibility Check
+  function initAdminMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('admin') === 'true' || urlParams.get('mode') === 'admin' || window.location.hash === '#admin';
+    if (isAdmin && btnOpenSettings) {
+      btnOpenSettings.classList.add('admin-visible');
+    }
+
+    // Secret trigger: Triple click on vinyl player in top-right corner to toggle admin button
+    const vinylEl = document.getElementById('vinyl-player');
+    if (vinylEl) {
+      let clicks = 0;
+      let timer = null;
+      vinylEl.addEventListener('click', () => {
+        clicks++;
+        clearTimeout(timer);
+        timer = setTimeout(() => { clicks = 0; }, 600);
+        if (clicks === 3) {
+          clicks = 0;
+          if (btnOpenSettings) {
+            btnOpenSettings.classList.toggle('admin-visible');
+            if (btnOpenSettings.classList.contains('admin-visible')) {
+              alert('🔓 Chế độ quản trị: Đã hiển thị nút "Tùy chỉnh"!');
+            } else {
+              alert('🔒 Đã ẩn nút "Tùy chỉnh"!');
+            }
+          }
+        }
+      });
+    }
+  }
+
   // Initialize
   initAmbientParticles();
   applyConfigToUI();
   renderQuizQuestion();
   renderDiaryNotes();
   renderMemoriesGrid();
+  initAdminMode();
 
 })();

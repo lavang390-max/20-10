@@ -390,7 +390,11 @@ button {
 }
 
 .settings-trigger-btn {
-  display: flex;
+  display: none !important;
+}
+
+.settings-trigger-btn.admin-visible {
+  display: flex !important;
   align-items: center;
   gap: 7px;
   background: var(--glass-bg);
@@ -2479,6 +2483,34 @@ button {
   color: rgba(255, 255, 255, 0.88);
   line-height: 1.5;
   white-space: pre-wrap;
+}
+
+.diary-note-actions-row {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-share-note {
+  background: rgba(255, 77, 136, 0.15);
+  border: 1px solid rgba(255, 77, 136, 0.35);
+  color: #ffd6e0;
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-share-note:hover {
+  background: var(--primary-pink);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 77, 136, 0.3);
 }
 
 /* ==========================================================
