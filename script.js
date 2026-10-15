@@ -1018,20 +1018,35 @@
     try {
       locketVideo.muted = true;
       locketVideo.playsInline = true;
-      locketVideo.setAttribute('playsinline', 'true');
-      locketVideo.setAttribute('webkit-playsinline', 'true');
-      locketVideo.setAttribute('autoplay', 'true');
-      locketVideo.setAttribute('muted', 'true');
+      locketVideo.setAttribute('playsinline', '');
+      locketVideo.setAttribute('webkit-playsinline', '');
+      locketVideo.setAttribute('x5-playsinline', '');
+      locketVideo.setAttribute('x5-video-player-type', 'h5-page');
+      locketVideo.setAttribute('x5-video-player-fullscreen', 'false');
+      locketVideo.setAttribute('disablePictureInPicture', '');
+      locketVideo.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
+
+      // CRITICAL: Intercept and prevent any native fullscreen popup on iOS Safari & mobile Chrome
+      locketVideo.onwebkitbeginfullscreen = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (typeof locketVideo.webkitExitFullscreen === 'function') {
+          locketVideo.webkitExitFullscreen();
+        }
+      };
+      locketVideo.onenterfullscreen = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      };
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Trình duyệt không hỗ trợ getUserMedia');
       }
 
-      // Constraints without audio to prevent mic rejection / latency
+      // Portrait-compatible square ideal constraints (never throw OverconstrainedError)
       const constraints = {
         video: {
           facingMode: currentCameraFacing,
-          width: { ideal: 1280 },
+          width: { ideal: 720 },
           height: { ideal: 720 }
         },
         audio: false
@@ -1039,6 +1054,11 @@
 
       locketMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       locketVideo.srcObject = locketMediaStream;
+      
+      locketVideo.onloadedmetadata = () => {
+        locketVideo.play().catch(err => console.warn('Autoplay prevented:', err));
+      };
+
       const playPromise = locketVideo.play();
       if (playPromise !== undefined) {
         playPromise.catch(err => console.warn('Autoplay prevented, requires tap:', err));
@@ -1176,7 +1196,11 @@
 
   // Shutter Button Action
   if (btnLocketShutter) {
-    btnLocketShutter.addEventListener('click', () => {
+    btnLocketShutter.addEventListener('click', async () => {
+      if (!locketMediaStream || !locketMediaStream.active) {
+        await initLocketCamera();
+        return;
+      }
       if (currentLocketMode === 'photo') {
         takeLocketPhoto();
       } else {

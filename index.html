@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261015_camera_v5">
+  <link rel="stylesheet" href="style.css?v=20261015_camera_v6">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -398,8 +398,8 @@
 
             <!-- SQUIRCLE VIEWPORT (CAMERA & PREVIEW) -->
             <div class="locket-viewport-frame" id="locket-viewport-frame">
-              <!-- Live Video -->
-              <video id="locket-video" class="locket-video-stream filter-normal" playsinline webkit-playsinline autoplay muted></video>
+              <!-- Live Video (Strictly Inline - Block Fullscreen Player) -->
+              <video id="locket-video" class="locket-video-stream filter-normal" playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5-page" x5-video-player-fullscreen="false" autoplay muted loop disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback"></video>
               <canvas id="locket-canvas" style="display: none;"></canvas>
 
               <!-- Camera Start / Permission Overlay -->
@@ -960,8 +960,8 @@
   </div>
 
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261015_camera_v5"></script>
+  <script src="config.js?v=20261015_camera_v6"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261015_camera_v5"></script>
+  <script src="script.js?v=20261015_camera_v6"></script>
 </body>
 </html>
