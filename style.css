@@ -3098,20 +3098,53 @@ button {
 /* ==========================================================
    MINI LOCKET COUPLE WIDGET (CAMERA & 5S VIDEO)
    ========================================================== */
+#slide-locket {
+  padding-top: 55px !important;
+  padding-bottom: 95px !important;
+}
+
 .locket-slide-content {
-  max-width: 680px;
+  max-width: 440px;
   margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.locket-top-pill-header {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.locket-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(255, 77, 136, 0.15);
+  border: 1px solid rgba(255, 77, 136, 0.35);
+  color: #ff94ba;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
 .locket-card-wrapper {
-  background: rgba(22, 13, 34, 0.75);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 77, 136, 0.25);
-  border-radius: var(--radius-xl);
-  padding: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 77, 136, 0.15);
-  margin-bottom: 30px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  margin-bottom: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* LOCKET HUD TOP */
@@ -3119,23 +3152,25 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding: 0 6px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  width: 100%;
+  max-width: 270px;
 }
 
 .locket-user-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .locket-avatar-circle {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2px solid var(--primary-pink);
   overflow: hidden;
-  box-shadow: 0 0 12px rgba(255, 77, 136, 0.4);
+  box-shadow: 0 0 10px rgba(255, 77, 136, 0.4);
 }
 
 .locket-avatar-circle img {
@@ -3147,16 +3182,18 @@ button {
 .locket-user-meta {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .locket-user-name {
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
+  line-height: 1.2;
 }
 
 .locket-user-status {
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   color: #55efc4;
   display: flex;
   align-items: center;
@@ -3165,21 +3202,21 @@ button {
 
 .locket-tools-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .locket-tool-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #fff;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.2s ease;
 }
 
@@ -3197,23 +3234,22 @@ button {
 
 /* LOCKET SQUIRCLE VIEWPORT (AUTHENTIC LOCKET APP STYLE - STRICTLY FIXED IN FRAME) */
 .locket-viewport-frame {
-  width: 100%;
-  max-width: 320px;
-  height: 320px;
-  aspect-ratio: 1 / 1;
-  margin: 0 auto;
-  border-radius: 38px !important;
-  position: relative;
+  width: min(72vw, 260px) !important;
+  height: min(72vw, 260px) !important;
+  aspect-ratio: 1 / 1 !important;
+  margin: 0 auto 10px auto !important;
+  border-radius: 36px !important;
+  position: relative !important;
   overflow: hidden !important;
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
-  mask-image: radial-gradient(white, black);
-  background: #050208;
-  border: 3.5px solid rgba(246, 200, 95, 0.6);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(246, 200, 95, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  contain: paint;
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  mask-image: radial-gradient(white, black) !important;
+  background: #050208 !important;
+  border: 3.5px solid rgba(246, 200, 95, 0.7) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 25px rgba(246, 200, 95, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  contain: paint !important;
 }
 
 .locket-video-stream {
@@ -3260,7 +3296,7 @@ video::-webkit-media-controls-start-playback-button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   text-align: center;
   z-index: 25;
   transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -3274,8 +3310,8 @@ video::-webkit-media-controls-start-playback-button {
 }
 
 .camera-start-pulse {
-  width: 70px;
-  height: 70px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(255, 42, 109, 0.25), rgba(246, 200, 95, 0.25));
   border: 2px solid rgba(255, 42, 109, 0.5);
@@ -3283,43 +3319,46 @@ video::-webkit-media-controls-start-playback-button {
   align-items: center;
   justify-content: center;
   color: #ff9bbb;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   animation: pulseCameraIcon 2s infinite ease-in-out;
 }
 
 @keyframes pulseCameraIcon {
   0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 42, 109, 0.4); }
-  50% { transform: scale(1.08); box-shadow: 0 0 22px 6px rgba(255, 42, 109, 0.35); }
+  50% { transform: scale(1.08); box-shadow: 0 0 20px 4px rgba(255, 42, 109, 0.35); }
 }
 
 .btn-start-camera {
   background: linear-gradient(135deg, #ff2a6d, #ff6b8b);
   color: #fff;
   border: none;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 30px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   font-family: var(--font-primary);
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(255, 42, 109, 0.45);
+  box-shadow: 0 6px 18px rgba(255, 42, 109, 0.45);
   transition: transform 0.2s, box-shadow 0.2s;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto !important;
 }
 
 .btn-start-camera:hover, .btn-start-camera:active {
   transform: scale(1.04);
-  box-shadow: 0 10px 28px rgba(255, 42, 109, 0.6);
+  box-shadow: 0 8px 22px rgba(255, 42, 109, 0.6);
 }
 
 .camera-prompt-tip {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: rgba(255, 255, 255, 0.7);
-  margin-top: 10px;
-  max-width: 260px;
-  line-height: 1.4;
+  margin-top: 8px;
+  max-width: 230px;
+  line-height: 1.35;
 }
 
 /* FILTERS APPLIED TO VIDEO & PREVIEW */
@@ -3349,7 +3388,7 @@ video::-webkit-media-controls-start-playback-button {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  padding: 18px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -3365,9 +3404,9 @@ video::-webkit-media-controls-start-playback-button {
 .locket-time-pill {
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(10px);
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -3376,13 +3415,13 @@ video::-webkit-media-controls-start-playback-button {
 .locket-rec-badge {
   background: rgba(239, 68, 68, 0.85);
   color: #fff;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   display: none;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   animation: pulseRec 1s infinite alternate;
 }
 
@@ -3398,12 +3437,12 @@ video::-webkit-media-controls-start-playback-button {
 .locket-love-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: #ffd6e0;
   font-weight: 600;
   border: 1px solid rgba(255, 77, 136, 0.3);
@@ -3422,74 +3461,43 @@ video::-webkit-media-controls-start-playback-button {
   display: block;
 }
 
-.locket-preview-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .btn-retake-locket {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   color: #fff;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.76rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   cursor: pointer;
   z-index: 60;
   backdrop-filter: blur(8px);
   transition: all 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto !important;
 }
 
-.btn-retake-locket:hover {
-  background: rgba(239, 68, 68, 0.8);
+.btn-retake-locket:hover, .btn-retake-locket:active {
+  background: rgba(239, 68, 68, 0.85);
   border-color: #ef4444;
+  transform: scale(1.05);
 }
 
-/* FILTER SELECTOR BAR */
-.locket-filter-bar {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-  overflow-x: auto;
-  padding: 4px 6px;
-  scrollbar-width: none;
-}
-.locket-filter-bar::-webkit-scrollbar { display: none; }
-
-.locket-filter-chip {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--text-muted);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.locket-filter-chip:hover,
-.locket-filter-chip.active {
-  background: rgba(255, 77, 136, 0.3);
-  border-color: var(--primary-pink);
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-/* SHUTTER & RECORDING BAR */
+/* SHUTTER & RECORDING BAR (ALWAYS VISIBLE DIRECTLY UNDER CAMERA) */
 .locket-shutter-bar {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 18px;
-  gap: 14px;
+  margin-top: 4px;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  position: relative;
+  z-index: 30;
 }
 
 .locket-mode-tabs {
@@ -3497,32 +3505,33 @@ video::-webkit-media-controls-start-playback-button {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 30px;
-  padding: 3px;
+  padding: 2px;
 }
 
 .locket-mode-tab {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .locket-mode-tab.active {
   background: var(--primary-pink);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(255, 77, 136, 0.4);
+  box-shadow: 0 3px 10px rgba(255, 77, 136, 0.4);
 }
 
 .locket-shutter-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 26px;
+  gap: 22px;
   width: 100%;
 }
 
@@ -3530,17 +3539,20 @@ video::-webkit-media-controls-start-playback-button {
   background: rgba(255, 255, 255, 0.12);
   border: 1.5px solid rgba(255, 255, 255, 0.25);
   color: #fff;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   transition: all 0.2s;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(8px);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto !important;
 }
 
 .locket-action-sub-btn:hover,
@@ -3553,8 +3565,8 @@ video::-webkit-media-controls-start-playback-button {
 /* AUTHENTIC LOCKET SHUTTER BUTTON (GOLDEN INNER CIRCLE + THICK WHITE RING) */
 .locket-shutter-btn-wrapper {
   position: relative;
-  width: 86px;
-  height: 86px;
+  width: 82px;
+  height: 82px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3571,11 +3583,11 @@ video::-webkit-media-controls-start-playback-button {
 
 .locket-progress-svg circle {
   fill: none;
-  stroke-width: 5;
+  stroke-width: 4.5;
 }
 
 .locket-progress-bg {
-  stroke: rgba(255, 255, 255, 0.25);
+  stroke: rgba(255, 255, 255, 0.22);
 }
 
 .locket-progress-fill {
@@ -3587,56 +3599,100 @@ video::-webkit-media-controls-start-playback-button {
 }
 
 .locket-shutter-btn {
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 4px solid #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 18px rgba(246, 200, 95, 0.35);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  width: 70px !important;
+  height: 70px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 3.5px solid #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 16px rgba(246, 200, 95, 0.35) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  z-index: 50 !important;
 }
 
 .locket-shutter-btn:active {
-  transform: scale(0.9);
+  transform: scale(0.92);
 }
 
 .locket-shutter-inner-dot {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ffd166 0%, #f6c85f 100%);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.6);
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #ffd166 0%, #f6c85f 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.6) !important;
   transition: all 0.25s ease;
+  pointer-events: none !important;
 }
 
 /* In Video Recording State */
 .locket-shutter-btn.recording {
-  border-color: #ef4444;
-  box-shadow: 0 0 22px rgba(239, 68, 68, 0.7);
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.7) !important;
 }
 
 .locket-shutter-btn.recording .locket-shutter-inner-dot {
-  background: #ef4444;
-  width: 30px;
-  height: 30px;
-  border-radius: 10px; /* Smooth square like video stop */
+  background: #ef4444 !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+}
+
+/* FILTER SELECTOR BAR (PLACED NEATLY BELOW SHUTTER) */
+.locket-filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+  overflow-x: auto;
+  padding: 2px 4px;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+.locket-filter-bar::-webkit-scrollbar { display: none; }
+
+.locket-filter-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.locket-filter-chip:hover,
+.locket-filter-chip.active {
+  background: rgba(255, 77, 136, 0.3);
+  border-color: var(--primary-pink);
+  color: #fff;
+  transform: translateY(-1px);
 }
 
 /* POST CAPTION & SEND BAR */
 .locket-caption-box {
-  margin-top: 18px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-md);
-  padding: 14px 16px;
+  padding: 10px 14px;
   display: none;
+  width: 100%;
+  max-width: 320px;
   animation: modalFadeIn 0.3s ease;
+  position: relative;
+  z-index: 35;
 }
 
 .locket-caption-box.show {
@@ -3645,10 +3701,10 @@ video::-webkit-media-controls-start-playback-button {
 
 .locket-sticker-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
 .locket-sticker-btn {
@@ -3711,6 +3767,22 @@ video::-webkit-media-controls-start-playback-button {
 .btn-send-locket:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(255, 77, 136, 0.65);
+}
+
+.btn-cancel-send-locket {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-cancel-send-locket:hover,
+.btn-cancel-send-locket:active {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: scale(0.96);
 }
 
 /* LOCKET FEED SECTION */

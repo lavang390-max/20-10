@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261015_camera_v6">
+  <link rel="stylesheet" href="style.css?v=20261015_camera_v7">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -372,9 +372,8 @@
       <!-- SLIDE 4: MÁY ẢNH ĐÔI TA (CHỤP ẢNH TỨC THÌ & VIDEO 5S) -->
       <section class="slide-section" id="slide-locket" data-slide-index="3">
         <div class="slide-content locket-slide-content">
-          <div class="section-header" style="margin-bottom: 10px;">
-            <span class="section-badge" style="margin-bottom: 4px; padding: 3px 12px; font-size: 0.75rem;">✨ Khoảnh Khắc Tức Thì ✨</span>
-            <h2 class="section-title" style="font-size: 1.55rem; margin-bottom: 2px;">Máy Ảnh Đôi Ta</h2>
+          <div class="locket-top-pill-header">
+            <span class="locket-pill-tag">✨ Máy Ảnh Đôi Ta 📸</span>
           </div>
 
           <div class="locket-card-wrapper">
@@ -405,7 +404,7 @@
               <!-- Camera Start / Permission Overlay -->
               <div class="camera-start-overlay" id="camera-start-overlay">
                 <div class="camera-start-pulse">
-                  <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                     <circle cx="12" cy="13" r="4"></circle>
                   </svg>
@@ -446,15 +445,6 @@
               </div>
             </div>
 
-            <!-- FILTERS SELECTOR BAR -->
-            <div class="locket-filter-bar">
-              <button type="button" class="locket-filter-chip active" data-filter="normal">✨ Tự Nhiên</button>
-              <button type="button" class="locket-filter-chip" data-filter="pink">🌸 Hồng Pastel</button>
-              <button type="button" class="locket-filter-chip" data-filter="vintage">🎞️ Vintage Film</button>
-              <button type="button" class="locket-filter-chip" data-filter="warm">🌅 Hoàng Hôn</button>
-              <button type="button" class="locket-filter-chip" data-filter="bw">🖤 B&amp;W Classic</button>
-            </div>
-
             <!-- SHUTTER & RECORDING BAR (ALWAYS VISIBLE RIGHT BELOW CAMERA) -->
             <div class="locket-shutter-bar" id="locket-shutter-bar">
               <!-- Mode Tabs -->
@@ -486,6 +476,15 @@
                 </button>
                 <input type="file" id="locket-file-input" accept="image/*,video/*" style="display: none;">
               </div>
+
+              <!-- FILTERS SELECTOR BAR -->
+              <div class="locket-filter-bar">
+                <button type="button" class="locket-filter-chip active" data-filter="normal">✨ Tự Nhiên</button>
+                <button type="button" class="locket-filter-chip" data-filter="pink">🌸 Hồng Pastel</button>
+                <button type="button" class="locket-filter-chip" data-filter="vintage">🎞️ Vintage</button>
+                <button type="button" class="locket-filter-chip" data-filter="warm">🌅 Hoàng Hôn</button>
+                <button type="button" class="locket-filter-chip" data-filter="bw">🖤 B&amp;W</button>
+              </div>
             </div>
 
             <!-- CAPTION & SEND CONTAINER (Revealed after capturing) -->
@@ -504,7 +503,7 @@
               <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào gửi anh... 💕" maxlength="80">
 
               <div style="display: flex; gap: 10px; width: 100%;">
-                <button type="button" class="btn-cancel-send-locket" id="btn-cancel-send-locket" style="flex: 1; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 30px; padding: 12px 14px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                <button type="button" class="btn-cancel-send-locket" id="btn-cancel-send-locket" style="flex: 1; background: rgba(255,255,255,0.14); color: #fff; border: 1px solid rgba(255,255,255,0.28); border-radius: 30px; padding: 12px 14px; font-weight: 700; cursor: pointer; font-size: 0.9rem; touch-action: manipulation;">
                   ✕ Chụp Lại
                 </button>
                 <button type="button" class="btn-send-locket" id="btn-send-locket" style="flex: 2;">
@@ -962,6 +961,6 @@
   <!-- Couple Configuration File -->
   <script src="config.js?v=20261015_camera_v6"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261015_camera_v6"></script>
+  <script src="script.js?v=20261015_camera_v7"></script>
 </body>
 </html>

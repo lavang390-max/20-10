@@ -1195,28 +1195,71 @@
   }
 
   // Shutter Button Action
-  if (btnLocketShutter) {
-    btnLocketShutter.addEventListener('click', async () => {
-      if (!locketMediaStream || !locketMediaStream.active) {
+  async function triggerShutterAction() {
+    sound.init();
+
+    // If stream is not active, try to start camera
+    if (!locketMediaStream || !locketMediaStream.active) {
+      if (cameraPromptTip) cameraPromptTip.textContent = '⏳ Đang khởi động máy ảnh...';
+      try {
         await initLocketCamera();
+      } catch (err) {
+        console.warn('initLocketCamera error:', err);
+      }
+
+      // If camera started successfully, proceed!
+      if (locketMediaStream && locketMediaStream.active) {
+        setTimeout(() => {
+          if (currentLocketMode === 'photo') {
+            takeLocketPhoto();
+          } else {
+            startLocketVideoRecording();
+          }
+        }, 300);
+        return;
+      } else {
+        // Fallback: If camera access is blocked or unavailable, open file picker!
+        if (locketFileInput) {
+          locketFileInput.click();
+        }
         return;
       }
-      if (currentLocketMode === 'photo') {
-        takeLocketPhoto();
+    }
+
+    if (currentLocketMode === 'photo') {
+      takeLocketPhoto();
+    } else {
+      if (!isRecordingVideo) {
+        startLocketVideoRecording();
       } else {
-        if (!isRecordingVideo) {
-          startLocketVideoRecording();
-        } else {
-          stopLocketVideoRecording();
-        }
+        stopLocketVideoRecording();
       }
-    });
+    }
+  }
+
+  if (btnLocketShutter) {
+    let lastShutterTime = 0;
+    const onShutterTrigger = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastShutterTime < 450) return; // avoid duplicate tap/click
+      lastShutterTime = now;
+      triggerShutterAction();
+    };
+
+    btnLocketShutter.addEventListener('click', onShutterTrigger);
+    btnLocketShutter.addEventListener('touchend', onShutterTrigger);
   }
 
   // 3. Take Photo Mode
   function takeLocketPhoto() {
     sound.init();
-    sound.playCameraShutter();
+    try {
+      sound.playCameraShutter();
+    } catch(e) {}
 
     // Screen flash
     if (locketFlashOverlay) {
@@ -1224,14 +1267,12 @@
       setTimeout(() => locketFlashOverlay.classList.remove('flashing'), 220);
     }
 
-    if (!locketVideo || !locketCanvas) return;
+    if (!locketCanvas) return;
 
-    const w = locketVideo.videoWidth || 640;
-    const h = locketVideo.videoHeight || 640;
-    const minSide = Math.min(w, h);
     locketCanvas.width = 720;
     locketCanvas.height = 720;
     const ctx = locketCanvas.getContext('2d');
+    if (!ctx) return;
 
     const filterMap = {
       normal: 'none',
@@ -1242,13 +1283,33 @@
     };
     ctx.filter = filterMap[activeLocketFilter] || 'none';
 
-    const sx = (w - minSide) / 2;
-    const sy = (h - minSide) / 2;
-
-    ctx.save();
-    // KHÔNG LẬT MẶT - VẼ ĐÚNG CHIỀU TỰ NHIÊN
-    ctx.drawImage(locketVideo, sx, sy, minSide, minSide, 0, 0, 720, 720);
-    ctx.restore();
+    try {
+      if (locketVideo && locketVideo.videoWidth > 0 && locketVideo.videoHeight > 0) {
+        const w = locketVideo.videoWidth;
+        const h = locketVideo.videoHeight;
+        const minSide = Math.min(w, h);
+        const sx = (w - minSide) / 2;
+        const sy = (h - minSide) / 2;
+        ctx.save();
+        // KHÔNG LẬT MẶT - VẼ ĐÚNG CHIỀU TỰ NHIÊN
+        ctx.drawImage(locketVideo, sx, sy, minSide, minSide, 0, 0, 720, 720);
+        ctx.restore();
+      } else {
+        // Fallback snapshot if video hasn't rendered dimensions
+        const grad = ctx.createLinearGradient(0, 0, 720, 720);
+        grad.addColorStop(0, '#ff4d88');
+        grad.addColorStop(1, '#ff9a8b');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 720, 720);
+      }
+    } catch(drawErr) {
+      console.warn('Canvas draw error:', drawErr);
+      const grad = ctx.createLinearGradient(0, 0, 720, 720);
+      grad.addColorStop(0, '#ff4d88');
+      grad.addColorStop(1, '#ff9a8b');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 720, 720);
+    }
 
     // Watermark top
     ctx.filter = 'none';
@@ -1486,20 +1547,24 @@
     if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '245';
   }
 
+  const handleRetakeClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    sound.init();
+    sound.playKeyClick();
+    retakeLocket();
+  };
+
   if (btnRetakeLocket) {
-    btnRetakeLocket.addEventListener('click', () => {
-      sound.init();
-      sound.playKeyClick();
-      retakeLocket();
-    });
+    btnRetakeLocket.addEventListener('click', handleRetakeClick);
+    btnRetakeLocket.addEventListener('touchend', handleRetakeClick);
   }
 
   if (btnCancelSendLocket) {
-    btnCancelSendLocket.addEventListener('click', () => {
-      sound.init();
-      sound.playKeyClick();
-      retakeLocket();
-    });
+    btnCancelSendLocket.addEventListener('click', handleRetakeClick);
+    btnCancelSendLocket.addEventListener('touchend', handleRetakeClick);
   }
 
   // Sticker Selector
