@@ -20,6 +20,8 @@ window.COUPLE_CONFIG = {
   // 2. Thông tin tên của hai bạn
   girlfriendName: 'bé mèo',
   boyfriendName: 'khúc gỗ',
+  girlfriendRealName: 'N.T.B.N', // Tên bạn gái trên Giấy Chứng Nhận
+  boyfriendRealName: 'Huỳnh Ngọc Thắng', // Tên bạn trai người ký giấy
 
   // Ngày bắt đầu yêu (Định dạng: YYYY-MM-DDTHH:mm:ss)
   // Ví dụ: '2024-02-07T00:00:00' (Ngày 07/02/2024)

@@ -951,6 +951,7 @@
   // Tool buttons
   const btnFlipCamera = document.getElementById('btn-flip-camera');
   const btnToggleFlash = document.getElementById('btn-toggle-flash');
+  const btnLocketHeartPulse = document.getElementById('btn-locket-heart-pulse');
   const filterChips = document.querySelectorAll('.locket-filter-chip');
 
   // Shutter & Mode
@@ -991,7 +992,19 @@
   let isRecordingVideo = false;
   let recordingInterval = null;
   let capturedMediaData = null; // { type: 'photo' | 'video', base64: '...' }
-  let cachedLocketItems = [];
+  let cachedLocketItems = (function() {
+    try {
+      const raw = localStorage.getItem('romantic_gift_locket_feed');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (Array.isArray(p) && p.length > 0) return p;
+      }
+    } catch(e) {}
+    if (typeof window !== 'undefined' && window.SEED_DATA && Array.isArray(window.SEED_DATA.locket)) {
+      return JSON.parse(JSON.stringify(window.SEED_DATA.locket));
+    }
+    return [];
+  })();
 
   // 1. Clock & HUD updates
   function updateLocketClock() {
@@ -1871,7 +1884,7 @@
   async function loadLocketFeed() {
     if (!locketFeedGrid) return;
 
-    // Load from localStorage first (guaranteed instant display)
+    // 1. Load from localStorage first (guaranteed instant display)
     try {
       const raw = localStorage.getItem('romantic_gift_locket_feed');
       if (raw) {
@@ -1883,13 +1896,21 @@
       }
     } catch(e) {}
 
-    // In background, fetch from server if backend is active
+    // 2. Fallback to SEED_DATA immediately if empty
+    if (cachedLocketItems.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.locket) && window.SEED_DATA.locket.length > 0) {
+      cachedLocketItems = JSON.parse(JSON.stringify(window.SEED_DATA.locket));
+      try {
+        localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(cachedLocketItems));
+      } catch(e) {}
+      renderLocketFeed(cachedLocketItems);
+    }
+
+    // 3. In background, fetch from server if backend is active
     try {
       const res = await fetch('/api/locket');
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.items) && data.items.length > 0) {
-          // Merge unique items
           const serverMap = new Map();
           data.items.forEach(it => serverMap.set(it.id, it));
           cachedLocketItems.forEach(it => {
@@ -1899,28 +1920,24 @@
           cachedLocketItems = merged;
           localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(merged));
           renderLocketFeed(merged);
+          return;
         }
       }
-    } catch(e) {
-      // Offline / GitHub Pages mode - purely use cachedLocketItems
-      if (cachedLocketItems.length === 0) {
-        // Seed default preview if completely empty
-        const defaultItems = [
-          {
-            id: 'sample-cam-1',
-            type: 'photo',
-            mediaUrl: 'images/photo1.jpg',
-            caption: 'Khoảnh khắc đầu tiên cùng người anh yêu nhất 💖',
-            sender: (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ',
-            sticker: '💕',
-            filter: 'pink',
-            reactions: 2,
-            timeFormatted: '20/10 • Kỷ niệm'
+    } catch(e) {}
+
+    // 4. Fallback to data/db.json on GitHub Pages static mode
+    if (cachedLocketItems.length === 0) {
+      try {
+        const res = await fetch('data/db.json');
+        if (res.ok) {
+          const dbData = await res.json();
+          if (dbData && Array.isArray(dbData.locket) && dbData.locket.length > 0) {
+            cachedLocketItems = dbData.locket;
+            localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(dbData.locket));
+            renderLocketFeed(cachedLocketItems);
           }
-        ];
-        cachedLocketItems = defaultItems;
-        renderLocketFeed(defaultItems);
-      }
+        }
+      } catch(e) {}
     }
   }
 
@@ -2047,6 +2064,26 @@
         }
       }
     } catch(e) {}
+
+    // Static GitHub Pages fallback
+    try {
+      const res = await fetch('data/db.json');
+      if (res.ok) {
+        const dbData = await res.json();
+        if (dbData && Array.isArray(dbData.notes) && dbData.notes.length > 0) {
+          const current = getSavedDiaryNotes();
+          const merged = [...current];
+          dbData.notes.forEach(dn => {
+            if (!merged.some(m => m.id === dn.id || (m.text === dn.text && m.date === dn.date))) {
+              merged.push(dn);
+            }
+          });
+          localStorage.setItem('romantic_gift_user_notes', JSON.stringify(merged));
+          return merged;
+        }
+      }
+    } catch(e) {}
+
     return null;
   }
 
@@ -2085,8 +2122,14 @@
   function getSavedDiaryNotes() {
     try {
       const raw = localStorage.getItem('romantic_gift_user_notes');
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
     } catch(e) {}
+    if (window.SEED_DATA && Array.isArray(window.SEED_DATA.notes) && window.SEED_DATA.notes.length > 0) {
+      return JSON.parse(JSON.stringify(window.SEED_DATA.notes));
+    }
     return DEFAULT_DIARY_NOTES;
   }
 
@@ -2263,6 +2306,19 @@
         }
       }
     } catch(e) {}
+
+    // Static fallback: data/db.json
+    try {
+      const res = await fetch('data/db.json');
+      if (res.ok) {
+        const dbData = await res.json();
+        if (dbData && Array.isArray(dbData.memories) && dbData.memories.length > 0) {
+          localStorage.setItem('romantic_gift_user_memories', JSON.stringify(dbData.memories));
+          return dbData.memories;
+        }
+      }
+    } catch(e) {}
+
     return null;
   }
 
@@ -2308,6 +2364,9 @@
         }
       }
     } catch(e) {}
+    if (window.SEED_DATA && Array.isArray(window.SEED_DATA.memories) && window.SEED_DATA.memories.length > 0) {
+      return JSON.parse(JSON.stringify(window.SEED_DATA.memories));
+    }
     return JSON.parse(JSON.stringify(DEFAULT_MEMORIES));
   }
 
@@ -2551,7 +2610,19 @@
   const btnSubmitNewBucket = document.getElementById('btn-submit-new-bucket');
 
   let activeBucketFilter = 'all';
-  let cachedBucketList = [];
+  let cachedBucketList = (function() {
+    try {
+      const raw = localStorage.getItem('romantic_gift_bucket_list') || localStorage.getItem('romantic_gift_user_bucket');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (Array.isArray(p) && p.length > 0) return p;
+      }
+    } catch(e) {}
+    if (typeof window !== 'undefined' && window.SEED_DATA && Array.isArray(window.SEED_DATA.bucketList)) {
+      return JSON.parse(JSON.stringify(window.SEED_DATA.bucketList));
+    }
+    return [];
+  })();
 
   const CATEGORY_MAP = {
     sweet: { label: 'Lãng mạn', icon: '🌸' },
@@ -2561,11 +2632,32 @@
   };
 
   async function fetchBucketList() {
+    // 1. Initial fast load from localStorage or SEED_DATA
+    try {
+      const raw = localStorage.getItem('romantic_gift_bucket_list') || localStorage.getItem('romantic_gift_user_bucket');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cachedBucketList = parsed;
+          renderBucketList();
+        }
+      }
+    } catch(e) {}
+
+    if (cachedBucketList.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.bucketList) && window.SEED_DATA.bucketList.length > 0) {
+      cachedBucketList = JSON.parse(JSON.stringify(window.SEED_DATA.bucketList));
+      try {
+        localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(cachedBucketList));
+      } catch(e) {}
+      renderBucketList();
+    }
+
+    // 2. Fetch from /api/bucket (local server)
     try {
       const res = await fetch('/api/bucket');
       if (res.ok) {
         const data = await res.json();
-        if (data.success && Array.isArray(data.items)) {
+        if (data.success && Array.isArray(data.items) && data.items.length > 0) {
           cachedBucketList = data.items;
           localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(data.items));
           renderBucketList();
@@ -2574,15 +2666,20 @@
       }
     } catch(e) {}
 
-    // Fallback to localStorage
-    try {
-      const raw = localStorage.getItem('romantic_gift_bucket_list');
-      if (raw) {
-        cachedBucketList = JSON.parse(raw);
-        renderBucketList();
-        return;
-      }
-    } catch(e) {}
+    // 3. Static fallback: fetch data/db.json
+    if (cachedBucketList.length === 0) {
+      try {
+        const res = await fetch('data/db.json');
+        if (res.ok) {
+          const dbData = await res.json();
+          if (dbData && Array.isArray(dbData.bucketList) && dbData.bucketList.length > 0) {
+            cachedBucketList = dbData.bucketList;
+            localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(dbData.bucketList));
+            renderBucketList();
+          }
+        }
+      } catch(e) {}
+    }
   }
 
   function renderBucketList() {
@@ -3003,12 +3100,14 @@
 
     const certRecipient = document.getElementById('cert-recipient-name');
     if (certRecipient) {
-      certRecipient.textContent = `${userConfig.girlfriendName || 'Huỳnh Ngọc Thắng'} !`;
+      const gfCertName = userConfig.girlfriendRealName || (userConfig.girlfriendName && userConfig.girlfriendName !== 'Huỳnh Ngọc Thắng' && userConfig.girlfriendName !== 'khúc gỗ' ? userConfig.girlfriendName : 'N.T.B.N');
+      certRecipient.textContent = `${gfCertName} !`;
     }
 
     const certIssuer = document.getElementById('cert-issuer-name');
     if (certIssuer) {
-      certIssuer.textContent = userConfig.boyfriendName || 'N.T.B.N';
+      const bfCertName = userConfig.boyfriendRealName || (userConfig.boyfriendName && userConfig.boyfriendName !== 'N.T.B.N' && userConfig.boyfriendName !== 'bé mèo' ? userConfig.boyfriendName : 'Huỳnh Ngọc Thắng');
+      certIssuer.textContent = bfCertName;
     }
 
     const hintSpan = document.querySelector('#hint-bubble span');
@@ -3062,12 +3161,13 @@
   applyConfigToUI();
   renderDiaryNotes();
   renderMemoriesGrid();
+  renderBucketList();
+  loadLocketFeed();
   initAdminMode();
 
   // Async Sync with Database Server
   syncNotesToUI();
   syncMemoriesToUI();
   fetchBucketList();
-  loadLocketFeed();
 
 })();

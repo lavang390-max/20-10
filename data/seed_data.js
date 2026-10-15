@@ -1,0 +1,309 @@
+/**
+ * ==========================================================
+ * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
+ * ==========================================================
+ * Đảm bảo dữ liệu kỉ niệm, danh sách 21 điều ước, góc của bé
+ * và máy ảnh đôi ta luôn luôn hiển thị trọn vẹn 100% trên cả
+ * máy tính, điện thoại, GitHub Pages tĩnh lẫn máy chủ Node.js!
+ */
+
+const SEED_DATA = {
+  notes: [
+    {
+      id: "note_1792033486437_245",
+      mood: "🥰",
+      moodLabel: "Hạnh phúc",
+      text: "Anh Anh oi, hom nay em rat vui va hanh phuc! Cam on anh vi mon qua 20/10 sieu xin xo nay nha",
+      date: "10:04 • 15/10/2026",
+      createdAt: 1792033486437,
+      isRead: false
+    },
+    {
+      id: "default-welcome-note",
+      mood: "🥰",
+      moodLabel: "Hạnh phúc",
+      text: "Chào bé yêu! Đây là góc nhỏ bí mật để bé thoải mái chia sẻ mọi suy nghĩ, tâm sự, dặn dò hoặc hờn dỗi với anh. Bất cứ điều gì bé viết ở đây đều được anh trân trọng và lắng nghe!",
+      date: "Góc Của Bé ❤️",
+      createdAt: 1792033386221,
+      isRead: true
+    }
+  ],
+  memories: [
+    { id: "mem-1", src: "images/photo1.jpg", caption: "Bên bé mọi khoảnh khắc đều đẹp 💖", date: "Kỷ niệm yêu thương" },
+    { id: "mem-2", src: "images/photo2.jpg", caption: "Nụ cười tỏa nắng của bé ☀️", date: "Ngày hạnh phúc" },
+    { id: "mem-3", src: "images/photo3.jpg", caption: "Nắm tay bé đi khắp thế gian 🌸", date: "Tình yêu ngọt ngào" },
+    { id: "mem-4", src: "images/photo4.jpg", caption: "Bé yêu của anh ✨", date: "Những ngày bình yên" },
+    { id: "mem-5", src: "images/photo5.jpg", caption: "Mỗi ngày bên bé là một món quà 🎁", date: "Hành trình bên nhau" },
+    { id: "mem-6", src: "images/photo6.jpg", caption: "Ánh mắt bé làm tan chảy tim anh ✨", date: "Khoảnh khắc diệu kỳ" },
+    { id: "mem-7", src: "images/photo7.jpg", caption: "Yêu bé nhiều hơn mỗi ngày 💕", date: "Kỷ niệm đôi ta" },
+    { id: "mem-8", src: "images/photo8.jpg", caption: "Thế giới của anh thu nhỏ lại bằng bé 🌍", date: "Yêu thương đong đầy" },
+    { id: "mem-9", src: "images/photo9.jpg", caption: "Bình yên nhất là khi có bé 🍃", date: "Ngọt ngào bên bé" },
+    { id: "mem-10", src: "images/photo10.jpg", caption: "Đi cùng với anh nhó 👵👴", date: "Hứa mãi bên nhau" },
+    { id: "mem-11", src: "images/photo11.jpg", caption: "Hạnh phúc đơn giản là có bé bên cạnh 🥰", date: "Mùa yêu thương" },
+    { id: "mem-12", src: "images/photo12.jpg", caption: "Chúc mừng 20/10 người anh yêu nhất trần đời 💐", date: "20.10.2026 ❤️" }
+  ],
+  bucketList: [
+    {
+      id: "b-1",
+      icon: "🍿",
+      title: "Đi xem phim suất chiếu muộn và ăn bắp rang bơ cùng nhau",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: true,
+      completedDate: "Đã hoàn thành 💕",
+      note: "Lúc nào xem phim bé cũng tựa đầu vào vai anh"
+    },
+    {
+      id: "b-2",
+      icon: "🛵",
+      title: "Đèo bé dạo quanh phố đêm ngắm thành phố lên đèn lung linh",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: true,
+      completedDate: "Đã hoàn thành 💕",
+      note: "Bé ôm anh từ phía sau ấm áp lắm"
+    },
+    {
+      id: "b-3",
+      icon: "👩‍🍳",
+      title: "Cùng nhau vào bếp tự nấu một bữa tối lãng mạn",
+      category: "sweet",
+      categoryLabel: "Lãng mạn",
+      completed: true,
+      completedDate: "15/10/2026",
+      note: "Anh nấu món bé thích, bé nêm nếm gia vị"
+    },
+    {
+      id: "b-4",
+      icon: "🏖️",
+      title: "Nắm tay nhau đi dạo và ngắm hoàng hôn trên bờ biển",
+      category: "travel",
+      categoryLabel: "Du lịch",
+      completed: false,
+      completedDate: null,
+      note: "Ghi lại dấu chân đôi mình trên cát"
+    },
+    {
+      id: "b-5",
+      icon: "🌧️",
+      title: "Cùng nhau đi dưới mưa chung một chiếc ô nhỏ",
+      category: "sweet",
+      categoryLabel: "Lãng mạn",
+      completed: true,
+      completedDate: "Đã hoàn thành 💕",
+      note: "Vai anh ướt nhưng bé thì không bị lạnh"
+    },
+    {
+      id: "b-6",
+      icon: "✈️",
+      title: "Đi du lịch Đà Lạt săn mây và uống sữa đậu nành nóng",
+      category: "travel",
+      categoryLabel: "Du lịch",
+      completed: false,
+      completedDate: null,
+      note: "Thuê xe máy vi vu khắp các con dốc"
+    },
+    {
+      id: "b-7",
+      icon: "👕",
+      title: "Mặc áo đôi cùng nhau dạo phố không ngại ánh mắt ai",
+      category: "sweet",
+      categoryLabel: "Lãng mạn",
+      completed: false,
+      completedDate: null,
+      note: "Tự hào khoe với cả thế giới bé là của anh"
+    },
+    {
+      id: "b-8",
+      icon: "⛺",
+      title: "Đi cắm trại qua đêm ngắm bầu trời đầy sao lấp lánh",
+      category: "travel",
+      categoryLabel: "Du lịch",
+      completed: false,
+      completedDate: null,
+      note: "Đốt lửa trại, nướng khoai và tâm sự thâu đêm"
+    },
+    {
+      id: "b-9",
+      icon: "💆‍♀️",
+      title: "Xoa bóp vai gáy, bóp đầu ru bé ngủ thật say giấc",
+      category: "sweet",
+      categoryLabel: "Lãng mạn",
+      completed: true,
+      completedDate: "Đã hoàn thành 💕",
+      note: "Nhiệm vụ cao cả của anh mỗi khi bé mệt mỏi"
+    },
+    {
+      id: "b-10",
+      icon: "📸",
+      title: "Chụp một bộ ảnh phong cách Hàn Quốc photobooth siêu ngố",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: false,
+      completedDate: null,
+      note: "Làm những biểu cảm hài hước nhất cùng bé"
+    },
+    {
+      id: "b-11",
+      icon: "🎂",
+      title: "Cùng nhau đón sinh nhật ấm cúng chỉ có riêng hai đứa",
+      category: "sweet",
+      categoryLabel: "Lãng mạn",
+      completed: false,
+      completedDate: null,
+      note: "Thổi nến và ước những điều ước cho tương lai"
+    },
+    {
+      id: "b-12",
+      icon: "🐱",
+      title: "Cùng nhau nuôi một bé mèo hoặc bé cún ngoan ngoãn",
+      category: "future",
+      categoryLabel: "Tương lai",
+      completed: false,
+      completedDate: null,
+      note: "Hai đứa làm ba mẹ của một bé thú cưng đáng yêu"
+    },
+    {
+      id: "b-13",
+      icon: "🎡",
+      title: "Đi công viên giải trí và chơi vòng đu quay khổng lồ",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: false,
+      completedDate: null,
+      note: "Hôn nhau khi cabin đu quay lên đỉnh cao nhất"
+    },
+    {
+      id: "b-14",
+      icon: "🌅",
+      title: "Thức dậy thật sớm đón bình minh ngày đầu năm mới",
+      category: "future",
+      categoryLabel: "Tương lai",
+      completed: false,
+      completedDate: null,
+      note: "Gửi những ước nguyện tốt đẹp nhất cho tình yêu"
+    },
+    {
+      id: "b-15",
+      icon: "☕",
+      title: "Ngồi quán cafe yên tĩnh đọc sách và tựa vai nhau",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: false,
+      completedDate: null,
+      note: "Những ngày bình yên không ồn ào"
+    },
+    {
+      id: "b-16",
+      icon: "💌",
+      title: "Viết thư tay niêm phong và hẹn mở ra sau 1 năm",
+      category: "sweet",
+      categoryLabel: "Lãng mạn",
+      completed: false,
+      completedDate: null,
+      note: "Đọc lại những rung động ban đầu"
+    },
+    {
+      id: "b-17",
+      icon: "🧺",
+      title: "Đi picnic trên bãi cỏ xanh ngát vào chiều cuối tuần",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: false,
+      completedDate: null,
+      note: "Mang theo hoa quả, bánh ngọt và đàn hát cho bé nghe"
+    },
+    {
+      id: "b-18",
+      icon: "💍",
+      title: "Cùng nhau bước vào lễ đường trong sự chúc phúc của gia đình",
+      category: "future",
+      categoryLabel: "Tương lai",
+      completed: false,
+      completedDate: null,
+      note: "Trao nhau chiếc nhẫn hẹn ước trọn đời"
+    },
+    {
+      id: "b-19",
+      icon: "🏡",
+      title: "Xây dựng một tổ ấm nhỏ tràn ngập tiếng cười và bình yên",
+      category: "future",
+      categoryLabel: "Tương lai",
+      completed: false,
+      completedDate: null,
+      note: "Nơi trở về sau những bộn bề cuộc sống"
+    },
+    {
+      id: "b-20",
+      icon: "👵👴",
+      title: "Cùng nhau già đi, đầu bạc răng long vẫn nắm chặt tay nhau",
+      category: "future",
+      categoryLabel: "Tương lai",
+      completed: false,
+      completedDate: null,
+      note: "Lời hứa trọn đời của anh dành cho bé"
+    },
+    {
+      id: "b_1792034702786_954",
+      icon: "🍿",
+      title: "Di uong tra dao cam sa ngam mua cung nhau",
+      category: "date",
+      categoryLabel: "Hẹn hò",
+      completed: false,
+      completedDate: null,
+      note: "",
+      createdAt: 1792034702786
+    }
+  ],
+  locket: [
+    {
+      id: "locket_1792036596385_1",
+      type: "photo",
+      mediaUrl: "images/photo3.jpg",
+      caption: "Em vua chup gui anh ne! <3",
+      sender: "bé mèo",
+      senderRole: "girlfriend",
+      sticker: "😽",
+      filter: "pink",
+      filterLabel: "Tự nhiên",
+      createdAt: 1792036596385,
+      timeFormatted: "10:56 • 15/10",
+      reactions: 3
+    },
+    {
+      id: "locket-sample-1",
+      type: "photo",
+      mediaUrl: "images/photo1.jpg",
+      caption: "Đang nhớ anh nhiều lắm nè 💕✨",
+      sender: "bé mèo",
+      senderRole: "girlfriend",
+      sticker: "🥰",
+      filter: "pink",
+      filterLabel: "Hồng Ngọt Ngào",
+      createdAt: 1792034418907,
+      timeFormatted: "25 phút trước",
+      reactions: 3
+    },
+    {
+      id: "locket-sample-2",
+      type: "photo",
+      mediaUrl: "images/photo2.jpg",
+      caption: "Hôm nay trời đẹp, ước gì có anh ở đây 🌤️",
+      sender: "bé mèo",
+      senderRole: "girlfriend",
+      sticker: "🌸",
+      filter: "vintage",
+      filterLabel: "Vintage Film",
+      createdAt: 1792028718907,
+      timeFormatted: "2 giờ trước",
+      reactions: 5
+    }
+  ]
+};
+
+if (typeof window !== 'undefined') {
+  window.SEED_DATA = SEED_DATA;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SEED_DATA;
+}

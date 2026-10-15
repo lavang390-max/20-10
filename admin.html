@@ -1045,8 +1045,9 @@
     <span id="toast-text">Đã thực hiện thành công!</span>
   </div>
 
-  <!-- LOAD CONFIG FILE IF EXISTS -->
-  <script src="config.js"></script>
+  <!-- LOAD CONFIG FILE AND SEED DATA IF EXISTS -->
+  <script src="data/seed_data.js?v=20261015_data_v9"></script>
+  <script src="config.js?v=20261015_data_v9"></script>
 
   <!-- ADMIN SCRIPT LOGIC -->
   <script>
@@ -1428,15 +1429,21 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const res = await fetch('/api/notes');
           if (res.ok) {
             const data = await res.json();
-            if (data.success && Array.isArray(data.notes)) {
+            if (data.success && Array.isArray(data.notes) && data.notes.length > 0) {
               notes = data.notes;
             }
           }
-        } catch(e) {
+        } catch(e) {}
+
+        if (notes.length === 0) {
           try {
             const raw = localStorage.getItem('romantic_gift_user_notes');
             if (raw) notes = JSON.parse(raw);
           } catch(err){}
+        }
+
+        if (notes.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.notes)) {
+          notes = window.SEED_DATA.notes;
         }
 
         if (badgeEl) badgeEl.textContent = `${notes.length} lời nhắn`;
@@ -1490,15 +1497,21 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const res = await fetch('/api/memories');
           if (res.ok) {
             const data = await res.json();
-            if (data.success && Array.isArray(data.memories)) {
+            if (data.success && Array.isArray(data.memories) && data.memories.length > 0) {
               memories = data.memories;
             }
           }
-        } catch(e) {
+        } catch(e) {}
+
+        if (memories.length === 0) {
           try {
             const raw = localStorage.getItem('romantic_gift_user_memories');
             if (raw) memories = JSON.parse(raw);
           } catch(err){}
+        }
+
+        if (memories.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.memories)) {
+          memories = window.SEED_DATA.memories;
         }
 
         if (badgeEl) badgeEl.textContent = `${memories.length} bức ảnh`;
@@ -1611,22 +1624,29 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const res = await fetch('/api/bucket');
           if (res.ok) {
             const data = await res.json();
-            if (data.success && Array.isArray(data.items)) {
+            if (data.success && Array.isArray(data.items) && data.items.length > 0) {
               items = data.items;
               total = data.total;
               completedCount = data.completedCount;
               percent = data.percent;
             }
           }
-        } catch(e) {
+        } catch(e) {}
+
+        if (items.length === 0) {
           try {
-            const raw = localStorage.getItem('romantic_gift_user_bucket');
+            const raw = localStorage.getItem('romantic_gift_bucket_list') || localStorage.getItem('romantic_gift_user_bucket');
             if (raw) items = JSON.parse(raw);
-            total = items.length;
-            completedCount = items.filter(i => i.completed).length;
-            percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
           } catch(err){}
         }
+
+        if (items.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.bucketList)) {
+          items = window.SEED_DATA.bucketList;
+        }
+
+        total = items.length;
+        completedCount = items.filter(i => i.completed).length;
+        percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
         if (badgeEl) badgeEl.textContent = `${completedCount} / ${total} điều (${percent}%)`;
         listEl.innerHTML = '';
@@ -1737,15 +1757,21 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const res = await fetch('/api/locket');
           if (res.ok) {
             const data = await res.json();
-            if (data.success && Array.isArray(data.items)) {
+            if (data.success && Array.isArray(data.items) && data.items.length > 0) {
               items = data.items;
             }
           }
-        } catch(e) {
+        } catch(e) {}
+
+        if (items.length === 0) {
           try {
             const raw = localStorage.getItem('romantic_gift_locket_feed');
             if (raw) items = JSON.parse(raw);
           } catch(err){}
+        }
+
+        if (items.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.locket)) {
+          items = window.SEED_DATA.locket;
         }
 
         if (badgeEl) badgeEl.textContent = `${items.length} khoảnh khắc`;

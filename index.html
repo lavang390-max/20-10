@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261015_camera_v8">
+  <link rel="stylesheet" href="style.css?v=20261015_data_v9">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -259,7 +259,7 @@
               <!-- Recipient & Content -->
               <div class="real-cert-body">
                 <div class="real-cert-for">Dành cho:</div>
-                <div class="real-cert-name" id="cert-recipient-name">Huỳnh Ngọc Thắng !</div>
+                <div class="real-cert-name" id="cert-recipient-name">N.T.B.N !</div>
                 <p class="real-cert-mission">
                   Đã hoàn thành xuất sắc nhiệm vụ yêu thương và quan tâm anh
                 </p>
@@ -278,7 +278,7 @@
                     </svg>
                     <span class="real-cert-sign-text"></span>
                   </div>
-                  <span class="real-cert-issuer" id="cert-issuer-name">N.T.B.N</span>
+                  <span class="real-cert-issuer" id="cert-issuer-name">Huỳnh Ngọc Thắng</span>
                 </div>
 
                 <!-- Golden Rosette Medal Ribbon -->
@@ -969,9 +969,11 @@
     <span>🎵 Bấm để bật nhạc lãng mạn</span>
   </div>
 
+  <!-- System Seed Data (Offline & Static fallback for all 21 bucket items, notes, memories) -->
+  <script src="data/seed_data.js?v=20261015_data_v9"></script>
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261015_camera_v6"></script>
+  <script src="config.js?v=20261015_data_v9"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261015_camera_v8"></script>
+  <script src="script.js?v=20261015_data_v9"></script>
 </body>
 </html>
