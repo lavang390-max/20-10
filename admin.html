@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>⚙️ Trung Tâm Quản Trị Quà Tặng 20/10 - Dành Cho Anh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* DEDICATED STYLES FOR ADMIN DASHBOARD */
+    body {
+      background: radial-gradient(circle at 50% 20%, #2b0c36 0%, #150921 50%, #0a0412 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: var(--font-primary);
+      overflow-y: auto !important;
+      user-select: auto !important;
+      padding-bottom: 80px;
+    }
+
+    /* AUTH GATE MODAL */
+    .auth-gate-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 4, 18, 0.94);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-gate-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 36px 28px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      animation: modalFadeIn 0.35s ease-out;
+    }
+
+    .auth-gate-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: heartBeat 2s infinite ease-in-out;
+    }
+
+    .auth-gate-box h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .auth-gate-box p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .pin-input-group {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .pin-digit-input {
+      width: 52px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .pin-digit-input:focus {
+      border-color: var(--primary-pink);
+      box-shadow: 0 0 16px rgba(255, 77, 136, 0.4);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .auth-error-text {
+      color: #ff7675;
+      font-size: 0.85rem;
+      margin-top: -12px;
+      margin-bottom: 16px;
+      min-height: 20px;
+    }
+
+    /* ADMIN MAIN CONTAINER */
+    .admin-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* TOP HEADER */
+    .admin-header {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 24px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .admin-title-wrap h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 30%, #ff85a2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-title-wrap p {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 4px;
+    }
+
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 77, 136, 0.2);
+      border: 1px solid rgba(255, 77, 136, 0.4);
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      color: #ff9bbb;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    .admin-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #55efc4;
+      box-shadow: 0 0 8px #55efc4;
+    }
+
+    .admin-actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-admin {
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+
+    .btn-admin:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-admin-pink {
+      background: linear-gradient(135deg, #ff4d88 0%, #ff2a6d 100%);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(255, 42, 109, 0.4);
+    }
+    .btn-admin-pink:hover {
+      box-shadow: 0 10px 25px rgba(255, 42, 109, 0.6);
+    }
+
+    .btn-admin-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+    .btn-admin-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-admin-gold {
+      background: linear-gradient(135deg, #f6c85f 0%, #d49a26 100%);
+      color: #2b1800;
+      box-shadow: 0 6px 20px rgba(246, 200, 95, 0.35);
+    }
+
+    /* NOTICE BANNER: CHẾ ĐỘ XEM CỦA BÉ */
+    .notice-banner {
+      background: linear-gradient(135deg, rgba(255, 77, 136, 0.15), rgba(157, 78, 221, 0.15));
+      border: 1px solid rgba(255, 77, 136, 0.35);
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .notice-banner-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .notice-banner-content h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ff9bbb;
+      margin-bottom: 4px;
+    }
+
+    .notice-banner-content p {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.5;
+    }
+
+    /* SHARE LINK BOX */
+    .share-link-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .share-link-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #55efc4;
+      font-family: monospace;
+      font-size: 0.85rem;
+      outline: none;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    /* CARD SECTIONS */
+    .admin-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 26px 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .admin-card-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-card-icon {
+      font-size: 1.5rem;
+    }
+
+    .admin-card-head h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .admin-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .admin-field {
+      margin-bottom: 18px;
+    }
+
+    .admin-field label {
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 8px;
+    }
+
+    .admin-field label span {
+      color: var(--primary-pink);
+      font-size: 0.78rem;
+      margin-left: 4px;
+    }
+
+    .admin-input, .admin-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .admin-input:focus, .admin-textarea:focus {
+      border-color: var(--primary-pink);
+      background: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 0 15px rgba(255, 77, 136, 0.3);
+    }
+
+    .admin-textarea {
+      min-height: 180px;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    .field-hint {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 6px;
+    }
+
+    /* LIVE COUNTER PREVIEW IN ADMIN */
+    .live-counter-preview-pill {
+      background: rgba(255, 77, 136, 0.15);
+      border: 1px solid rgba(255, 77, 136, 0.3);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #ffb199;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* WHEEL PRIZES LIST */
+    .wheel-prizes-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .wheel-prize-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 16px;
+      position: relative;
+    }
+
+    .wheel-prize-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    /* TOAST NOTIFICATION */
+    .admin-toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #11081f;
+      border: 1px solid var(--primary-pink);
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 77, 136, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      z-index: 999999;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .admin-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* LETTER TEMPLATES SUGGESTION PILLS */
+    .template-pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .btn-template-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      color: #ffb199;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-template-pill:hover {
+      background: rgba(255, 77, 136, 0.2);
+      border-color: var(--primary-pink);
+      color: #fff;
+    }
+
+    /* NOTES INBOX STYLES */
+    .admin-notes-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .admin-note-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 16px 20px;
+      transition: all 0.2s ease;
+    }
+
+    .admin-note-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 77, 136, 0.3);
+    }
+
+    .admin-note-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .admin-note-mood {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #ff9bbb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .admin-note-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .admin-note-body {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+      white-space: pre-wrap;
+    }
+
+    .btn-delete-item {
+      background: rgba(255, 118, 117, 0.15);
+      border: 1px solid rgba(255, 118, 117, 0.35);
+      color: #ff7675;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-delete-item:hover {
+      background: #ff7675;
+      color: #fff;
+    }
+
+    .admin-empty-state {
+      text-align: center;
+      padding: 30px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+    }
+
+    /* MEMORIES MANAGER STYLES */
+    .admin-upload-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .admin-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .admin-memories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .admin-memory-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .admin-memory-thumb {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+      background: #11081f;
+    }
+
+    .admin-memory-info {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+    }
+
+    .admin-memory-caption {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+
+    .admin-memory-date {
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .admin-memory-card .btn-delete-item {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 118, 117, 0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    /* LOVE BUCKET LIST ADMIN STYLES */
+    .admin-bucket-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: all 0.2s ease;
+    }
+    .admin-bucket-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 77, 136, 0.35);
+    }
+    .admin-bucket-item.completed {
+      background: rgba(85, 239, 196, 0.06);
+      border-color: rgba(85, 239, 196, 0.25);
+    }
+    .admin-bucket-checkbox {
+      width: 22px;
+      height: 22px;
+      accent-color: #ff4d88;
+      cursor: pointer;
+    }
+    .admin-bucket-title {
+      flex: 1;
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .admin-bucket-item.completed .admin-bucket-title {
+      text-decoration: line-through;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .admin-bucket-cat-pill {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffb199;
+      font-weight: 600;
+    }
+
+    /* STICKY BOTTOM ACTION BAR ON MOBILE */
+    .mobile-sticky-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(14, 9, 21, 0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      z-index: 999;
+    }
+
+    @media (max-width: 650px) {
+      .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .admin-actions-bar {
+        justify-content: stretch;
+      }
+      .btn-admin {
+        flex: 1;
+        justify-content: center;
+      }
+      .pin-digit-input {
+        width: 44px;
+        height: 52px;
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==============================================
+       1. SECURITY AUTH GATE (LOGIN PIN)
+       ============================================== -->
+  <div class="auth-gate-overlay" id="auth-gate-overlay">
+    <div class="auth-gate-box">
+      <div class="auth-gate-icon">🔐</div>
+      <h2>Quản Trị Quà Tặng 20/10</h2>
+      <p>Trang này chỉ dành cho bạn trai chỉnh sửa nội dung. Vui lòng nhập mã PIN bảo mật để mở giao diện quản trị:</p>
+
+      <div class="pin-input-group">
+        <input type="password" maxlength="1" class="pin-digit-input" id="pin-1" autofocus>
+        <input type="password" maxlength="1" class="pin-digit-input" id="pin-2">
+        <input type="password" maxlength="1" class="pin-digit-input" id="pin-3">
+        <input type="password" maxlength="1" class="pin-digit-input" id="pin-4">
+      </div>
+
+      <div class="auth-error-text" id="auth-error-text"></div>
+
+      <button type="button" class="btn-admin btn-admin-pink" id="btn-login-admin" style="width: 100%; justify-content: center; padding: 14px;">
+        🔓 Mở Khóa Quản Trị
+      </button>
+
+      <p style="font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-top: 16px; margin-bottom: 0;">
+        (Mã PIN mặc định ban đầu: <b>0702</b> hoặc <b>2010</b>)
+      </p>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       2. MAIN ADMIN DASHBOARD
+       ============================================== -->
+  <div class="admin-wrapper" id="admin-main-wrap" style="display: none;">
+
+    <!-- TOP HEADER -->
+    <header class="admin-header">
+      <div class="admin-title-wrap">
+        <h1>⚙️ Trung Tâm Quản Trị 20/10</h1>
+        <p>Soạn quà tặng lãng mạn dành riêng cho bé • Tạo đường link chỉ xem an toàn</p>
+        <div class="admin-badge">
+          <span class="admin-badge-dot"></span>
+          <span>Chế độ quản trị viên đã kích hoạt</span>
+        </div>
+      </div>
+
+      <div class="admin-actions-bar">
+        <button type="button" class="btn-admin btn-admin-pink" id="btn-copy-girl-link">
+          📋 Sao Chép Link Gửi Bé
+        </button>
+        <a href="index.html" target="_blank" class="btn-admin btn-admin-secondary" id="btn-preview-girl-view">
+          👁️ Xem Thử Trang Của Bé
+        </a>
+        <button type="button" class="btn-admin btn-admin-gold" id="btn-save-all-admin">
+          💾 Lưu Cấu Hình
+        </button>
+        <button type="button" class="btn-admin btn-admin-secondary" id="btn-export-config-file">
+          📥 Xuất config.js
+        </button>
+      </div>
+    </header>
+
+    <!-- NOTICE BANNER: BÉ CHỈ XEM, KHÔNG THỂ SỬA -->
+    <div class="notice-banner">
+      <div class="notice-banner-icon">💡</div>
+      <div class="notice-banner-content">
+        <h3>Bảo Mật Tuyệt Đối: Bé chỉ được xem, không thể sửa!</h3>
+        <p>
+          Khi bạn bấm <b>"Sao Chép Link Gửi Bé"</b>, đường link tạo ra đã được mã hóa toàn bộ dữ liệu bạn đã soạn.
+          Khi bé bấm vào link trên điện thoại hoặc máy tính, web sẽ tự động hiển thị 100% nội dung của bạn mà <b>không hề có nút Cài đặt hay bất kỳ quyền chỉnh sửa nào</b>!
+        </p>
+        <div class="share-link-box">
+          <input type="text" class="share-link-input" id="live-share-link-input" readonly value="Đang tạo link...">
+          <button type="button" class="btn-admin btn-admin-pink" id="btn-quick-copy" style="padding: 6px 14px; font-size: 0.8rem;">
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM SECTIONS -->
+    <form id="admin-form" onsubmit="return false;">
+
+      <!-- CARD 1: MẬT MÃ MÀN HÌNH KHÓA IPHONE -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <span class="admin-card-icon">📱</span>
+          <h2>1. Màn Hình Khóa iPhone & Mật Mã (Passcode)</h2>
+        </div>
+
+        <div class="admin-grid-2">
+          <div class="admin-field">
+            <label for="admin-passcode">Mật Mã 4 Số Mở Khóa Màn Hình<span>*</span></label>
+            <input type="text" id="admin-passcode" class="admin-input" maxlength="4" placeholder="VD: 0702, 2010" value="0702">
+            <p class="field-hint">Mật mã 4 chữ số bé phải nhập trên màn hình khóa iPhone để mở quà.</p>
+          </div>
+
+          <div class="admin-field">
+            <label for="admin-passcode-hint">Lời Gợi Ý Mật Mã (Khi Bé Bấm 💡)<span>*</span></label>
+            <input type="text" id="admin-passcode-hint" class="admin-input" placeholder="VD: Gợi ý: Ngày kỷ niệm tụi mình nè! ✨" value="Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! (0702) ✨">
+            <p class="field-hint">Hiện lên khi bé chưa đoán ra mật khẩu và bấm nút "Gợi ý 💡".</p>
+          </div>
+        </div>
+
+        <div class="admin-field" style="margin-bottom: 0;">
+          <label for="admin-admin-pin">Mã PIN Đăng Nhập Trang Admin Này<span>*</span></label>
+          <input type="text" id="admin-admin-pin" class="admin-input" style="max-width: 280px;" maxlength="6" placeholder="Mặc định: 0702" value="0702">
+          <p class="field-hint">Mã PIN để bảo vệ trang admin.html này, chỉ anh mới biết để vào sửa.</p>
+        </div>
+      </div>
+
+      <!-- CARD 2: THÔNG TIN CẶP ĐÔI & NGÀY KỶ NIỆM -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <span class="admin-card-icon">💑</span>
+          <h2>2. Tên Hai Bạn & Đồng Hồ Đếm Ngày Yêu</h2>
+        </div>
+
+        <div class="admin-grid-2">
+          <div class="admin-field">
+            <label for="admin-gf-name">Tên / Biệt Danh Của Bé Yêu<span>*</span></label>
+            <input type="text" id="admin-gf-name" class="admin-input" placeholder="VD: Bé Mèo, Em Bé, Huỳnh Ngọc Thắng" value="bé mèo">
+            <p class="field-hint">Tên sẽ xuất hiện ở trang chính, giấy chứng nhận quyền lực và lời chúc.</p>
+          </div>
+
+          <div class="admin-field">
+            <label for="admin-bf-name">Tên / Biệt Danh Của Bạn Trai<span>*</span></label>
+            <input type="text" id="admin-bf-name" class="admin-input" placeholder="VD: Khúc Gỗ, Anh Yêu, Chồng iu" value="khúc gỗ">
+            <p class="field-hint">Tên người phát hành giấy chứng nhận và ký tên thư tình.</p>
+          </div>
+        </div>
+
+        <div class="admin-field" style="margin-bottom: 0;">
+          <label for="admin-start-date">Ngày Bắt Đầu Yêu Nhau<span>*</span></label>
+          <input type="datetime-local" id="admin-start-date" class="admin-input" style="max-width: 320px;">
+          <div class="live-counter-preview-pill" id="live-calc-days-pill">
+            ⏳ Đã bên nhau: <b>Đang tính toán...</b>
+          </div>
+          <p class="field-hint">Đồng hồ Live Time Counter sẽ nhảy từng giây kể từ mốc thời gian này.</p>
+        </div>
+      </div>
+
+      <!-- CARD 3: TÂM THƯ TÌNH CẢM 20/10 -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <span class="admin-card-icon">💌</span>
+          <h2>3. Bức Thư Tình 20/10 (Hiệu Ứng Máy Đánh Chữ)</h2>
+        </div>
+
+        <div class="template-pills-row">
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); align-self: center;">Mẫu thư gợi ý:</span>
+          <button type="button" class="btn-template-pill" id="btn-tpl-sweet">🌸 Mẫu Ngọt Ngào Lãng Mạn</button>
+          <button type="button" class="btn-template-pill" id="btn-tpl-cute">🐱 Mẫu Dễ Thương Hài Hước</button>
+          <button type="button" class="btn-template-pill" id="btn-tpl-deep">✨ Mẫu Chân Thành Sâu Sắc</button>
+        </div>
+
+        <div class="admin-field" style="margin-bottom: 0;">
+          <label for="admin-letter-body">Nội Dung Thư Tình<span>*</span></label>
+          <textarea id="admin-letter-body" class="admin-textarea" placeholder="Nhập bức thư tình của bạn dành cho bé..."></textarea>
+          <p class="field-hint">Bức thư sẽ tự động gõ từng chữ kèm âm thanh máy đánh chữ cổ điển khi bé mở phong bì tình yêu.</p>
+        </div>
+      </div>
+
+      <!-- CARD 4: QUẢN LÝ MINI LOCKET ĐÔI TA (DATABASE) -->
+      <div class="admin-card">
+        <div class="admin-card-head" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="admin-card-icon">💛</span>
+            <h2>4. Quản Lý Mini Locket Đôi Ta (Ảnh &amp; Video 5s Tức Thì)</h2>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="admin-locket-count-badge" class="admin-badge" style="background: rgba(246, 200, 95, 0.18); border-color: #f6c85f; color: #f6c85f;">
+              0 khoảnh khắc
+            </span>
+            <button type="button" class="btn-admin btn-admin-secondary" id="btn-refresh-locket" style="padding: 6px 14px; font-size: 0.8rem;">
+              🔄 Làm Mới
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Khoảnh khắc chụp ảnh tức thì hoặc video 5s được gửi giữa anh và bé. Anh cũng có thể gửi phản hồi trực tiếp cho bé từ đây!
+        </p>
+
+        <!-- UPLOAD LOCKET FROM ADMIN -->
+        <div class="admin-upload-box" style="margin-bottom: 22px;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #f6c85f;">➕ Gửi một Locket mới từ anh:</h4>
+          <div class="admin-grid-3">
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>File ảnh hoặc video (MP4, WebM, JPG):</label>
+              <input type="file" id="admin-locket-file-input" accept="image/*,video/*" class="admin-input" style="padding: 8px;">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Lời nhắn gửi bé:</label>
+              <input type="text" id="admin-locket-caption-input" class="admin-input" placeholder="VD: Anh đang nhớ bé nhiều lắm nè! 💕">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Sticker cảm xúc:</label>
+              <select id="admin-locket-sticker-input" class="admin-input">
+                <option value="💕">💕 Yêu thương</option>
+                <option value="😽">😽 Cưng xỉu</option>
+                <option value="🌸">🌸 Ngọt ngào</option>
+                <option value="🥺">🥺 Làm nũng</option>
+                <option value="☕">☕ Cafe chill</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button type="button" class="btn-admin btn-admin-pink" id="btn-admin-send-locket">
+              🚀 Gửi Locket Đến Bé
+            </button>
+          </div>
+        </div>
+
+        <!-- LOCKET ITEMS GRID -->
+        <div id="admin-locket-grid" class="admin-memories-grid" style="margin-top: 10px;">
+          <div class="admin-empty-state">Đang tải khoảnh khắc Locket từ Database...</div>
+        </div>
+      </div>
+
+      <!-- CARD 5: HỘP THƯ BÉ GỬI CHO ANH (DATABASE INBOX) -->
+      <div class="admin-card">
+        <div class="admin-card-head" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="admin-card-icon">💌</span>
+            <h2>5. Hộp Thư Bé Gửi Cho Anh (Database)</h2>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="admin-notes-count-badge" class="admin-badge" style="background: rgba(255, 77, 136, 0.2); border-color: var(--primary-pink); color: #ff9bbb;">
+              0 lời nhắn
+            </span>
+            <button type="button" class="btn-admin btn-admin-secondary" id="btn-refresh-notes" style="padding: 6px 14px; font-size: 0.8rem;">
+              🔄 Làm Mới
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Tất cả những chia sẻ, dặn dò hoặc hờn dỗi mà bé viết ở mục <b>"Bé viết chia sẻ cảm xúc"</b> trên web sẽ được lưu tự động vào Database và hiển thị trực tiếp tại đây!
+        </p>
+
+        <div id="admin-notes-list" class="admin-notes-container">
+          <!-- Dynamically populated notes -->
+          <div class="admin-empty-state">Đang tải hộp thư từ Database...</div>
+        </div>
+      </div>
+
+      <!-- CARD 6: QUẢN LÝ KHO ẢNH KỶ NIỆM (DATABASE MEMORIES) -->
+      <div class="admin-card">
+        <div class="admin-card-head" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="admin-card-icon">📸</span>
+            <h2>6. Quản Lý Kho Ảnh Kỷ Niệm (Database)</h2>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="admin-memories-count-badge" class="admin-badge" style="background: rgba(85, 239, 196, 0.15); border-color: #55efc4; color: #55efc4;">
+              0 bức ảnh
+            </span>
+            <button type="button" class="btn-admin btn-admin-secondary" id="btn-refresh-memories" style="padding: 6px 14px; font-size: 0.8rem;">
+              🔄 Làm Mới
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Toàn bộ ảnh trong album kỷ niệm đôi ta. Ảnh bé upload trên điện thoại hoặc ảnh anh tải lên ở đây đều được lưu vào Database và đồng bộ tức thì cho cả hai bạn!
+        </p>
+
+        <!-- UPLOAD SECTION IN ADMIN -->
+        <div class="admin-upload-box">
+          <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #ffb199;">➕ Tải thêm ảnh mới vào album:</h4>
+          <div class="admin-grid-3">
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Chọn file ảnh (JPG, PNG, WebP):</label>
+              <input type="file" id="admin-photo-file-input" accept="image/*" class="admin-input" style="padding: 8px;">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Chú thích bức ảnh:</label>
+              <input type="text" id="admin-photo-caption-input" class="admin-input" placeholder="VD: Đi chơi công viên cùng bé 💕">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Ngày kỷ niệm:</label>
+              <input type="date" id="admin-photo-date-input" class="admin-input">
+            </div>
+          </div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button type="button" class="btn-admin btn-admin-pink" id="btn-admin-upload-photo">
+              🚀 Tải Ảnh Lên Database
+            </button>
+          </div>
+        </div>
+
+        <!-- MEMORIES GRID -->
+        <div id="admin-memories-grid" class="admin-memories-grid" style="margin-top: 24px;">
+          <!-- Dynamically populated memories -->
+          <div class="admin-empty-state">Đang tải ảnh từ Database...</div>
+        </div>
+      </div>
+
+      <!-- CARD 7: QUẢN LÝ LOVE BUCKET LIST (DATABASE BUCKET LIST) -->
+      <div class="admin-card">
+        <div class="admin-card-head" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="admin-card-icon">🎯</span>
+            <h2>7. Quản Lý Love Bucket List (100 Điều Cùng Nhau Làm)</h2>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="admin-bucket-count-badge" class="admin-badge" style="background: rgba(255, 177, 153, 0.15); border-color: #ffb199; color: #ffb199;">
+              0 / 0 điều (0%)
+            </span>
+            <button type="button" class="btn-admin btn-admin-secondary" id="btn-refresh-bucket" style="padding: 6px 14px; font-size: 0.8rem;">
+              🔄 Làm Mới
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Danh sách mục tiêu ngọt ngào của hai bạn. Cả anh và bé đều có thể bấm tích hoàn thành (kèm pháo hoa rực rỡ) và thêm điều ước mới vào Database!
+        </p>
+
+        <!-- ADD BUCKET ITEM IN ADMIN -->
+        <div class="admin-upload-box" style="margin-bottom: 20px;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #ffb199;">➕ Thêm mục tiêu tình yêu mới:</h4>
+          <div class="admin-grid-3">
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Biểu tượng (Emoji):</label>
+              <input type="text" id="admin-bucket-icon-input" class="admin-input" placeholder="VD: ✈️, 🏔️, 🍿" value="✨" maxlength="4">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Nội dung điều ước muốn làm:</label>
+              <input type="text" id="admin-bucket-title-input" class="admin-input" placeholder="VD: Cùng nhau đón giao thừa ở Paris...">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <label>Chủ đề phân loại:</label>
+              <select id="admin-bucket-cat-input" class="admin-input">
+                <option value="sweet">Ngọt Ngào 🍯</option>
+                <option value="travel">Du Lịch ✈️</option>
+                <option value="date">Hẹn Hò 🍿</option>
+                <option value="future">Tương Lai 🏡</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button type="button" class="btn-admin btn-admin-pink" id="btn-admin-add-bucket">
+              ➕ Thêm Vào Bucket List
+            </button>
+          </div>
+        </div>
+
+        <!-- BUCKET LIST ITEMS -->
+        <div id="admin-bucket-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; padding-right: 6px;">
+          <!-- Dynamically populated bucket items -->
+          <div class="admin-empty-state">Đang tải danh sách điều ước từ Database...</div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- STICKY BOTTOM ACTION BAR -->
+  <div class="mobile-sticky-bar" id="mobile-sticky-bar" style="display: none;">
+    <button type="button" class="btn-admin btn-admin-pink" id="btn-sticky-copy-link" style="flex: 2;">
+      📋 Sao Chép Link Gửi Bé
+    </button>
+    <button type="button" class="btn-admin btn-admin-gold" id="btn-sticky-save" style="flex: 1;">
+      💾 Lưu
+    </button>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="admin-toast" id="admin-toast">
+    <span id="toast-icon">💖</span>
+    <span id="toast-text">Đã thực hiện thành công!</span>
+  </div>
+
+  <!-- LOAD CONFIG FILE IF EXISTS -->
+  <script src="config.js"></script>
+
+  <!-- ADMIN SCRIPT LOGIC -->
+  <script>
+    (function() {
+      'use strict';
+
+      // Safe Base64 Unicode encode & decode
+      function encodeConfig(obj) {
+        const jsonStr = JSON.stringify(obj);
+        const bytes = new TextEncoder().encode(jsonStr);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+      }
+
+      function decodeConfig(base64Str) {
+        try {
+          const binary = atob(base64Str);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          const jsonStr = new TextDecoder().decode(bytes);
+          return JSON.parse(jsonStr);
+        } catch(e) {
+          console.error(e);
+          return null;
+        }
+      }
+
+      // Default Config Template
+      const DEFAULT_CONFIG = {
+        passcode: '0702',
+        passcodeHint: 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! (0702) ✨',
+        adminPin: '0702',
+        girlfriendName: 'bé mèo',
+        boyfriendName: 'khúc gỗ',
+        startDate: '2024-02-07T00:00:00',
+        wheelPrizes: [
+          { title: '1 Cái Ôm Thật Chặt', note: 'Ít nhất 30 giây để bé cảm nhận trọn vẹn hơi ấm và tình yêu của anh ❤️', color: '#ff758c' },
+          { title: '1 Chiếc Thơm Má Ngọt Ngào', note: 'Bất kỳ lúc nào bé thích, đổi lấy nụ cười rạng rỡ của bé!', color: '#ff85a2' },
+          { title: '1 Giờ Lắng Nghe Tâm Sự', note: 'Chỉ lắng nghe, gật đầu, ôm vào lòng và xoa đầu bé', color: '#ffb199' },
+          { title: 'Một Buổi Dạo Phố Đêm', note: 'Đèo bé đi hóng gió ngắm phố phường, bé tha hồ ôm từ phía sau', color: '#f6c85f' },
+          { title: 'Xoa Bóp Đấm Lưng', note: 'Bàn tay chuyên nghiệp ru bé vào giấc ngủ thật ngon và thư giãn', color: '#4facfe' },
+          { title: 'Một Điều Ước Vô Điều Kiện', note: 'Bất cứ điều gì bé sai bảo hôm nay, anh đều ngoan ngoãn nghe lời!', color: '#9d4edd' }
+        ],
+        letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`
+      };
+
+      // Current active admin configuration
+      let currentConfig = Object.assign({}, DEFAULT_CONFIG);
+
+      // Load config from config.js or localStorage
+      if (window.COUPLE_CONFIG && typeof window.COUPLE_CONFIG === 'object') {
+        currentConfig = Object.assign({}, currentConfig, window.COUPLE_CONFIG);
+      }
+      try {
+        const saved = localStorage.getItem('romantic_gift_config_2010');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          currentConfig = Object.assign({}, currentConfig, parsed);
+        }
+      } catch(e) {}
+
+      // UI Elements
+      const authOverlay = document.getElementById('auth-gate-overlay');
+      const authErrorText = document.getElementById('auth-error-text');
+      const btnLoginAdmin = document.getElementById('btn-login-admin');
+      const pinInputs = [
+        document.getElementById('pin-1'),
+        document.getElementById('pin-2'),
+        document.getElementById('pin-3'),
+        document.getElementById('pin-4')
+      ];
+
+      const adminMainWrap = document.getElementById('admin-main-wrap');
+      const mobileStickyBar = document.getElementById('mobile-sticky-bar');
+
+      const inputPasscode = document.getElementById('admin-passcode');
+      const inputPasscodeHint = document.getElementById('admin-passcode-hint');
+      const inputAdminPin = document.getElementById('admin-admin-pin');
+      const inputGfName = document.getElementById('admin-gf-name');
+      const inputBfName = document.getElementById('admin-bf-name');
+      const inputStartDate = document.getElementById('admin-start-date');
+      const liveCalcDaysPill = document.getElementById('live-calc-days-pill');
+      const inputLetterBody = document.getElementById('admin-letter-body');
+      const wheelPrizesList = document.getElementById('admin-wheel-prizes-list');
+      const liveShareLinkInput = document.getElementById('live-share-link-input');
+
+      // Toast utility
+      const toastEl = document.getElementById('admin-toast');
+      const toastText = document.getElementById('toast-text');
+      const toastIcon = document.getElementById('toast-icon');
+      let toastTimer = null;
+
+      function showToast(msg, icon = '💖') {
+        if (!toastEl) return;
+        toastText.textContent = msg;
+        toastIcon.textContent = icon;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastEl.classList.remove('show');
+        }, 3600);
+      }
+
+      // --- PIN INPUT SETUP ---
+      pinInputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          authErrorText.textContent = '';
+          if (input.value.length === 1 && index < 3) {
+            pinInputs[index + 1].focus();
+          }
+          if (getEnteredPin().length === 4) {
+            verifyAdminPin();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !input.value && index > 0) {
+            pinInputs[index - 1].focus();
+          }
+          if (e.key === 'Enter') {
+            verifyAdminPin();
+          }
+        });
+      });
+
+      function getEnteredPin() {
+        return pinInputs.map(p => p.value).join('');
+      }
+
+      function verifyAdminPin() {
+        const entered = getEnteredPin();
+        const validPins = [
+          currentConfig.adminPin || '0702',
+          currentConfig.passcode || '0702',
+          '0702',
+          '2010'
+        ];
+
+        if (validPins.includes(entered)) {
+          authOverlay.style.display = 'none';
+          adminMainWrap.style.display = 'block';
+          mobileStickyBar.style.display = 'flex';
+          initAdminForm();
+          showToast('Chào mừng bạn đến trang Quản Trị Quà Tặng! 💖', '🔓');
+        } else {
+          authErrorText.textContent = 'Mã PIN không đúng! Vui lòng thử lại (hoặc nhập 0702 / 2010)';
+          pinInputs.forEach(p => { p.value = ''; p.style.borderColor = '#ff7675'; });
+          pinInputs[0].focus();
+          setTimeout(() => {
+            pinInputs.forEach(p => p.style.borderColor = '');
+          }, 800);
+        }
+      }
+
+      if (btnLoginAdmin) {
+        btnLoginAdmin.addEventListener('click', verifyAdminPin);
+      }
+
+      // Populate form fields with currentConfig
+      function initAdminForm() {
+        if (inputPasscode) inputPasscode.value = currentConfig.passcode || '0702';
+        if (inputPasscodeHint) inputPasscodeHint.value = currentConfig.passcodeHint || 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! (0702) ✨';
+        if (inputAdminPin) inputAdminPin.value = currentConfig.adminPin || '0702';
+        if (inputGfName) inputGfName.value = currentConfig.girlfriendName || 'bé mèo';
+        if (inputBfName) inputBfName.value = currentConfig.boyfriendName || 'khúc gỗ';
+        if (inputLetterBody) inputLetterBody.value = currentConfig.letterBody || DEFAULT_CONFIG.letterBody;
+
+        if (inputStartDate && currentConfig.startDate) {
+          try {
+            const d = new Date(currentConfig.startDate);
+            const iso = d.toISOString().slice(0, 16);
+            inputStartDate.value = iso;
+            updateDaysPreview(d);
+          } catch(e) {}
+        }
+
+        updateGeneratedShareLink();
+        loadAdminNotes();
+        loadAdminMemories();
+        loadAdminBucket();
+        loadAdminLocket();
+      }
+
+      // Update days preview
+      function updateDaysPreview(dateObj) {
+        if (!liveCalcDaysPill || !dateObj || isNaN(dateObj.getTime())) return;
+        const diffMs = new Date() - dateObj;
+        if (diffMs <= 0) {
+          liveCalcDaysPill.innerHTML = `⏳ Ngày bắt đầu là tương lai`;
+          return;
+        }
+        const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const years = Math.floor(totalDays / 365);
+        const remDays = totalDays % 365;
+        liveCalcDaysPill.innerHTML = `⏳ Đã bên nhau: <b>${totalDays} ngày</b> (${years > 0 ? years + ' năm ' : ''}${remDays} ngày)`;
+      }
+
+      if (inputStartDate) {
+        inputStartDate.addEventListener('input', () => {
+          if (inputStartDate.value) {
+            updateDaysPreview(new Date(inputStartDate.value));
+          }
+          updateGeneratedShareLink();
+        });
+      }
+
+      // Render 6 prizes in form
+      function renderPrizesEditor() {
+        if (!wheelPrizesList) return;
+        wheelPrizesList.innerHTML = '';
+        const prizes = currentConfig.wheelPrizes && currentConfig.wheelPrizes.length === 6
+          ? currentConfig.wheelPrizes
+          : DEFAULT_CONFIG.wheelPrizes;
+
+        prizes.forEach((p, idx) => {
+          const item = document.createElement('div');
+          item.className = 'wheel-prize-item';
+          item.innerHTML = `
+            <span class="wheel-prize-badge" style="background: ${p.color};">Ô ${idx + 1}</span>
+            <div class="admin-field" style="margin-bottom: 8px;">
+              <input type="text" class="admin-input input-prize-title" data-idx="${idx}" value="${p.title}" placeholder="Tên phần thưởng">
+            </div>
+            <div class="admin-field" style="margin-bottom: 0;">
+              <input type="text" class="admin-input input-prize-note" data-idx="${idx}" value="${p.note}" placeholder="Lời nhắn chi tiết">
+            </div>
+          `;
+          wheelPrizesList.appendChild(item);
+        });
+      }
+
+      // Extract form values into currentConfig
+      function collectFormData() {
+        currentConfig.passcode = (inputPasscode.value || '0702').trim();
+        currentConfig.passcodeHint = (inputPasscodeHint.value || 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! ✨').trim();
+        currentConfig.adminPin = (inputAdminPin.value || '0702').trim();
+        currentConfig.girlfriendName = (inputGfName.value || 'bé mèo').trim();
+        currentConfig.boyfriendName = (inputBfName.value || 'khúc gỗ').trim();
+        currentConfig.letterBody = (inputLetterBody.value || DEFAULT_CONFIG.letterBody).trim();
+
+        if (inputStartDate.value) {
+          currentConfig.startDate = new Date(inputStartDate.value).toISOString();
+        }
+
+        const titleInputs = document.querySelectorAll('.input-prize-title');
+        const noteInputs = document.querySelectorAll('.input-prize-note');
+        if (titleInputs.length === 6) {
+          const updated = [];
+          titleInputs.forEach((inp, idx) => {
+            const title = inp.value.trim() || DEFAULT_CONFIG.wheelPrizes[idx].title;
+            const note = (noteInputs[idx] && noteInputs[idx].value.trim()) || DEFAULT_CONFIG.wheelPrizes[idx].note;
+            const color = (currentConfig.wheelPrizes && currentConfig.wheelPrizes[idx] && currentConfig.wheelPrizes[idx].color) || DEFAULT_CONFIG.wheelPrizes[idx].color;
+            updated.push({ title, note, color });
+          });
+          currentConfig.wheelPrizes = updated;
+        }
+
+        return currentConfig;
+      }
+
+      // Generate share link
+      function generateShareableLink() {
+        const configData = collectFormData();
+        const base64Data = encodeConfig(configData);
+
+        // Get base URL for index.html
+        let base = window.location.href.split('admin.html')[0];
+        if (!base.endsWith('/')) base += '/';
+        const girlUrl = `${base}index.html#data=${base64Data}`;
+        return girlUrl;
+      }
+
+      function updateGeneratedShareLink() {
+        const link = generateShareableLink();
+        if (liveShareLinkInput) liveShareLinkInput.value = link;
+        const previewBtn = document.getElementById('btn-preview-girl-view');
+        if (previewBtn) previewBtn.href = link;
+      }
+
+      // Listen to inputs to update link dynamically
+      const allInputs = [inputPasscode, inputPasscodeHint, inputAdminPin, inputGfName, inputBfName, inputLetterBody];
+      allInputs.forEach(inp => {
+        if (inp) inp.addEventListener('input', updateGeneratedShareLink);
+      });
+      if (wheelPrizesList) {
+        wheelPrizesList.addEventListener('input', updateGeneratedShareLink);
+      }
+
+      // Save to localStorage and Database
+      async function saveToLocalStorage() {
+        const data = collectFormData();
+        try {
+          localStorage.setItem('romantic_gift_config_2010', JSON.stringify(data));
+          showToast('Đã lưu cấu hình vào trình duyệt thành công! 💾', '✅');
+        } catch(e) {
+          console.error(e);
+        }
+
+        // Also sync to backend Database server
+        try {
+          await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch(err) {}
+      }
+
+      // Copy link to clipboard
+      function copyGirlLink() {
+        saveToLocalStorage();
+        const link = generateShareableLink();
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link).then(() => {
+            showToast('Đã sao chép link gửi bé vào bộ nhớ tạm! Bạn chỉ việc dán gửi qua Zalo/Mess 💖', '📋');
+          }).catch(() => fallbackCopy(link));
+        } else {
+          fallbackCopy(link);
+        }
+      }
+
+      function fallbackCopy(text) {
+        if (liveShareLinkInput) {
+          liveShareLinkInput.select();
+          document.execCommand('copy');
+          showToast('Đã sao chép đường link gửi bé! 💖', '📋');
+        }
+      }
+
+      // Download config.js file
+      function exportConfigFile() {
+        const data = collectFormData();
+        const fileContent = `/**
+ * ==========================================================
+ * CẤU HÌNH QUÀ TẶNG 20/10 - THÔNG TIN DÀNH CHO CẶP ĐÔI
+ * ==========================================================
+ * Được tạo tự động từ trang admin.html
+ */
+
+window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
+`;
+
+        const blob = new Blob([fileContent], { type: 'application/javascript;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'config.js';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Đã tải xuống file config.js! Hãy lưu đè vào thư mục dự án 📂', '📥');
+      }
+
+      // HTML escaping helper
+      function escapeHTML(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>'"]/g, tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag));
+      }
+
+      // --- 5. LIVE NOTES INBOX FROM DATABASE ---
+      async function loadAdminNotes() {
+        const listEl = document.getElementById('admin-notes-list');
+        const badgeEl = document.getElementById('admin-notes-count-badge');
+        if (!listEl) return;
+
+        let notes = [];
+        try {
+          const res = await fetch('/api/notes');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.notes)) {
+              notes = data.notes;
+            }
+          }
+        } catch(e) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_user_notes');
+            if (raw) notes = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (badgeEl) badgeEl.textContent = `${notes.length} lời nhắn`;
+        listEl.innerHTML = '';
+
+        if (notes.length === 0) {
+          listEl.innerHTML = `<div class="admin-empty-state">Chưa có lời nhắn nào từ bé. Khi bé gửi tâm sự từ trang web, nội dung sẽ xuất hiện ngay tại đây! 💕</div>`;
+          return;
+        }
+
+        notes.forEach((n) => {
+          const card = document.createElement('div');
+          card.className = 'admin-note-card';
+          card.innerHTML = `
+            <div class="admin-note-head">
+              <div class="admin-note-mood">
+                <span>${n.mood || '🥰'}</span>
+                <span>${n.moodLabel || 'Hạnh phúc'}</span>
+              </div>
+              <div class="admin-note-meta">
+                <span>${n.date || 'Vừa xong'}</span>
+                <button type="button" class="btn-delete-item" data-id="${n.id}">✕ Xóa</button>
+              </div>
+            </div>
+            <p class="admin-note-body">${escapeHTML(n.text)}</p>
+          `;
+
+          const delBtn = card.querySelector('.btn-delete-item');
+          delBtn.addEventListener('click', async () => {
+            if (confirm('Xóa mẩu lời nhắn này?')) {
+              try {
+                await fetch(`/api/notes/${encodeURIComponent(n.id)}`, { method: 'DELETE' });
+              } catch(e) {}
+              loadAdminNotes();
+              showToast('Đã xóa lời nhắn', '🗑️');
+            }
+          });
+
+          listEl.appendChild(card);
+        });
+      }
+
+      // --- 6. LIVE MEMORIES MANAGER FROM DATABASE ---
+      async function loadAdminMemories() {
+        const gridEl = document.getElementById('admin-memories-grid');
+        const badgeEl = document.getElementById('admin-memories-count-badge');
+        if (!gridEl) return;
+
+        let memories = [];
+        try {
+          const res = await fetch('/api/memories');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.memories)) {
+              memories = data.memories;
+            }
+          }
+        } catch(e) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_user_memories');
+            if (raw) memories = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (badgeEl) badgeEl.textContent = `${memories.length} bức ảnh`;
+        gridEl.innerHTML = '';
+
+        if (memories.length === 0) {
+          gridEl.innerHTML = `<div class="admin-empty-state">Chưa có ảnh nào trong album. Hãy tải ảnh đầu tiên lên nhé! 📸</div>`;
+          return;
+        }
+
+        memories.forEach((m) => {
+          const card = document.createElement('div');
+          card.className = 'admin-memory-card';
+          card.innerHTML = `
+            <button type="button" class="btn-delete-item" data-id="${m.id}" title="Xóa ảnh này">✕ Xóa</button>
+            <img src="${m.src}" alt="${escapeHTML(m.caption)}" class="admin-memory-thumb" loading="lazy">
+            <div class="admin-memory-info">
+              <div class="admin-memory-caption">${escapeHTML(m.caption)}</div>
+              <div class="admin-memory-date">${escapeHTML(m.date || '')}</div>
+            </div>
+          `;
+
+          const delBtn = card.querySelector('.btn-delete-item');
+          delBtn.addEventListener('click', async () => {
+            if (confirm('Xóa bức ảnh này khỏi album kỷ niệm? Cả hai bạn sẽ không còn thấy ảnh này.')) {
+              try {
+                await fetch(`/api/memories/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+              } catch(e) {}
+              loadAdminMemories();
+              showToast('Đã xóa ảnh khỏi album', '🗑️');
+            }
+          });
+
+          gridEl.appendChild(card);
+        });
+      }
+
+      // Upload memory from Admin
+      const btnUploadAdminPhoto = document.getElementById('btn-admin-upload-photo');
+      const fileInputAdmin = document.getElementById('admin-photo-file-input');
+      const captionInputAdmin = document.getElementById('admin-photo-caption-input');
+      const dateInputAdmin = document.getElementById('admin-photo-date-input');
+
+      if (dateInputAdmin) {
+        dateInputAdmin.value = new Date().toISOString().split('T')[0];
+      }
+
+      if (btnUploadAdminPhoto) {
+        btnUploadAdminPhoto.addEventListener('click', async () => {
+          if (!fileInputAdmin || !fileInputAdmin.files || !fileInputAdmin.files[0]) {
+            alert('Vui lòng chọn một file ảnh trước khi bấm tải lên!');
+            return;
+          }
+
+          const file = fileInputAdmin.files[0];
+          const caption = (captionInputAdmin && captionInputAdmin.value.trim()) || 'Khoảnh khắc đáng nhớ';
+          let dateVal = (dateInputAdmin && dateInputAdmin.value) || '';
+          if (!dateVal) {
+            const d = new Date();
+            dateVal = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+          } else {
+            const parts = dateVal.split('-');
+            if (parts.length === 3) dateVal = `${parts[2]}/${parts[1]}/${parts[0]}`;
+          }
+
+          btnUploadAdminPhoto.disabled = true;
+          btnUploadAdminPhoto.textContent = '⏳ Đang tải lên Database...';
+
+          const formData = new FormData();
+          formData.append('photo', file);
+          formData.append('caption', caption);
+          formData.append('date', dateVal);
+
+          try {
+            const res = await fetch('/api/memories', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (res.ok) {
+              showToast('Đã tải ảnh lên Database thành công! 📸✨', '✅');
+              fileInputAdmin.value = '';
+              if (captionInputAdmin) captionInputAdmin.value = '';
+              loadAdminMemories();
+            } else {
+              alert('Không thể lưu ảnh lên server. Hãy kiểm tra kết nối.');
+            }
+          } catch(err) {
+            console.error(err);
+            alert('Lỗi kết nối khi tải ảnh.');
+          } finally {
+            btnUploadAdminPhoto.disabled = false;
+            btnUploadAdminPhoto.textContent = '🚀 Tải Ảnh Lên Database';
+          }
+        });
+      }
+
+      // --- 7. LIVE BUCKET LIST MANAGER FROM DATABASE ---
+      async function loadAdminBucket() {
+        const listEl = document.getElementById('admin-bucket-list');
+        const badgeEl = document.getElementById('admin-bucket-count-badge');
+        if (!listEl) return;
+
+        let items = [];
+        let completedCount = 0;
+        let total = 0;
+        let percent = 0;
+
+        try {
+          const res = await fetch('/api/bucket');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.items)) {
+              items = data.items;
+              total = data.total;
+              completedCount = data.completedCount;
+              percent = data.percent;
+            }
+          }
+        } catch(e) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_user_bucket');
+            if (raw) items = JSON.parse(raw);
+            total = items.length;
+            completedCount = items.filter(i => i.completed).length;
+            percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+          } catch(err){}
+        }
+
+        if (badgeEl) badgeEl.textContent = `${completedCount} / ${total} điều (${percent}%)`;
+        listEl.innerHTML = '';
+
+        if (items.length === 0) {
+          listEl.innerHTML = `<div class="admin-empty-state">Chưa có mục tiêu nào trong Love Bucket List. Hãy thêm điều ước đầu tiên nhé! ✨</div>`;
+          return;
+        }
+
+        const catNames = {
+          sweet: 'Ngọt Ngào 🍯',
+          travel: 'Du Lịch ✈️',
+          date: 'Hẹn Hò 🍿',
+          future: 'Tương Lai 🏡'
+        };
+
+        items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = `admin-bucket-item ${item.completed ? 'completed' : ''}`;
+          row.innerHTML = `
+            <input type="checkbox" class="admin-bucket-checkbox" ${item.completed ? 'checked' : ''} data-id="${item.id}" title="Đánh dấu hoàn thành">
+            <span style="font-size: 1.25rem;">${escapeHTML(item.icon || '✨')}</span>
+            <div class="admin-bucket-title">
+              <b>${escapeHTML(item.title)}</b>
+              ${item.completedDate ? `<span style="font-size: 0.75rem; color: #55efc4; margin-left: 8px;">✓ Đã xong: ${escapeHTML(item.completedDate)}</span>` : ''}
+            </div>
+            <span class="admin-bucket-cat-pill">${catNames[item.category] || 'Mục tiêu'}</span>
+            <button type="button" class="btn-delete-item" data-id="${item.id}" title="Xóa mục tiêu này">✕ Xóa</button>
+          `;
+
+          const chk = row.querySelector('.admin-bucket-checkbox');
+          chk.addEventListener('change', async () => {
+            try {
+              await fetch(`/api/bucket/${encodeURIComponent(item.id)}/toggle`, { method: 'PUT' });
+            } catch(e) {}
+            loadAdminBucket();
+            showToast(chk.checked ? 'Đã đánh dấu hoàn thành điều ước! 🎉' : 'Đã bỏ đánh dấu hoàn thành', '🎯');
+          });
+
+          const delBtn = row.querySelector('.btn-delete-item');
+          delBtn.addEventListener('click', async () => {
+            if (confirm(`Xóa điều ước "${item.title}" khỏi Bucket List?`)) {
+              try {
+                await fetch(`/api/bucket/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
+              } catch(e) {}
+              loadAdminBucket();
+              showToast('Đã xóa điều ước khỏi Bucket List', '🗑️');
+            }
+          });
+
+          listEl.appendChild(row);
+        });
+      }
+
+      // Add Bucket Item from Admin
+      const btnAdminAddBucket = document.getElementById('btn-admin-add-bucket');
+      const inputBucketIcon = document.getElementById('admin-bucket-icon-input');
+      const inputBucketTitle = document.getElementById('admin-bucket-title-input');
+      const selectBucketCat = document.getElementById('admin-bucket-cat-input');
+
+      if (btnAdminAddBucket) {
+        btnAdminAddBucket.addEventListener('click', async () => {
+          const title = inputBucketTitle ? inputBucketTitle.value.trim() : '';
+          const icon = (inputBucketIcon && inputBucketIcon.value.trim()) || '✨';
+          const category = (selectBucketCat && selectBucketCat.value) || 'sweet';
+
+          if (!title) {
+            alert('Vui lòng nhập nội dung điều ước muốn cùng nhau làm!');
+            if (inputBucketTitle) inputBucketTitle.focus();
+            return;
+          }
+
+          btnAdminAddBucket.disabled = true;
+          btnAdminAddBucket.textContent = '⏳ Đang lưu...';
+
+          try {
+            const res = await fetch('/api/bucket', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, icon, category })
+            });
+
+            if (res.ok) {
+              showToast('Đã thêm điều ước mới vào Love Bucket List! 🎯💖', '✅');
+              if (inputBucketTitle) inputBucketTitle.value = '';
+              loadAdminBucket();
+            } else {
+              alert('Không thể lưu vào server. Hãy kiểm tra kết nối.');
+            }
+          } catch(err) {
+            console.error(err);
+            alert('Lỗi kết nối khi thêm điều ước.');
+          } finally {
+            btnAdminAddBucket.disabled = false;
+            btnAdminAddBucket.textContent = '➕ Thêm Vào Bucket List';
+          }
+        });
+      }
+
+      // --- 4. LIVE LOCKET MOMENTS MANAGER FROM DATABASE ---
+      async function loadAdminLocket() {
+        const gridEl = document.getElementById('admin-locket-grid');
+        const badgeEl = document.getElementById('admin-locket-count-badge');
+        if (!gridEl) return;
+
+        let items = [];
+        try {
+          const res = await fetch('/api/locket');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.items)) {
+              items = data.items;
+            }
+          }
+        } catch(e) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_locket_feed');
+            if (raw) items = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (badgeEl) badgeEl.textContent = `${items.length} khoảnh khắc`;
+        gridEl.innerHTML = '';
+
+        if (items.length === 0) {
+          gridEl.innerHTML = `<div class="admin-empty-state">Chưa có khoảnh khắc Locket nào. Bé hoặc anh có thể gửi khoảnh khắc đầu tiên! 💛</div>`;
+          return;
+        }
+
+        items.forEach((m) => {
+          const card = document.createElement('div');
+          card.className = 'admin-memory-card';
+
+          const isVideo = m.type === 'video';
+          const mediaHtml = isVideo
+            ? `<video src="${m.mediaUrl}" class="admin-memory-thumb" controls loop playsinline style="object-fit: cover;"></video>`
+            : `<img src="${m.mediaUrl}" alt="${escapeHTML(m.caption)}" class="admin-memory-thumb" loading="lazy">`;
+
+          card.innerHTML = `
+            <button type="button" class="btn-delete-item" data-id="${m.id}" title="Xóa khoảnh khắc này">✕ Xóa</button>
+            ${mediaHtml}
+            <div class="admin-memory-info">
+              <div style="font-size: 0.76rem; color: #f6c85f; font-weight: 700; margin-bottom: 2px;">
+                ${m.sticker || '💕'} ${escapeHTML(m.sender || 'Người gửi')} • ${isVideo ? '🎥 Video 5s' : '📸 Ảnh'}
+              </div>
+              <div class="admin-memory-caption">${escapeHTML(m.caption)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <span class="admin-memory-date">${escapeHTML(m.timeFormatted || '')}</span>
+                <span style="font-size: 0.76rem; color: #ff758c;">❤️ ${m.reactions || 1}</span>
+              </div>
+            </div>
+          `;
+
+          const delBtn = card.querySelector('.btn-delete-item');
+          delBtn.addEventListener('click', async () => {
+            if (confirm('Xóa khoảnh khắc Locket này?')) {
+              try {
+                await fetch(`/api/locket/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+              } catch(e) {}
+              loadAdminLocket();
+              showToast('Đã xóa khoảnh khắc Locket', '🗑️');
+            }
+          });
+
+          gridEl.appendChild(card);
+        });
+      }
+
+      // Send Locket from Admin
+      const btnAdminSendLocket = document.getElementById('btn-admin-send-locket');
+      const fileInputLocketAdmin = document.getElementById('admin-locket-file-input');
+      const captionInputLocketAdmin = document.getElementById('admin-locket-caption-input');
+      const stickerInputLocketAdmin = document.getElementById('admin-locket-sticker-input');
+
+      if (btnAdminSendLocket) {
+        btnAdminSendLocket.addEventListener('click', async () => {
+          if (!fileInputLocketAdmin || !fileInputLocketAdmin.files || !fileInputLocketAdmin.files[0]) {
+            alert('Vui lòng chọn file ảnh hoặc video trước khi gửi!');
+            return;
+          }
+
+          const file = fileInputLocketAdmin.files[0];
+          const caption = (captionInputLocketAdmin && captionInputLocketAdmin.value.trim()) || 'Nhớ bé nhiều lắm 💕';
+          const sticker = (stickerInputLocketAdmin && stickerInputLocketAdmin.value) || '💕';
+          const isVideo = file.type.startsWith('video');
+
+          btnAdminSendLocket.disabled = true;
+          btnAdminSendLocket.textContent = '⏳ Đang gửi Locket...';
+
+          const formData = new FormData();
+          formData.append('media', file);
+          formData.append('caption', caption);
+          formData.append('sender', (inputBfName && inputBfName.value.trim()) || 'Khúc Gỗ');
+          formData.append('senderRole', 'boyfriend');
+          formData.append('sticker', sticker);
+          formData.append('type', isVideo ? 'video' : 'photo');
+
+          try {
+            const res = await fetch('/api/locket', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (res.ok) {
+              showToast('Đã gửi Locket đến bé thành công! 💛🚀', '✅');
+              fileInputLocketAdmin.value = '';
+              if (captionInputLocketAdmin) captionInputLocketAdmin.value = '';
+              loadAdminLocket();
+            } else {
+              alert('Không thể lưu Locket lên máy chủ.');
+            }
+          } catch(err) {
+            console.error(err);
+            alert('Lỗi kết nối khi gửi Locket.');
+          } finally {
+            btnAdminSendLocket.disabled = false;
+            btnAdminSendLocket.textContent = '🚀 Gửi Locket Đến Bé';
+          }
+        });
+      }
+
+      const btnRefreshNotes = document.getElementById('btn-refresh-notes');
+      const btnRefreshMemories = document.getElementById('btn-refresh-memories');
+      const btnRefreshBucket = document.getElementById('btn-refresh-bucket');
+      const btnRefreshLocket = document.getElementById('btn-refresh-locket');
+      if (btnRefreshNotes) btnRefreshNotes.addEventListener('click', loadAdminNotes);
+      if (btnRefreshMemories) btnRefreshMemories.addEventListener('click', loadAdminMemories);
+      if (btnRefreshBucket) btnRefreshBucket.addEventListener('click', loadAdminBucket);
+      if (btnRefreshLocket) btnRefreshLocket.addEventListener('click', loadAdminLocket);
+
+      // Auto poll notes, bucket, and locket
+      setInterval(loadAdminNotes, 15000);
+      setInterval(loadAdminBucket, 20000);
+      setInterval(loadAdminLocket, 15000);
+
+      // Attach button listeners
+      const btnCopyGirlLink = document.getElementById('btn-copy-girl-link');
+      const btnStickyCopy = document.getElementById('btn-sticky-copy-link');
+      const btnQuickCopy = document.getElementById('btn-quick-copy');
+      const btnSaveAll = document.getElementById('btn-save-all-admin');
+      const btnStickySave = document.getElementById('btn-sticky-save');
+      const btnExport = document.getElementById('btn-export-config-file');
+
+      if (btnCopyGirlLink) btnCopyGirlLink.addEventListener('click', copyGirlLink);
+      if (btnStickyCopy) btnStickyCopy.addEventListener('click', copyGirlLink);
+      if (btnQuickCopy) btnQuickCopy.addEventListener('click', copyGirlLink);
+
+      if (btnSaveAll) btnSaveAll.addEventListener('click', saveToLocalStorage);
+      if (btnStickySave) btnStickySave.addEventListener('click', saveToLocalStorage);
+      if (btnExport) btnExport.addEventListener('click', exportConfigFile);
+
+      // Letter Templates
+      const btnTplSweet = document.getElementById('btn-tpl-sweet');
+      const btnTplCute = document.getElementById('btn-tpl-cute');
+      const btnTplDeep = document.getElementById('btn-tpl-deep');
+
+      if (btnTplSweet) {
+        btnTplSweet.addEventListener('click', () => {
+          inputLetterBody.value = `Gửi em - cô gái ngọt ngào nhất của anh,\n\nNhân ngày 20/10, anh muốn gửi trọn vẹn tình yêu và sự trân trọng này đến em. Cảm ơn em đã bước vào cuộc đời anh, biến những ngày bình thường thành những ngày ngập tràn tiếng cười và hạnh phúc.\n\nChúc em luôn xinh đẹp, rạng rỡ và mãi là nguồn năng lượng tích cực nhất bên anh. Anh sẽ luôn nắm chặt tay em, che chở và cùng em bước qua mọi chặng đường phía trước.\n\nYêu em nhiều hơn mỗi ngày! ❤️`;
+          updateGeneratedShareLink();
+          showToast('Đã áp dụng mẫu thư lãng mạn!', '💌');
+        });
+      }
+
+      if (btnTplCute) {
+        btnTplCute.addEventListener('click', () => {
+          inputLetterBody.value = `Hellu bé mèo quậy phá của anh,\n\nHôm nay là 20/10 - ngày của bé đó nha! Chúc bé bớt dỗi anh lại một xíu (dù lúc dỗi nhìn cũng đáng yêu thiệt), ăn mau chóng lớn, luôn vui vẻ và được anh cưng chiều suốt đời.\n\nAnh làm món quà này để tặng nóc nhà quyền lực tối thượng. Mọi điều ước hôm nay của bé, khúc gỗ này đều ngoan ngoãn nghe lời và phục vụ hết mình!\n\nThương bé mèo nhất trần đời! 🐾🥰`;
+          updateGeneratedShareLink();
+          showToast('Đã áp dụng mẫu thư dễ thương!', '🐾');
+        });
+      }
+
+      if (btnTplDeep) {
+        btnTplDeep.addEventListener('click', () => {
+          inputLetterBody.value = `Gửi người con gái anh yêu thương nhất,\n\nCó những điều giản đơn nhưng mang lại niềm hạnh phúc vô tận, đó là mỗi sáng thức dậy biết rằng mình có em trong đời. Cảm ơn em vì đã luôn kiên nhẫn, thấu hiểu và cùng anh vượt qua những thăng trầm.\n\nNhân ngày 20/10, anh chúc em luôn an yên, hạnh phúc và đạt được mọi ước mơ của mình. Dù ngoài kia có bão giông thế nào, nơi anh luôn là bến đỗ bình yên nhất chờ đón em trở về.\n\nMãi mãi yêu em! ✨💖`;
+          updateGeneratedShareLink();
+          showToast('Đã áp dụng mẫu thư chân thành!', '✨');
+        });
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -227,7 +227,7 @@
 
             <div class="slide-nav-action">
               <button class="luxury-btn btn-next-slide" data-goto="1">
-                <span>Vòng Quay May Mắn 🎡</span>
+                <span>Đến Thẻ Cào Bí Mật 🎫</span>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
@@ -235,50 +235,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 2: LUCKY SPIN WHEEL -->
-      <section class="slide-section" id="slide-wheel" data-slide-index="1">
-        <div class="slide-content wheel-content">
-          <div class="section-header">
-            <span class="section-badge">✨ Dành riêng cho ngày 20/10 ✨</span>
-            <h2 class="section-title">Vòng Quay Đặc Quyền</h2>
-            <p class="section-desc">100% trúng thưởng! Bấm quay để nhận những cái ôm ấm áp, nụ hôn má ngọt ngào và đặc quyền từ anh nha bé 💖</p>
-          </div>
-
-          <div class="wheel-stage-wrapper">
-            <!-- Indicator Needle -->
-            <div class="wheel-needle">
-              <div class="needle-triangle"></div>
-            </div>
-
-            <!-- Spinning Wheel Canvas -->
-            <div class="wheel-canvas-container" id="wheel-container">
-              <canvas id="wheel-canvas" width="400" height="400"></canvas>
-              <button class="wheel-center-btn" id="btn-spin-wheel" aria-label="Quay vòng quay">
-                <span class="spin-text">QUAY</span>
-                <span class="spin-sub">100% Trúng</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="wheel-footer-actions">
-            <p class="wheel-tip" id="wheel-status-text">👉 Chạm vào nút <strong>QUAY</strong> ở giữa để bắt đầu nhận quà!</p>
-            <div class="prize-history-bar" id="prize-history-bar" style="display: none;">
-              <span>Phần thưởng đã trúng: </span>
-              <strong id="recent-won-prize" class="won-text"></strong>
-            </div>
-          </div>
-
-          <div class="slide-nav-action">
-            <button class="luxury-btn btn-next-slide" data-goto="2">
-              <span>Đến Thẻ Cào Bí Mật 🎫</span>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 3: SCRATCH CARD -->
-      <section class="slide-section" id="slide-scratch" data-slide-index="2">
+      <!-- SLIDE 2: SCRATCH CARD -->
+      <section class="slide-section" id="slide-scratch" data-slide-index="1">
         <div class="slide-content scratch-content">
           <div class="section-header">
             <span class="section-badge">✨ Bí mật tối cao 20/10 ✨</span>
@@ -367,7 +325,7 @@
             <button class="luxury-btn btn-gold" id="btn-reveal-all-scratch">
               <span>✨ Mở nhanh chứng nhận</span>
             </button>
-            <button class="luxury-btn btn-next-slide" data-goto="3">
+            <button class="luxury-btn btn-next-slide" data-goto="2">
               <span>Đến Trạm Ảnh Polaroid 📸</span>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
@@ -375,8 +333,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 4: POLAROID PHOTO BOOTH -->
-      <section class="slide-section" id="slide-polaroid" data-slide-index="3">
+      <!-- SLIDE 3: POLAROID PHOTO BOOTH -->
+      <section class="slide-section" id="slide-polaroid" data-slide-index="2">
         <div class="slide-content polaroid-content">
           <div class="section-header">
             <span class="section-badge">✨ Khoảnh khắc ngọt ngào ✨</span>
@@ -403,64 +361,161 @@
             <button class="action-pill-btn btn-secondary" id="btn-clear-polaroids">
               <span>🧹 Dọn dẹp ảnh</span>
             </button>
-            <button class="luxury-btn btn-next-slide" data-goto="4">
-              <span>Đến Trắc Nghiệm Đôi Ta 🧩</span>
+            <button class="luxury-btn btn-next-slide" data-goto="3">
+              <span>Mở Mini Locket Đôi Ta 💛</span>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 4: COUPLE QUIZ / TRẮC NGHIỆM ĐÔI TA -->
-      <section class="slide-section" id="slide-quiz" data-slide-index="4">
-        <div class="slide-content quiz-slide-content">
+      <!-- SLIDE 4: MINI LOCKET ĐÔI TA (CHỤP ẢNH TỨC THÌ & VIDEO 5S) -->
+      <section class="slide-section" id="slide-locket" data-slide-index="3">
+        <div class="slide-content locket-slide-content">
           <div class="section-header">
-            <span class="section-badge">✨ Mini Game Đôi Ta ✨</span>
-            <h2 class="section-title">Trắc Nghiệm Đôi Ta</h2>
-            <p class="section-desc">Cùng kiểm tra xem chúng mình có phải cặp đôi ăn ý nhất vũ trụ không nhé! 💖</p>
+            <span class="section-badge">✨ Widget Cặp Đôi Thời Gian Thực ✨</span>
+            <h2 class="section-title">Mini Locket Đôi Ta</h2>
+            <p class="section-desc">Chụp ảnh tức thì hoặc quay video 5 giây gửi ngay đến màn hình của đối phương như Locket widget! 📸💛</p>
           </div>
 
-          <div class="quiz-card-wrapper glass-panel">
-            <!-- Quiz Progress -->
-            <div class="quiz-progress-bar-wrap">
-              <div class="quiz-progress-info">
-                <span id="quiz-step-text">Câu hỏi 1 / 4</span>
-                <span class="quiz-score-badge" id="quiz-score-badge">Điểm: 0</span>
+          <div class="locket-card-wrapper">
+            <!-- HUD TOP -->
+            <div class="locket-hud-top">
+              <div class="locket-user-badge">
+                <div class="locket-avatar-circle">
+                  <img src="images/avatar.jpg" alt="Avatar đôi mình" id="locket-user-avatar">
+                </div>
+                <div class="locket-user-meta">
+                  <span class="locket-user-name" id="locket-display-name">Bé Mèo &amp; Khúc Gỗ</span>
+                  <span class="locket-user-status">🟢 Đang kết nối • 🔋 100%</span>
+                </div>
               </div>
-              <div class="quiz-progress-track">
-                <div class="quiz-progress-fill" id="quiz-progress-fill" style="width: 25%;"></div>
-              </div>
-            </div>
-
-            <!-- Quiz Body (Active Question) -->
-            <div class="quiz-body" id="quiz-body">
-              <div class="quiz-question-box">
-                <span class="quiz-q-num" id="quiz-q-num">Q1</span>
-                <h3 class="quiz-question-title" id="quiz-question-title">Ai là người hay dỗi hơn?</h3>
-              </div>
-              <div class="quiz-options-grid" id="quiz-options-grid">
-                <!-- Dynamically rendered -->
-              </div>
-              <div class="quiz-feedback-box" id="quiz-feedback-box" style="display: none;">
-                <p class="quiz-feedback-text" id="quiz-feedback-text"></p>
-                <button class="action-pill-btn" id="btn-next-question">Câu tiếp theo ➜</button>
-              </div>
-            </div>
-
-            <!-- Quiz Result View (Hidden initially) -->
-            <div class="quiz-result-view" id="quiz-result-view" style="display: none;">
-              <div class="quiz-trophy-anim">🏆✨</div>
-              <h3 class="quiz-result-title">XUẤT SẮC: 100/100 ĐIỂM!</h3>
-              <p class="quiz-result-badge">Danh hiệu: Cặp Đôi Hòa Hợp Nhất Vũ Trụ 💕</p>
-              <p class="quiz-result-desc">Dù thế nào đi nữa thì khúc gỗ vẫn luôn nhận lỗi và yêu thương bé mèo vô điều kiện!</p>
-              <div class="quiz-result-actions">
-                <button class="action-pill-btn btn-secondary" id="btn-restart-quiz">🔄 Làm lại bài quiz</button>
-                <button class="luxury-btn btn-next-slide" data-goto="5">
-                  <span>Góc Nhỏ Của Bé 💭</span>
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <div class="locket-tools-row">
+                <button type="button" class="locket-tool-btn" id="btn-flip-camera" title="Lật camera Trước / Sau">
+                  🔄
+                </button>
+                <button type="button" class="locket-tool-btn" id="btn-toggle-flash" title="Bật / Tắt đèn Flash giả lập">
+                  ⚡
                 </button>
               </div>
             </div>
+
+            <!-- SQUIRCLE VIEWPORT (CAMERA & PREVIEW) -->
+            <div class="locket-viewport-frame" id="locket-viewport-frame">
+              <!-- Live Video -->
+              <video id="locket-video" class="locket-video-stream filter-normal" playsinline autoplay muted></video>
+              <canvas id="locket-canvas" style="display: none;"></canvas>
+
+              <!-- Screen Flash Animation -->
+              <div class="locket-flash-overlay" id="locket-flash-overlay"></div>
+
+              <!-- HUD Watermark Overlay -->
+              <div class="locket-watermark-overlay">
+                <div class="locket-watermark-top">
+                  <span class="locket-time-pill" id="locket-live-clock">10:45 AM • Hôm nay</span>
+                  <span class="locket-rec-badge" id="locket-rec-badge">
+                    <span>🔴 REC</span>
+                    <span id="locket-rec-seconds">0:05</span>
+                  </span>
+                </div>
+                <div class="locket-watermark-bottom">
+                  <span class="locket-love-tag" id="locket-love-tag">
+                    <span id="locket-live-sticker">💕</span>
+                    <span id="locket-quote-tag">Gửi người anh thương nhất</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Preview Overlay (When photo snapped or 5s video recorded) -->
+              <div class="locket-preview-wrap" id="locket-preview-wrap">
+                <img id="locket-preview-img" class="locket-preview-media" style="display: none;" alt="Locket Preview">
+                <video id="locket-preview-video" class="locket-preview-media" style="display: none;" loop playsinline autoplay></video>
+                <button type="button" class="btn-retake-locket" id="btn-retake-locket">
+                  ✕ Chụp Lại
+                </button>
+              </div>
+            </div>
+
+            <!-- FILTERS SELECTOR BAR -->
+            <div class="locket-filter-bar">
+              <button type="button" class="locket-filter-chip active" data-filter="normal">✨ Tự Nhiên</button>
+              <button type="button" class="locket-filter-chip" data-filter="pink">🌸 Hồng Pastel</button>
+              <button type="button" class="locket-filter-chip" data-filter="vintage">🎞️ Vintage Film</button>
+              <button type="button" class="locket-filter-chip" data-filter="warm">🌅 Hoàng Hôn</button>
+              <button type="button" class="locket-filter-chip" data-filter="bw">🖤 B&amp;W Classic</button>
+            </div>
+
+            <!-- SHUTTER & RECORDING BAR -->
+            <div class="locket-shutter-bar">
+              <!-- Mode Tabs -->
+              <div class="locket-mode-tabs">
+                <button type="button" class="locket-mode-tab active" id="tab-mode-photo">📸 Chụp Ảnh</button>
+                <button type="button" class="locket-mode-tab" id="tab-mode-video">🎥 Video 5s</button>
+              </div>
+
+              <div class="locket-shutter-row">
+                <!-- Fallback file upload -->
+                <button type="button" class="locket-action-sub-btn" id="btn-locket-browse-file" title="Tải ảnh/video từ điện thoại">
+                  📁
+                </button>
+                <input type="file" id="locket-file-input" accept="image/*,video/*" style="display: none;">
+
+                <!-- Big Shutter Button with Circular 5s Progress Ring -->
+                <div class="locket-shutter-btn-wrapper">
+                  <svg class="locket-progress-svg" viewBox="0 0 82 82">
+                    <circle class="locket-progress-bg" cx="41" cy="41" r="38"></circle>
+                    <circle class="locket-progress-fill" id="locket-progress-fill" cx="41" cy="41" r="38"></circle>
+                  </svg>
+                  <button type="button" class="locket-shutter-btn" id="btn-locket-shutter" aria-label="Bấm chụp hoặc quay video 5s">
+                    <div class="locket-shutter-inner-dot" id="locket-shutter-inner-dot"></div>
+                  </button>
+                </div>
+
+                <!-- Heart Burst Sound / Effect -->
+                <button type="button" class="locket-action-sub-btn" id="btn-locket-heart-pulse" title="Bắn tim vào Locket">
+                  💖
+                </button>
+              </div>
+            </div>
+
+            <!-- CAPTION & SEND CONTAINER (Revealed after capturing) -->
+            <div class="locket-caption-box" id="locket-caption-box">
+              <div class="locket-sticker-row" id="locket-sticker-row">
+                <button type="button" class="locket-sticker-btn active" data-sticker="💕">💕</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="😽">😽</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="🌸">🌸</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="🥺">🥺</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="☕">☕</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="💤">💤</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="✨">✨</button>
+                <button type="button" class="locket-sticker-btn" data-sticker="💌">💌</button>
+              </div>
+
+              <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào kèm theo... (VD: Đang nhớ bé nè 💕)" maxlength="80">
+
+              <button type="button" class="btn-send-locket" id="btn-send-locket">
+                <span>🚀 Gửi Locket Đến Đối Phương</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- LOCKET FEED: RECENT MOMENTS -->
+          <div class="locket-feed-wrap">
+            <div class="locket-feed-title-bar">
+              <h3><span>💌</span> Khoảnh Khắc Locket Đôi Ta</h3>
+              <span id="locket-feed-count" style="font-size: 0.8rem; color: #ff9bbb;">0 khoảnh khắc</span>
+            </div>
+
+            <div class="locket-feed-grid" id="locket-feed-grid">
+              <div class="admin-empty-state" style="grid-column: 1 / -1;">Đang tải khoảnh khắc Locket...</div>
+            </div>
+          </div>
+
+          <div class="slide-nav-action" style="margin-top: 26px;">
+            <button class="luxury-btn btn-next-slide" data-goto="4">
+              <span>Góc Nhỏ Của Bé 💭</span>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
           </div>
         </div>
       </section>
@@ -526,7 +581,7 @@
             </div>
 
             <div class="slide-nav-action" style="margin-top: 18px;">
-              <button class="luxury-btn btn-next-slide" data-goto="6">
+              <button class="luxury-btn btn-next-slide" data-goto="5">
                 <span>Kho Kỷ Niệm Ảnh Đôi Ta 🖼️</span>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
@@ -535,8 +590,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 6: KHO KỶ NIỆM ĐÔI TA (UPLOAD ẢNH LƯU TRỮ) -->
-      <section class="slide-section" id="slide-memories" data-slide-index="6">
+      <!-- SLIDE 5: KHO KỶ NIỆM ĐÔI TA (UPLOAD ẢNH LƯU TRỮ) -->
+      <section class="slide-section" id="slide-memories" data-slide-index="5">
         <div class="slide-content memories-slide-content">
           <div class="section-header">
             <span class="section-badge">✨ Album Kỷ Niệm Của Chúng Mình ✨</span>
@@ -589,11 +644,87 @@
             </div>
 
             <div class="slide-nav-action" style="margin-top: 20px;">
-              <button class="luxury-btn btn-next-slide" data-goto="7">
-                <span>Mở Bức Thư Tình 20/10 💌</span>
+              <button class="luxury-btn btn-next-slide" data-goto="6">
+                <span>Love Bucket List 🎯</span>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: LOVE BUCKET LIST (100 ĐIỀU MUỐN CÙNG NHAU LÀM) -->
+      <section class="slide-section" id="slide-bucket" data-slide-index="6">
+        <div class="slide-content bucket-slide-content">
+          <div class="section-header">
+            <span class="section-badge">✨ 100 Điều Ước Tình Yêu ✨</span>
+            <h2 class="section-title">Love Bucket List Đôi Ta</h2>
+            <p class="section-desc">Những điều ngọt ngào nhất chúng mình muốn cùng nhau thực hiện trước khi già đi 💕 Chạm vào trái tim để đánh dấu những điều đã làm được nhé!</p>
+          </div>
+
+          <!-- Bucket Hero Card with Love Progress -->
+          <div class="bucket-hero-card">
+            <div class="bucket-progress-header">
+              <div class="bucket-badge-rank" id="bucket-badge-rank">
+                <span>🏆</span>
+                <span id="bucket-rank-title">Cặp Đôi Đồng Điệu</span>
+              </div>
+              <div class="bucket-stats-text" id="bucket-progress-text">
+                Đang tải tiến trình...
+              </div>
+            </div>
+
+            <div class="bucket-progress-track">
+              <div class="bucket-progress-fill" id="bucket-progress-fill"></div>
+            </div>
+
+            <!-- Controls bar: Filters & Add new wish -->
+            <div class="bucket-controls-bar">
+              <div class="bucket-filter-pills" id="bucket-filter-pills">
+                <button type="button" class="bucket-filter-pill active" data-filter="all">Tất cả</button>
+                <button type="button" class="bucket-filter-pill" data-filter="todo">Chưa làm</button>
+                <button type="button" class="bucket-filter-pill" data-filter="done">Đã xong ✅</button>
+                <button type="button" class="bucket-filter-pill" data-filter="sweet">Lãng mạn 🌸</button>
+                <button type="button" class="bucket-filter-pill" data-filter="date">Hẹn hò 🍿</button>
+                <button type="button" class="bucket-filter-pill" data-filter="travel">Du lịch ✈️</button>
+              </div>
+              <button type="button" class="btn-open-add-bucket" id="btn-toggle-add-bucket">
+                <span>➕ Thêm Điều Muốn Làm</span>
+              </button>
+            </div>
+
+            <!-- Add new wish box (Collapsible) -->
+            <div class="bucket-add-box" id="bucket-add-box">
+              <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #ff9bbb;">✨ Viết thêm một điều ước mới vào danh sách đôi ta:</h4>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="input-bucket-title" class="admin-input" placeholder="VD: Cùng nhau ngắm tuyết rơi mùa đông...">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <select id="select-bucket-category" class="admin-input" style="flex: 1; min-width: 150px; background: rgba(22, 12, 33, 0.9);">
+                    <option value="sweet">🌸 Lãng mạn</option>
+                    <option value="date">🍿 Hẹn hò & Đi chơi</option>
+                    <option value="travel">✈️ Du lịch</option>
+                    <option value="future">🏡 Tương lai lâu dài</option>
+                  </select>
+                  <input type="text" id="input-bucket-note" class="admin-input" style="flex: 2; min-width: 200px;" placeholder="Ghi chú thêm (tùy chọn)">
+                  <button type="button" class="luxury-btn btn-pink" id="btn-submit-new-bucket" style="padding: 10px 18px;">
+                    <span>Thêm Ngay 💕</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Bucket List Items Grid -->
+          <div class="bucket-list-grid" id="bucket-list-grid">
+            <!-- Dynamically populated from Database -->
+            <div class="admin-empty-state">Đang tải danh sách điều ước từ Database...</div>
+          </div>
+
+          <div class="slide-nav-action" style="margin-top: 20px;">
+            <button class="luxury-btn btn-next-slide" data-goto="7">
+              <span>Mở Bức Thư Tình 20/10 💌</span>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
           </div>
         </div>
       </section>
@@ -638,29 +769,29 @@
         <span class="dock-icon">⏱️</span>
         <span class="dock-label">Kỷ Niệm</span>
       </button>
-      <button class="dock-btn" data-slide="1" title="Vòng Quay">
-        <span class="dock-icon">🎡</span>
-        <span class="dock-label">Vòng Quay</span>
-      </button>
-      <button class="dock-btn" data-slide="2" title="Thẻ Cào">
+      <button class="dock-btn" data-slide="1" title="Thẻ Cào">
         <span class="dock-icon">🎫</span>
         <span class="dock-label">Thẻ Cào</span>
       </button>
-      <button class="dock-btn" data-slide="3" title="Trạm Ảnh">
+      <button class="dock-btn" data-slide="2" title="Trạm Ảnh">
         <span class="dock-icon">📸</span>
         <span class="dock-label">Trạm Ảnh</span>
       </button>
-      <button class="dock-btn" data-slide="4" title="Trắc Nghiệm">
-        <span class="dock-icon">🧩</span>
-        <span class="dock-label">Trắc Nghiệm</span>
+      <button class="dock-btn" data-slide="3" title="Mini Locket">
+        <span class="dock-icon">💛</span>
+        <span class="dock-label">Locket</span>
       </button>
-      <button class="dock-btn" data-slide="5" title="Góc Của Bé">
+      <button class="dock-btn" data-slide="4" title="Góc Của Bé">
         <span class="dock-icon">💭</span>
         <span class="dock-label">Góc Của Bé</span>
       </button>
-      <button class="dock-btn" data-slide="6" title="Kho Ảnh">
+      <button class="dock-btn" data-slide="5" title="Kho Ảnh">
         <span class="dock-icon">🖼️</span>
         <span class="dock-label">Kho Ảnh</span>
+      </button>
+      <button class="dock-btn" data-slide="6" title="Bucket List">
+        <span class="dock-icon">🎯</span>
+        <span class="dock-label">Bucket List</span>
       </button>
       <button class="dock-btn" data-slide="7" title="Bức Thư">
         <span class="dock-icon">💌</span>
@@ -784,6 +915,7 @@
 
         <div class="settings-btn-row">
           <button type="button" class="sub-btn" id="btn-reset-default">Khôi phục mặc định</button>
+          <a href="admin.html" class="sub-btn" style="text-decoration: none; color: #ff9bbb;">⚙️ Mở Trang Admin</a>
           <button type="button" class="luxury-btn btn-pink" id="btn-save-settings">💾 Lưu Thông Tin</button>
         </div>
       </form>
@@ -812,6 +944,8 @@
     <span>🎵 Bấm để bật nhạc lãng mạn</span>
   </div>
 
+  <!-- Couple Configuration File -->
+  <script src="config.js"></script>
   <!-- Main Application Script -->
   <script src="script.js"></script>
 </body>

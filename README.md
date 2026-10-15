@@ -1,4 +1,4 @@
-﻿# 💖 Website Quà Tặng 20/10 Siêu Xịn Sò Dành Tặng Bạn Gái
+# 💖 Website Quà Tặng 20/10 Siêu Xịn Sò Dành Tặng Bạn Gái
 
 Một trang web kỷ niệm ngày Phụ Nữ Việt Nam 20/10 với giao diện chuẩn **Luxury Romantic Glassmorphism**, âm nhạc lãng mạn, hiệu ứng tương tác mượt mà và đầy ắp bất ngờ ngọt ngào.
 
@@ -52,26 +52,34 @@ Một trang web kỷ niệm ngày Phụ Nữ Việt Nam 20/10 với giao diện 
    - Hiệu ứng máy đánh chữ gõ từng ký tự kèm con trỏ nhấp nháy `|` và âm thanh gõ máy chữ vintage.
    - Pháo hoa giấy (Confetti) mưa ngập màn hình khi bức thư kết thúc.
 
-8. **Nút Tùy Chỉnh (Cực Kỳ Tiện Lợi)**:
-   - Có nút **"Tùy chỉnh"** (hình bánh răng) ở góc trên bên trái:
-     - Thay đổi tên bạn gái, tên bạn trai.
-     - Chọn ngày kỷ niệm yêu nhau qua bộ chọn ngày giờ.
-     - Đổi mã PIN mở khóa (mặc định: `2010`).
-     - Tự viết nội dung bức thư tình theo ý bạn.
-     - Dữ liệu tự động lưu vào trình duyệt (`localStorage`), không lo bị mất!
+8. **Trung Tâm Quản Trị Riêng & Chế Độ Chỉ Xem Dành Cho Bé**:
+   - **Trang Quản Trị Riêng ([admin.html](file:///d:/20.10.2026/admin.html))**:
+     - Bảo vệ bằng mã PIN bảo mật (mặc định: `0702` hoặc `2010`).
+     - Tùy chỉnh trực quan: Tên hai bạn, ngày kỷ niệm yêu nhau, mã PIN mở khóa iPhone, lời gợi ý, tâm thư tình cảm 20/10, 6 ô vòng quay may mắn.
+     - Nút **"📋 Sao Chép Link Gửi Bé"**: Tạo đường link mã hóa an toàn mang theo toàn bộ dữ liệu bạn đã soạn.
+     - Nút **"📥 Xuất config.js"**: Tải về file cấu hình để lưu vào dự án hoặc deploy lên GitHub Pages / Vercel.
+   - **Chế Độ Dành Riêng Cho Bé ([index.html](file:///d:/20.10.2026/index.html))**:
+     - Khi bé mở đường link: **Nút Cài Đặt và quyền chỉnh sửa bị KHÓA & ẨN 100%**.
+     - Bé chỉ có thể trải nghiệm mở khóa PIN, xem đếm ngày, quay thưởng, cào thẻ, nhận quà và đọc thư tình!
 
 ---
 
-## 🚀 Hướng Dẫn Sử Dụng
+## 🚀 Hướng Dẫn Khởi Chạy Website & Cơ Sở Dữ Liệu (Database)
 
-### Cách 1: Mở trực tiếp
-- Chỉ cần nhấp đúp vào file `index.html` bằng bất kỳ trình duyệt nào (Chrome, Safari, Edge, Cốc Cốc).
-
-### Cách 2: Chạy qua Live Server / Node.js
+### Cách Khởi Chạy Chuẩn (Hỗ Trợ Database Đồng Bộ 2 Chiều):
+Chỉ cần mở terminal tại thư mục này và chạy:
 ```bash
-npx -y serve . -p 8080
+npm start
 ```
-Sau đó truy cập `http://localhost:8080`.
+(hoặc `node server.js`)
+
+Hệ thống backend và database sẽ tự động khởi động:
+- **Link Dành Cho Bé (Chỉ xem, gửi lời nhắn & upload ảnh vào database):**
+  👉 `http://localhost:3000/`
+- **Link Quản Trị Dành Cho Anh (Xem tin nhắn bé gửi, quản lý ảnh, chỉnh sửa):**
+  👉 `http://localhost:3000/admin.html`
+- **Thư mục cơ sở dữ liệu:** `data/db.json`
+- **Thư mục ảnh upload:** `uploads/`
 
 ---
 

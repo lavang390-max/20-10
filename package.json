@@ -1,0 +1,25 @@
+{
+  "name": "20.10.2026",
+  "version": "1.0.0",
+  "description": "Một trang web kỷ niệm ngày Phụ Nữ Việt Nam 20/10 với giao diện chuẩn **Luxury Romantic Glassmorphism**, âm nhạc lãng mạn, hiệu ứng tương tác mượt mà và đầy ắp bất ngờ ngọt ngào.",
+  "main": "config.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://lavang390-max@github.com/lavang390-max/20-10.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lavang390-max/20-10/issues"
+  },
+  "homepage": "https://github.com/lavang390-max/20-10#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "multer": "^2.4.0"
+  }
+}
