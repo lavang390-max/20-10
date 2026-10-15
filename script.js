@@ -963,6 +963,12 @@
   const btnSendLocket = document.getElementById('btn-send-locket');
   const stickerBtns = document.querySelectorAll('.locket-sticker-btn');
 
+  // Camera Overlay & Status
+  const cameraStartOverlay = document.getElementById('camera-start-overlay');
+  const btnStartCamera = document.getElementById('btn-start-camera');
+  const cameraPromptTip = document.getElementById('camera-prompt-tip');
+  const cameraStatusPill = document.getElementById('camera-status-pill');
+
   // Feed
   const locketFeedGrid = document.getElementById('locket-feed-grid');
   const locketFeedCount = document.getElementById('locket-feed-count');
@@ -999,39 +1005,74 @@
   // 2. Camera Management
   async function initLocketCamera() {
     if (!locketVideo) return;
-    if (locketMediaStream && locketMediaStream.active) return; // already active
+    if (locketMediaStream && locketMediaStream.active) {
+      if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
+      return;
+    }
+
+    if (cameraPromptTip) {
+      cameraPromptTip.textContent = '⏳ Đang khởi động máy ảnh...';
+    }
 
     try {
+      locketVideo.muted = true;
+      locketVideo.playsInline = true;
+      locketVideo.setAttribute('playsinline', 'true');
+      locketVideo.setAttribute('webkit-playsinline', 'true');
+      locketVideo.setAttribute('autoplay', 'true');
+      locketVideo.setAttribute('muted', 'true');
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Trình duyệt không hỗ trợ getUserMedia');
+      }
+
+      // Constraints without audio to prevent mic rejection / latency
       const constraints = {
         video: {
           facingMode: currentCameraFacing,
-          width: { ideal: 720 },
+          width: { ideal: 1280 },
           height: { ideal: 720 }
         },
-        audio: true
+        audio: false
       };
+
       locketMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       locketVideo.srcObject = locketMediaStream;
-      locketVideo.play().catch(e => console.warn(e));
+      const playPromise = locketVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => console.warn('Autoplay prevented, requires tap:', err));
+      }
 
       if (currentCameraFacing === 'user') {
         locketVideo.classList.remove('rear-camera');
       } else {
         locketVideo.classList.add('rear-camera');
       }
+
+      if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
+      if (cameraStatusPill) cameraStatusPill.textContent = '🟢 Máy ảnh sẵn sàng • 🔋 100%';
     } catch(err) {
-      console.warn('Trying video-only camera access:', err);
+      console.warn('Direct camera access failed, trying minimal fallback:', err);
       try {
-        locketMediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: currentCameraFacing }
-        });
+        locketMediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         locketVideo.srcObject = locketMediaStream;
         locketVideo.play().catch(e => console.warn(e));
+        if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
+        if (cameraStatusPill) cameraStatusPill.textContent = '🟢 Máy ảnh sẵn sàng • 🔋 100%';
       } catch(e) {
         console.warn('Camera access unavailable:', e);
-        if (locketQuoteTag) {
-          locketQuoteTag.textContent = '💡 Bấm 📁 để tải ảnh/video từ máy';
+        if (cameraStartOverlay) cameraStartOverlay.classList.remove('hidden');
+        if (cameraPromptTip) {
+          cameraPromptTip.innerHTML = 'Không thể mở máy ảnh trực tiếp.<br><span style="color:#ff2a6d;font-weight:700;">Chạm vào đây</span> hoặc nút 📁 để chọn ảnh từ máy nhé! 💕';
         }
+        if (btnStartCamera) {
+          btnStartCamera.innerHTML = '<span>📁 Chọn Ảnh / Video Từ Máy</span>';
+          btnStartCamera.onclick = (ev) => {
+            ev.stopPropagation();
+            if (locketFileInput) locketFileInput.click();
+          };
+        }
+        if (cameraStatusPill) cameraStatusPill.textContent = '📁 Chọn ảnh từ máy • 🔋 100%';
       }
     }
   }
@@ -1044,6 +1085,29 @@
     if (locketVideo) {
       locketVideo.srcObject = null;
     }
+    if (cameraStartOverlay) {
+      cameraStartOverlay.classList.remove('hidden');
+    }
+    if (cameraStatusPill) {
+      cameraStatusPill.textContent = '🟢 Chạm để bật máy ảnh • 🔋 100%';
+    }
+  }
+
+  // Camera start overlay gesture triggers
+  if (btnStartCamera) {
+    btnStartCamera.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.init();
+      sound.playKeyClick();
+      initLocketCamera();
+    });
+  }
+  if (cameraStartOverlay) {
+    cameraStartOverlay.addEventListener('click', () => {
+      sound.init();
+      sound.playKeyClick();
+      initLocketCamera();
+    });
   }
 
   // Flip Camera
@@ -1416,7 +1480,7 @@
     });
   });
 
-  // 6. Send Locket Moment
+  // 6. Send Camera Moment (Local-first & Server sync)
   if (btnSendLocket) {
     btnSendLocket.addEventListener('click', async () => {
       if (!capturedMediaData) {
@@ -1427,70 +1491,140 @@
       sound.init();
       sound.playSuccessChime();
       btnSendLocket.disabled = true;
-      btnSendLocket.textContent = '⏳ Đang gửi Locket đến đối phương...';
+      btnSendLocket.textContent = '⏳ Đang lưu khoảnh khắc...';
 
       const caption = (locketCaptionInput && locketCaptionInput.value.trim()) || 'Khoảnh khắc tức thì 💕';
-      const payload = {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const mins = now.getMinutes().toString().padStart(2, '0');
+      const timeFormatted = `${hours}:${mins} • Hôm nay`;
+
+      const newMoment = {
+        id: 'cam_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         type: capturedMediaData.type,
+        mediaUrl: capturedMediaData.base64 || capturedMediaData.blobUrl,
         caption: caption,
-        sender: userConfig.girlfriendName || 'Bé Mèo',
+        sender: (userConfig && userConfig.girlfriendName) || 'Bé Mèo',
         senderRole: 'girlfriend',
         sticker: activeLocketSticker,
         filter: activeLocketFilter,
+        reactions: 1,
+        timeFormatted: timeFormatted,
+        timestamp: now.toISOString()
+      };
+
+      // 1. ALWAYS save to local device storage (localStorage) first
+      let localFeed = [];
+      try {
+        const raw = localStorage.getItem('romantic_gift_locket_feed');
+        if (raw) localFeed = JSON.parse(raw);
+        if (!Array.isArray(localFeed)) localFeed = [];
+      } catch(e) { localFeed = []; }
+
+      localFeed.unshift(newMoment);
+      const trimmedFeed = localFeed.slice(0, 20); // Keep 20 recent items to prevent quota overflow
+      try {
+        localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(trimmedFeed));
+      } catch(quotaErr) {
+        console.warn('LocalStorage quota limit, keeping fewer items:', quotaErr);
+        try {
+          localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(trimmedFeed.slice(0, 8)));
+        } catch(e) {}
+      }
+
+      cachedLocketItems = trimmedFeed;
+      renderLocketFeed(cachedLocketItems);
+
+      // 2. Play celebration effects
+      sound.playWinFanfare();
+      burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
+      launchCelebrationConfetti();
+      retakeLocket();
+
+      // 3. Background server sync (fails silently on static hosting like GitHub Pages)
+      const payload = {
+        type: newMoment.type,
+        caption: newMoment.caption,
+        sender: newMoment.sender,
+        senderRole: newMoment.senderRole,
+        sticker: newMoment.sticker,
+        filter: newMoment.filter,
         mediaBase64: capturedMediaData.base64
       };
 
       try {
-        const res = await fetch('/api/locket', {
+        fetch('/api/locket', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
+        }).then(res => {
+          if (res.ok) console.log('Synced to backend database');
+        }).catch(err => {
+          console.log('GitHub Pages static mode: saved to device storage');
         });
+      } catch(e) {}
 
-        if (res.ok) {
-          sound.playWinFanfare();
-          burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
-          launchCelebrationConfetti();
-          alert('Đã gửi Locket thành công! Đối phương sẽ nhìn thấy ngay trên trang web 💖🚀');
-          retakeLocket();
-          loadLocketFeed();
-        } else {
-          alert('Không thể lưu Locket lên máy chủ. Hãy kiểm tra kết nối.');
-        }
-      } catch(err) {
-        console.error(err);
-        alert('Lỗi kết nối khi gửi Locket.');
-      } finally {
-        btnSendLocket.disabled = false;
-        btnSendLocket.textContent = '🚀 Gửi Locket Đến Đối Phương';
-      }
+      btnSendLocket.disabled = false;
+      btnSendLocket.textContent = '🚀 Gửi Khoảnh Khắc Này Cho Anh';
+      alert('Đã lưu bức ảnh vào Máy Ảnh Đôi Ta rồi nè! 💖📸\nBé và anh đều có thể xem ở bảng tin bên dưới.');
     });
   }
 
-  // 7. Locket Feed Rendering & Auto-Sync
+  // 7. Camera Feed Rendering & Auto-Sync
   async function loadLocketFeed() {
     if (!locketFeedGrid) return;
+
+    // Load from localStorage first (guaranteed instant display)
+    try {
+      const raw = localStorage.getItem('romantic_gift_locket_feed');
+      if (raw) {
+        const items = JSON.parse(raw);
+        if (Array.isArray(items) && items.length > 0) {
+          cachedLocketItems = items;
+          renderLocketFeed(cachedLocketItems);
+        }
+      }
+    } catch(e) {}
+
+    // In background, fetch from server if backend is active
     try {
       const res = await fetch('/api/locket');
       if (res.ok) {
         const data = await res.json();
-        if (data.success && Array.isArray(data.items)) {
-          cachedLocketItems = data.items;
-          localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(data.items));
-          renderLocketFeed(data.items);
-          return;
+        if (data.success && Array.isArray(data.items) && data.items.length > 0) {
+          // Merge unique items
+          const serverMap = new Map();
+          data.items.forEach(it => serverMap.set(it.id, it));
+          cachedLocketItems.forEach(it => {
+            if (!serverMap.has(it.id)) serverMap.set(it.id, it);
+          });
+          const merged = Array.from(serverMap.values()).slice(0, 25);
+          cachedLocketItems = merged;
+          localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(merged));
+          renderLocketFeed(merged);
         }
       }
-    } catch(e) {}
-
-    // Fallback to localStorage
-    try {
-      const raw = localStorage.getItem('romantic_gift_locket_feed');
-      if (raw) {
-        cachedLocketItems = JSON.parse(raw);
-        renderLocketFeed(cachedLocketItems);
+    } catch(e) {
+      // Offline / GitHub Pages mode - purely use cachedLocketItems
+      if (cachedLocketItems.length === 0) {
+        // Seed default preview if completely empty
+        const defaultItems = [
+          {
+            id: 'sample-cam-1',
+            type: 'photo',
+            mediaUrl: 'images/photo1.jpg',
+            caption: 'Khoảnh khắc đầu tiên cùng người anh yêu nhất 💖',
+            sender: (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ',
+            sticker: '💕',
+            filter: 'pink',
+            reactions: 2,
+            timeFormatted: '20/10 • Kỷ niệm'
+          }
+        ];
+        cachedLocketItems = defaultItems;
+        renderLocketFeed(defaultItems);
       }
-    } catch(e) {}
+    }
   }
 
   function renderLocketFeed(items) {
@@ -1501,7 +1635,7 @@
 
     locketFeedGrid.innerHTML = '';
     if (!items || items.length === 0) {
-      locketFeedGrid.innerHTML = `<div class="admin-empty-state" style="grid-column: 1 / -1;">Chưa có khoảnh khắc Locket nào. Hãy chụp hoặc quay video 5s đầu tiên nhé! 📸✨</div>`;
+      locketFeedGrid.innerHTML = `<div class="admin-empty-state" style="grid-column: 1 / -1;">Chưa có khoảnh khắc nào. Hãy chụp bức ảnh hoặc quay video 5s đầu tiên nhé! 📸✨</div>`;
       return;
     }
 
@@ -1511,7 +1645,7 @@
 
       const isVideo = item.type === 'video';
       const mediaHtml = isVideo
-        ? `<video src="${item.mediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" loop muted playsinline autoplay></video>`
+        ? `<video src="${item.mediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" loop muted playsinline webkit-playsinline autoplay></video>`
         : `<img src="${item.mediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" alt="${escapeHTML(item.caption)}" loading="lazy">`;
 
       card.innerHTML = `
@@ -1534,20 +1668,34 @@
 
       const reactBtn = card.querySelector('.btn-react-locket');
       if (reactBtn) {
-        reactBtn.addEventListener('click', async (e) => {
+        reactBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           burstHeartsAt(e.clientX, e.clientY);
           sound.init();
           sound.playSuccessChime();
 
+          item.reactions = (item.reactions || 1) + 1;
           const countSpan = reactBtn.querySelector('span');
           if (countSpan) {
-            const cur = parseInt(countSpan.textContent, 10) || 1;
-            countSpan.textContent = cur + 1;
+            countSpan.textContent = item.reactions;
           }
 
+          // Update in localStorage
           try {
-            await fetch(`/api/locket/${encodeURIComponent(item.id)}/react`, { method: 'POST' });
+            const raw = localStorage.getItem('romantic_gift_locket_feed');
+            if (raw) {
+              const list = JSON.parse(raw);
+              const found = list.find(x => x.id === item.id);
+              if (found) {
+                found.reactions = item.reactions;
+                localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(list));
+              }
+            }
+          } catch(err) {}
+
+          // Background sync to server
+          try {
+            fetch(`/api/locket/${encodeURIComponent(item.id)}/react`, { method: 'POST' }).catch(() => {});
           } catch(err) {}
         });
       }
@@ -1556,8 +1704,8 @@
     });
   }
 
-  // Auto poll Locket moments every 15s
-  setInterval(loadLocketFeed, 15000);
+  // Auto poll Camera moments every 20s
+  setInterval(loadLocketFeed, 20000);
 
   // --- 9. BÉ VIẾT CHIA SẺ CẢM XÚC (DIARY / MOOD) ---
   const moodPills = document.querySelectorAll('.mood-pill');

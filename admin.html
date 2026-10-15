@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261015_locket">
+  <link rel="stylesheet" href="style.css?v=20261015_camera_v4">
   <style>
     /* DEDICATED STYLES FOR ADMIN DASHBOARD */
     body {
@@ -833,12 +833,12 @@
         </div>
       </div>
 
-      <!-- CARD 4: QUẢN LÝ MINI LOCKET ĐÔI TA (DATABASE) -->
+      <!-- CARD 4: QUẢN LÝ MÁY ẢNH ĐÔI TA (DATABASE) -->
       <div class="admin-card">
         <div class="admin-card-head" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <span class="admin-card-icon">💛</span>
-            <h2>4. Quản Lý Mini Locket Đôi Ta (Ảnh &amp; Video 5s Tức Thì)</h2>
+            <span class="admin-card-icon">📸</span>
+            <h2>4. Quản Lý Máy Ảnh Đôi Ta (Ảnh &amp; Video 5s Tức Thì)</h2>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
             <span id="admin-locket-count-badge" class="admin-badge" style="background: rgba(246, 200, 95, 0.18); border-color: #f6c85f; color: #f6c85f;">
@@ -854,9 +854,9 @@
           Khoảnh khắc chụp ảnh tức thì hoặc video 5s được gửi giữa anh và bé. Anh cũng có thể gửi phản hồi trực tiếp cho bé từ đây!
         </p>
 
-        <!-- UPLOAD LOCKET FROM ADMIN -->
+        <!-- UPLOAD MOMENT FROM ADMIN -->
         <div class="admin-upload-box" style="margin-bottom: 22px;">
-          <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #f6c85f;">➕ Gửi một Locket mới từ anh:</h4>
+          <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #f6c85f;">➕ Gửi một khoảnh khắc mới từ anh:</h4>
           <div class="admin-grid-3">
             <div class="admin-field" style="margin-bottom: 0;">
               <label>File ảnh hoặc video (MP4, WebM, JPG):</label>
@@ -879,14 +879,14 @@
           </div>
           <div style="margin-top: 14px; text-align: right;">
             <button type="button" class="btn-admin btn-admin-pink" id="btn-admin-send-locket">
-              🚀 Gửi Locket Đến Bé
+              🚀 Gửi Đến Máy Ảnh Của Bé
             </button>
           </div>
         </div>
 
-        <!-- LOCKET ITEMS GRID -->
+        <!-- ITEMS GRID -->
         <div id="admin-locket-grid" class="admin-memories-grid" style="margin-top: 10px;">
-          <div class="admin-empty-state">Đang tải khoảnh khắc Locket từ Database...</div>
+          <div class="admin-empty-state">Đang tải khoảnh khắc máy ảnh từ Database...</div>
         </div>
       </div>
 
@@ -1752,7 +1752,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         gridEl.innerHTML = '';
 
         if (items.length === 0) {
-          gridEl.innerHTML = `<div class="admin-empty-state">Chưa có khoảnh khắc Locket nào. Bé hoặc anh có thể gửi khoảnh khắc đầu tiên! 💛</div>`;
+          gridEl.innerHTML = `<div class="admin-empty-state">Chưa có khoảnh khắc máy ảnh nào. Bé hoặc anh có thể gửi khoảnh khắc đầu tiên! 📸</div>`;
           return;
         }
 
@@ -1782,12 +1782,12 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
           const delBtn = card.querySelector('.btn-delete-item');
           delBtn.addEventListener('click', async () => {
-            if (confirm('Xóa khoảnh khắc Locket này?')) {
+            if (confirm('Xóa khoảnh khắc này?')) {
               try {
                 await fetch(`/api/locket/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
               } catch(e) {}
               loadAdminLocket();
-              showToast('Đã xóa khoảnh khắc Locket', '🗑️');
+              showToast('Đã xóa khoảnh khắc', '🗑️');
             }
           });
 
@@ -1795,7 +1795,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         });
       }
 
-      // Send Locket from Admin
+      // Send Moment from Admin
       const btnAdminSendLocket = document.getElementById('btn-admin-send-locket');
       const fileInputLocketAdmin = document.getElementById('admin-locket-file-input');
       const captionInputLocketAdmin = document.getElementById('admin-locket-caption-input');
@@ -1814,7 +1814,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const isVideo = file.type.startsWith('video');
 
           btnAdminSendLocket.disabled = true;
-          btnAdminSendLocket.textContent = '⏳ Đang gửi Locket...';
+          btnAdminSendLocket.textContent = '⏳ Đang gửi khoảnh khắc...';
 
           const formData = new FormData();
           formData.append('media', file);
@@ -1831,19 +1831,19 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             });
 
             if (res.ok) {
-              showToast('Đã gửi Locket đến bé thành công! 💛🚀', '✅');
+              showToast('Đã gửi đến máy ảnh của bé thành công! 📸🚀', '✅');
               fileInputLocketAdmin.value = '';
               if (captionInputLocketAdmin) captionInputLocketAdmin.value = '';
               loadAdminLocket();
             } else {
-              alert('Không thể lưu Locket lên máy chủ.');
+              alert('Không thể lưu ảnh/video lên máy chủ.');
             }
           } catch(err) {
             console.error(err);
-            alert('Lỗi kết nối khi gửi Locket.');
+            alert('Lỗi kết nối khi gửi ảnh/video.');
           } finally {
             btnAdminSendLocket.disabled = false;
-            btnAdminSendLocket.textContent = '🚀 Gửi Locket Đến Bé';
+            btnAdminSendLocket.textContent = '🚀 Gửi Đến Máy Ảnh Của Bé';
           }
         });
       }

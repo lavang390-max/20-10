@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261015_locket">
+  <link rel="stylesheet" href="style.css?v=20261015_camera_v4">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -362,20 +362,20 @@
               <span>🧹 Dọn dẹp ảnh</span>
             </button>
             <button class="luxury-btn btn-next-slide" data-goto="3">
-              <span>Mở Mini Locket Đôi Ta 💛</span>
+              <span>Mở Máy Ảnh Đôi Ta 📸</span>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 4: MINI LOCKET ĐÔI TA (CHỤP ẢNH TỨC THÌ & VIDEO 5S) -->
+      <!-- SLIDE 4: MÁY ẢNH ĐÔI TA (CHỤP ẢNH TỨC THÌ & VIDEO 5S) -->
       <section class="slide-section" id="slide-locket" data-slide-index="3">
         <div class="slide-content locket-slide-content">
           <div class="section-header">
-            <span class="section-badge">✨ Widget Cặp Đôi Thời Gian Thực ✨</span>
-            <h2 class="section-title">Mini Locket Đôi Ta</h2>
-            <p class="section-desc">Chụp ảnh tức thì hoặc quay video 5 giây gửi ngay đến màn hình của đối phương như Locket widget! 📸💛</p>
+            <span class="section-badge">✨ Khoảnh Khắc Tức Thì ✨</span>
+            <h2 class="section-title">Máy Ảnh Đôi Ta</h2>
+            <p class="section-desc">Chụp ảnh tức thì hoặc quay video 5 giây lưu giữ khoảnh khắc ngọt ngào của hai đứa mình! 📸💖</p>
           </div>
 
           <div class="locket-card-wrapper">
@@ -387,7 +387,7 @@
                 </div>
                 <div class="locket-user-meta">
                   <span class="locket-user-name" id="locket-display-name">Bé Mèo &amp; Khúc Gỗ</span>
-                  <span class="locket-user-status">🟢 Đang kết nối • 🔋 100%</span>
+                  <span class="locket-user-status" id="camera-status-pill">🟢 Chạm để bật máy ảnh • 🔋 100%</span>
                 </div>
               </div>
               <div class="locket-tools-row">
@@ -403,8 +403,22 @@
             <!-- SQUIRCLE VIEWPORT (CAMERA & PREVIEW) -->
             <div class="locket-viewport-frame" id="locket-viewport-frame">
               <!-- Live Video -->
-              <video id="locket-video" class="locket-video-stream filter-normal" playsinline autoplay muted></video>
+              <video id="locket-video" class="locket-video-stream filter-normal" playsinline webkit-playsinline autoplay muted></video>
               <canvas id="locket-canvas" style="display: none;"></canvas>
+
+              <!-- Camera Start / Permission Overlay -->
+              <div class="camera-start-overlay" id="camera-start-overlay">
+                <div class="camera-start-pulse">
+                  <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </div>
+                <button type="button" class="btn-start-camera" id="btn-start-camera">
+                  <span>📸 Bật Máy Ảnh</span>
+                </button>
+                <p class="camera-prompt-tip" id="camera-prompt-tip">Chạm để mở camera chụp ảnh tức thì</p>
+              </div>
 
               <!-- Screen Flash Animation -->
               <div class="locket-flash-overlay" id="locket-flash-overlay"></div>
@@ -428,8 +442,8 @@
 
               <!-- Preview Overlay (When photo snapped or 5s video recorded) -->
               <div class="locket-preview-wrap" id="locket-preview-wrap">
-                <img id="locket-preview-img" class="locket-preview-media" style="display: none;" alt="Locket Preview">
-                <video id="locket-preview-video" class="locket-preview-media" style="display: none;" loop playsinline autoplay></video>
+                <img id="locket-preview-img" class="locket-preview-media" style="display: none;" alt="Xem trước ảnh chụp">
+                <video id="locket-preview-video" class="locket-preview-media" style="display: none;" loop playsinline webkit-playsinline autoplay></video>
                 <button type="button" class="btn-retake-locket" id="btn-retake-locket">
                   ✕ Chụp Lại
                 </button>
@@ -494,20 +508,20 @@
               <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào kèm theo... (VD: Đang nhớ bé nè 💕)" maxlength="80">
 
               <button type="button" class="btn-send-locket" id="btn-send-locket">
-                <span>🚀 Gửi Locket Đến Đối Phương</span>
+                <span>🚀 Gửi Khoảnh Khắc Này Cho Anh</span>
               </button>
             </div>
           </div>
 
-          <!-- LOCKET FEED: RECENT MOMENTS -->
+          <!-- FEED: RECENT MOMENTS -->
           <div class="locket-feed-wrap">
             <div class="locket-feed-title-bar">
-              <h3><span>💌</span> Khoảnh Khắc Locket Đôi Ta</h3>
+              <h3><span>📸</span> Bảng Tin Máy Ảnh Đôi Ta</h3>
               <span id="locket-feed-count" style="font-size: 0.8rem; color: #ff9bbb;">0 khoảnh khắc</span>
             </div>
 
             <div class="locket-feed-grid" id="locket-feed-grid">
-              <div class="admin-empty-state" style="grid-column: 1 / -1;">Đang tải khoảnh khắc Locket...</div>
+              <div class="admin-empty-state" style="grid-column: 1 / -1;">Đang tải khoảnh khắc máy ảnh...</div>
             </div>
           </div>
 
@@ -777,9 +791,9 @@
         <span class="dock-icon">📸</span>
         <span class="dock-label">Trạm Ảnh</span>
       </button>
-      <button class="dock-btn" data-slide="3" title="Mini Locket">
-        <span class="dock-icon">💛</span>
-        <span class="dock-label">Locket</span>
+      <button class="dock-btn" data-slide="3" title="Máy Ảnh">
+        <span class="dock-icon">📷</span>
+        <span class="dock-label">Máy Ảnh</span>
       </button>
       <button class="dock-btn" data-slide="4" title="Góc Của Bé">
         <span class="dock-icon">💭</span>
@@ -945,8 +959,8 @@
   </div>
 
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261015_locket"></script>
+  <script src="config.js?v=20261015_camera_v4"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261015_locket"></script>
+  <script src="script.js?v=20261015_camera_v4"></script>
 </body>
 </html>
