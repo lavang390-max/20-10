@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261015_camera_v4">
+  <link rel="stylesheet" href="style.css?v=20261015_camera_v5">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -372,10 +372,9 @@
       <!-- SLIDE 4: MÁY ẢNH ĐÔI TA (CHỤP ẢNH TỨC THÌ & VIDEO 5S) -->
       <section class="slide-section" id="slide-locket" data-slide-index="3">
         <div class="slide-content locket-slide-content">
-          <div class="section-header">
-            <span class="section-badge">✨ Khoảnh Khắc Tức Thì ✨</span>
-            <h2 class="section-title">Máy Ảnh Đôi Ta</h2>
-            <p class="section-desc">Chụp ảnh tức thì hoặc quay video 5 giây lưu giữ khoảnh khắc ngọt ngào của hai đứa mình! 📸💖</p>
+          <div class="section-header" style="margin-bottom: 10px;">
+            <span class="section-badge" style="margin-bottom: 4px; padding: 3px 12px; font-size: 0.75rem;">✨ Khoảnh Khắc Tức Thì ✨</span>
+            <h2 class="section-title" style="font-size: 1.55rem; margin-bottom: 2px;">Máy Ảnh Đôi Ta</h2>
           </div>
 
           <div class="locket-card-wrapper">
@@ -387,13 +386,10 @@
                 </div>
                 <div class="locket-user-meta">
                   <span class="locket-user-name" id="locket-display-name">Bé Mèo &amp; Khúc Gỗ</span>
-                  <span class="locket-user-status" id="camera-status-pill">🟢 Chạm để bật máy ảnh • 🔋 100%</span>
+                  <span class="locket-user-status" id="camera-status-pill">🟢 Máy ảnh sẵn sàng • 🔋 100%</span>
                 </div>
               </div>
               <div class="locket-tools-row">
-                <button type="button" class="locket-tool-btn" id="btn-flip-camera" title="Lật camera Trước / Sau">
-                  🔄
-                </button>
                 <button type="button" class="locket-tool-btn" id="btn-toggle-flash" title="Bật / Tắt đèn Flash giả lập">
                   ⚡
                 </button>
@@ -444,7 +440,7 @@
               <div class="locket-preview-wrap" id="locket-preview-wrap">
                 <img id="locket-preview-img" class="locket-preview-media" style="display: none;" alt="Xem trước ảnh chụp">
                 <video id="locket-preview-video" class="locket-preview-media" style="display: none;" loop playsinline webkit-playsinline autoplay></video>
-                <button type="button" class="btn-retake-locket" id="btn-retake-locket">
+                <button type="button" class="btn-retake-locket" id="btn-retake-locket" title="Chụp lại">
                   ✕ Chụp Lại
                 </button>
               </div>
@@ -459,8 +455,8 @@
               <button type="button" class="locket-filter-chip" data-filter="bw">🖤 B&amp;W Classic</button>
             </div>
 
-            <!-- SHUTTER & RECORDING BAR -->
-            <div class="locket-shutter-bar">
+            <!-- SHUTTER & RECORDING BAR (ALWAYS VISIBLE RIGHT BELOW CAMERA) -->
+            <div class="locket-shutter-bar" id="locket-shutter-bar">
               <!-- Mode Tabs -->
               <div class="locket-mode-tabs">
                 <button type="button" class="locket-mode-tab active" id="tab-mode-photo">📸 Chụp Ảnh</button>
@@ -468,27 +464,27 @@
               </div>
 
               <div class="locket-shutter-row">
-                <!-- Fallback file upload -->
-                <button type="button" class="locket-action-sub-btn" id="btn-locket-browse-file" title="Tải ảnh/video từ điện thoại">
-                  📁
+                <!-- Lật camera Trước / Sau -->
+                <button type="button" class="locket-action-sub-btn" id="btn-flip-camera" title="Lật camera Trước / Sau">
+                  🔄
                 </button>
-                <input type="file" id="locket-file-input" accept="image/*,video/*" style="display: none;">
 
-                <!-- Big Shutter Button with Circular 5s Progress Ring -->
+                <!-- Big Iconic Locket Shutter Button with Circular 5s Progress Ring -->
                 <div class="locket-shutter-btn-wrapper">
-                  <svg class="locket-progress-svg" viewBox="0 0 82 82">
-                    <circle class="locket-progress-bg" cx="41" cy="41" r="38"></circle>
-                    <circle class="locket-progress-fill" id="locket-progress-fill" cx="41" cy="41" r="38"></circle>
+                  <svg class="locket-progress-svg" viewBox="0 0 86 86">
+                    <circle class="locket-progress-bg" cx="43" cy="43" r="39"></circle>
+                    <circle class="locket-progress-fill" id="locket-progress-fill" cx="43" cy="43" r="39"></circle>
                   </svg>
-                  <button type="button" class="locket-shutter-btn" id="btn-locket-shutter" aria-label="Bấm chụp hoặc quay video 5s">
+                  <button type="button" class="locket-shutter-btn" id="btn-locket-shutter" aria-label="Bấm chụp hoặc quay video 5s" title="Bấm chụp ảnh tức thì">
                     <div class="locket-shutter-inner-dot" id="locket-shutter-inner-dot"></div>
                   </button>
                 </div>
 
-                <!-- Heart Burst Sound / Effect -->
-                <button type="button" class="locket-action-sub-btn" id="btn-locket-heart-pulse" title="Bắn tim vào Locket">
-                  💖
+                <!-- Tải ảnh hoặc video từ máy -->
+                <button type="button" class="locket-action-sub-btn" id="btn-locket-browse-file" title="Tải ảnh hoặc video từ album máy">
+                  📁
                 </button>
+                <input type="file" id="locket-file-input" accept="image/*,video/*" style="display: none;">
               </div>
             </div>
 
@@ -505,11 +501,16 @@
                 <button type="button" class="locket-sticker-btn" data-sticker="💌">💌</button>
               </div>
 
-              <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào kèm theo... (VD: Đang nhớ bé nè 💕)" maxlength="80">
+              <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào gửi anh... 💕" maxlength="80">
 
-              <button type="button" class="btn-send-locket" id="btn-send-locket">
-                <span>🚀 Gửi Khoảnh Khắc Này Cho Anh</span>
-              </button>
+              <div style="display: flex; gap: 10px; width: 100%;">
+                <button type="button" class="btn-cancel-send-locket" id="btn-cancel-send-locket" style="flex: 1; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 30px; padding: 12px 14px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                  ✕ Chụp Lại
+                </button>
+                <button type="button" class="btn-send-locket" id="btn-send-locket" style="flex: 2;">
+                  <span>🚀 Gửi Ngay Cho Anh</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -959,8 +960,8 @@
   </div>
 
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261015_camera_v4"></script>
+  <script src="config.js?v=20261015_camera_v5"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261015_camera_v4"></script>
+  <script src="script.js?v=20261015_camera_v5"></script>
 </body>
 </html>

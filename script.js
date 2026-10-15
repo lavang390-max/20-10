@@ -955,12 +955,13 @@
   const locketProgressFill = document.getElementById('locket-progress-fill');
   const btnLocketBrowseFile = document.getElementById('btn-locket-browse-file');
   const locketFileInput = document.getElementById('locket-file-input');
-  const btnLocketHeartPulse = document.getElementById('btn-locket-heart-pulse');
+  const locketShutterBar = document.getElementById('locket-shutter-bar');
 
   // Caption & Send
   const locketCaptionBox = document.getElementById('locket-caption-box');
   const locketCaptionInput = document.getElementById('locket-caption-input');
   const btnSendLocket = document.getElementById('btn-send-locket');
+  const btnCancelSendLocket = document.getElementById('btn-cancel-send-locket');
   const stickerBtns = document.querySelectorAll('.locket-sticker-btn');
 
   // Camera Overlay & Status
@@ -1221,10 +1222,7 @@
     const sy = (h - minSide) / 2;
 
     ctx.save();
-    if (currentCameraFacing === 'user') {
-      ctx.translate(720, 0);
-      ctx.scale(-1, 1);
-    }
+    // KHÔNG LẬT MẶT - VẼ ĐÚNG CHIỀU TỰ NHIÊN
     ctx.drawImage(locketVideo, sx, sy, minSide, minSide, 0, 0, 720, 720);
     ctx.restore();
 
@@ -1274,6 +1272,7 @@
       locketPreviewVideo.pause();
     }
     if (locketPreviewWrap) locketPreviewWrap.classList.add('active');
+    if (locketShutterBar) locketShutterBar.style.display = 'none';
     if (locketCaptionBox) {
       locketCaptionBox.classList.add('show');
       if (locketCaptionInput) locketCaptionInput.focus();
@@ -1337,6 +1336,7 @@
         locketPreviewImg.style.display = 'none';
       }
       if (locketPreviewWrap) locketPreviewWrap.classList.add('active');
+      if (locketShutterBar) locketShutterBar.style.display = 'none';
       if (locketCaptionBox) {
         locketCaptionBox.classList.add('show');
         if (locketCaptionInput) locketCaptionInput.focus();
@@ -1357,7 +1357,7 @@
       const elapsed = Date.now() - startTime;
       const remainingMs = Math.max(0, DURATION - elapsed);
       const progress = Math.min(1, elapsed / DURATION);
-      const offset = 238.76 * (1 - progress);
+      const offset = 245 * (1 - progress);
 
       if (locketProgressFill) locketProgressFill.style.strokeDashoffset = offset;
       if (locketRecSeconds) {
@@ -1381,7 +1381,7 @@
 
     if (btnLocketShutter) btnLocketShutter.classList.remove('recording');
     if (locketRecBadge) locketRecBadge.style.display = 'none';
-    if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '238.76';
+    if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '245';
 
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
@@ -1428,6 +1428,7 @@
         }
 
         if (locketPreviewWrap) locketPreviewWrap.classList.add('active');
+        if (locketShutterBar) locketShutterBar.style.display = 'none';
         if (locketCaptionBox) {
           locketCaptionBox.classList.add('show');
           if (locketCaptionInput) locketCaptionInput.focus();
@@ -1450,6 +1451,7 @@
     capturedMediaData = null;
     if (locketPreviewWrap) locketPreviewWrap.classList.remove('active');
     if (locketCaptionBox) locketCaptionBox.classList.remove('show');
+    if (locketShutterBar) locketShutterBar.style.display = 'flex';
     if (locketPreviewVideo) {
       locketPreviewVideo.pause();
       locketPreviewVideo.src = '';
@@ -1457,11 +1459,19 @@
     if (locketPreviewImg) locketPreviewImg.src = '';
     if (locketCaptionInput) locketCaptionInput.value = '';
     if (locketRecBadge) locketRecBadge.style.display = 'none';
-    if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '238.76';
+    if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '245';
   }
 
   if (btnRetakeLocket) {
     btnRetakeLocket.addEventListener('click', () => {
+      sound.init();
+      sound.playKeyClick();
+      retakeLocket();
+    });
+  }
+
+  if (btnCancelSendLocket) {
+    btnCancelSendLocket.addEventListener('click', () => {
       sound.init();
       sound.playKeyClick();
       retakeLocket();
