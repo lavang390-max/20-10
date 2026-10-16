@@ -485,7 +485,7 @@ const SEED_DATA = ${JSON.stringify({
   fs.writeFileSync(path.join(DATA_DIR, 'seed_data.js'), seedContent, 'utf8');
 
   // 3. Tự động commit và push lên GitHub
-  const gitCmd = 'git add config.js data/ uploads/ images/ && git commit -m "Auto-publish: Cập nhật cấu hình và dữ liệu từ Admin" && git push origin main';
+  const gitCmd = 'git add -A && git commit -m "Auto-publish: Dong bo toan dien du lieu va code tu Admin" && git push origin main';
   exec(gitCmd, { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {
       console.warn('Git publish notice:', error.message);
@@ -708,13 +708,69 @@ app.delete('/api/locket/:id', (req, res) => {
   res.json({ success: true, message: 'Đã xóa khoảnh khắc Locket thành công' });
 });
 
+// ==========================================================
+// 6. API: THÔNG TIN ĐỒNG BỘ ĐA THIẾT BỊ (MULTI-DEVICE SYNC INFO)
+// ==========================================================
+
+let cloudflareTunnelUrl = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+
+app.get('/api/sync-info', (req, res) => {
+  const db = readDatabase();
+  const currentTunnel = cloudflareTunnelUrl || (db.config && db.config.serverUrl) || 'https://memphis-likes-timely-privileges.trycloudflare.com';
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  let lanIp = '127.0.0.1';
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        lanIp = net.address;
+        break;
+      }
+    }
+  }
+  const adminPin = (db.config && db.config.adminPin) || '0702';
+  res.json({
+    success: true,
+    tunnelUrl: currentTunnel,
+    lanIp: lanIp,
+    port: PORT,
+    girlGlobalLink: currentTunnel ? currentTunnel + '/' : '',
+    adminGlobalLink: currentTunnel ? `${currentTunnel}/admin.html?pin=${adminPin}` : '',
+    girlLanLink: `http://${lanIp}:${PORT}/`,
+    adminLanLink: `http://${lanIp}:${PORT}/admin.html?pin=${adminPin}`
+  });
+});
+
 // Khởi động server
 app.listen(PORT, () => {
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  let lanIp = '127.0.0.1';
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        lanIp = net.address;
+        break;
+      }
+    }
+  }
+
+  const db = readDatabase();
+  if (db.config && db.config.serverUrl) {
+    cloudflareTunnelUrl = db.config.serverUrl;
+  } else {
+    if (!db.config) db.config = {};
+    db.config.serverUrl = cloudflareTunnelUrl;
+    writeDatabase(db);
+  }
+
   console.log('==========================================================');
-  console.log(`💖 Web Quà Tặng 20/10 Database Server đang chạy tại:`);
-  console.log(`👉 Link Cho Bé (Chỉ Xem):   http://localhost:${PORT}/`);
-  console.log(`👉 Link Cho Anh (Quản Trị): http://localhost:${PORT}/admin.html`);
-  console.log(`📁 Dữ liệu lưu tại:         ${DB_FILE}`);
-  console.log(`🖼️ Thư mục ảnh upload:      ${UPLOADS_DIR}`);
+  console.log(`💖 Web Quà Tặng 20/10 Database Server đang chạy:`);
+  console.log(`👉 Link Toàn Cầu Cho Bé:  ${cloudflareTunnelUrl}/`);
+  console.log(`👉 Link Toàn Cầu Cho Anh: ${cloudflareTunnelUrl}/admin.html?pin=0702`);
+  console.log(`👉 Link Wi-Fi Nội Bộ:     http://${lanIp}:${PORT}/`);
+  console.log(`👉 Link Localhost:        http://localhost:${PORT}/`);
+  console.log(`📁 Dữ liệu lưu tại:       ${DB_FILE}`);
+  console.log(`🖼️ Thư mục ảnh upload:    ${UPLOADS_DIR}`);
   console.log('==========================================================');
 });

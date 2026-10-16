@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
- * Tự động cập nhật: 2026-10-16T15:46:39.089Z
+ * Tự động cập nhật: 2026-10-16T16:20:34.569Z
  * ==========================================================
  */
 
@@ -48,7 +48,8 @@ const SEED_DATA = {
     "letterBody": "Hellu bé - bé iu của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh và luôn đồng hành với anh.\n\nAnh cũng mong anh sẽ là chỗ dựa của bé như cách bé vẫn luôn bên cạnh anh. Để khi bé mệt mỏi hay bé buồn, bé biết rằng vẫn sẽ có một người sẵn sàng lắng nghe và sẻ chia, nắm tay bé đi tiếp trên những chặng đường sắp tới.\n\nChúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui. Và anh sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày.\n\nTuy món quà này hơi đơn sơ nhưng đây là công sức anh tranh thủ lúc rảnh làm trong mấy ngày vừa qua, mong là bé sẽ đón nhận món quá này từ anh nhá.",
     "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
     "girlfriendRealName": "bé mèo",
-    "boyfriendRealName": "khúc gỗ"
+    "boyfriendRealName": "khúc gỗ",
+    "serverUrl": "https://memphis-likes-timely-privileges.trycloudflare.com"
   },
   "notes": [
     {
@@ -89,6 +90,20 @@ const SEED_DATA = {
     }
   ],
   "memories": [
+    {
+      "id": "mem_1792166475102_344",
+      "src": "/uploads/memory_1792166475100_136874.jpg",
+      "caption": "hoaa",
+      "date": "16/10/2026",
+      "createdAt": 1792166475102
+    },
+    {
+      "id": "mem_1792166326205_318",
+      "src": "/uploads/memory_1792166326197_620623.jpg",
+      "caption": "anh bé và hoa",
+      "date": "16/10/2026",
+      "createdAt": 1792166326205
+    },
     {
       "id": "mem-1",
       "src": "images/photo1.jpg",

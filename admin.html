@@ -741,20 +741,26 @@
       </div>
     </header>
 
-    <!-- NOTICE BANNER: BÉ CHỈ XEM, KHÔNG THỂ SỬA -->
-    <div class="notice-banner">
-      <div class="notice-banner-icon">💡</div>
-      <div class="notice-banner-content">
-        <h3>Bảo Mật Tuyệt Đối: Bé chỉ được xem, không thể sửa!</h3>
-        <p>
-          Khi bạn bấm <b>"Sao Chép Link Gửi Bé"</b>, đường link tạo ra đã được mã hóa toàn bộ dữ liệu bạn đã soạn.
-          Khi bé bấm vào link trên điện thoại hoặc máy tính, web sẽ tự động hiển thị 100% nội dung của bạn mà <b>không hề có nút Cài đặt hay bất kỳ quyền chỉnh sửa nào</b>!
+    <!-- BANNER ĐỒNG BỘ TOÀN CẦU CHO MỌI THIẾT BỊ -->
+    <div class="notice-banner" style="background: linear-gradient(135deg, rgba(20, 30, 60, 0.95), rgba(60, 20, 70, 0.9)); border: 2px solid #55efc4; box-shadow: 0 10px 30px rgba(85, 239, 196, 0.25);">
+      <div class="notice-banner-icon" style="font-size: 2.2rem;">🌐</div>
+      <div class="notice-banner-content" style="flex: 1;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <h3 style="color: #55efc4; font-size: 1.15rem; margin: 0;">Đường Truyền Đồng Bộ Toàn Cầu Đang Hoạt Động (Cloudflare Sync)</h3>
+          <span style="background: rgba(85, 239, 196, 0.2); color: #55efc4; border: 1px solid #55efc4; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;">🟢 Trực Tuyến Mọi Lúc Mọi Nơi</span>
+        </div>
+        <p style="margin: 8px 0 12px 0; color: #f1f2f6; font-size: 0.9rem; line-height: 1.5;">
+          Gửi đường link này cho Bé để <b>mở trên điện thoại bất kỳ (4G / Wi-Fi)</b>. Mọi ảnh bé chụp từ Máy Ảnh, ảnh trong Kho Kỷ Niệm và thư nhắn sẽ <b>lập tức đồng bộ sang máy tính của anh</b>!
         </p>
-        <div class="share-link-box">
-          <input type="text" class="share-link-input" id="live-share-link-input" readonly value="Đang tạo link...">
-          <button type="button" class="btn-admin btn-admin-pink" id="btn-quick-copy" style="padding: 6px 14px; font-size: 0.8rem;">
-            Copy
+        <div class="share-link-box" style="display: flex; gap: 8px;">
+          <input type="text" class="share-link-input" id="global-sync-girl-input" readonly value="https://memphis-likes-timely-privileges.trycloudflare.com/" style="flex: 1; font-weight: 600; color: #55efc4; background: rgba(0,0,0,0.4); border: 1px solid #55efc4;">
+          <button type="button" class="btn-admin btn-admin-pink" id="btn-copy-global-girl" style="padding: 8px 18px; font-size: 0.88rem; font-weight: 700; white-space: nowrap; background: linear-gradient(135deg, #00b894, #00cec9); border: none;">
+            📋 Sao Chép Link Gửi Bé
           </button>
+        </div>
+        <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.82rem; color: rgba(255,255,255,0.7); flex-wrap: wrap;">
+          <span>📱 Link Bé: <b id="lbl-girl-link" style="color: #55efc4;">https://memphis-likes-timely-privileges.trycloudflare.com/</b></span>
+          <span>🏠 Wi-Fi nội bộ: <b id="lbl-lan-link" style="color: #f6c85f;">http://192.168.30.54:3000/</b></span>
         </div>
       </div>
     </div>
@@ -1167,6 +1173,62 @@
         }
       } catch(e) {}
 
+      // Multi-device Cloud Sync Engine
+      const DEFAULT_REMOTE_BACKEND = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+
+      function getApiUrl(endpoint) {
+        if (!endpoint) return '';
+        if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
+        const clean = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+
+        if (!window.location.hostname.includes('github.io') && window.location.protocol !== 'file:') {
+          return clean;
+        }
+
+        const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
+                       localStorage.getItem('romantic_gift_server_url') || 
+                       DEFAULT_REMOTE_BACKEND;
+        return remote ? remote.replace(/\/+$/, '') + clean : clean;
+      }
+
+      function resolveMediaUrl(src) {
+        if (!src) return 'images/photo1.jpg';
+        if (src.startsWith('data:') || src.startsWith('blob:') || src.startsWith('http://') || src.startsWith('https://')) {
+          return src;
+        }
+        if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
+          const clean = src.startsWith('/') ? src : '/' + src;
+          if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') {
+            const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
+                           localStorage.getItem('romantic_gift_server_url') || 
+                           DEFAULT_REMOTE_BACKEND;
+            return remote ? remote.replace(/\/+$/, '') + clean : clean;
+          }
+        }
+        return src;
+      }
+
+      let currentGlobalTunnelUrl = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+
+      async function loadSyncInfo() {
+        try {
+          const res = await fetch(getApiUrl('/api/sync-info'));
+          if (res.ok) {
+            const info = await res.json();
+            if (info && info.success) {
+              if (info.tunnelUrl) currentGlobalTunnelUrl = info.tunnelUrl;
+              const girlInput = document.getElementById('global-sync-girl-input');
+              const lblGirl = document.getElementById('lbl-girl-link');
+              const lblLan = document.getElementById('lbl-lan-link');
+              if (girlInput && info.girlGlobalLink) girlInput.value = info.girlGlobalLink;
+              if (lblGirl && info.girlGlobalLink) lblGirl.textContent = info.girlGlobalLink;
+              if (lblLan && info.girlLanLink) lblLan.textContent = info.girlLanLink;
+              updateGeneratedShareLink();
+            }
+          }
+        } catch(e) {}
+      }
+
       // UI Elements
       const authOverlay = document.getElementById('auth-gate-overlay');
       const authErrorText = document.getElementById('auth-error-text');
@@ -1359,7 +1421,7 @@
       async function syncServerConfigToAdmin(onlyIfUnfocused = false) {
         let serverConfig = null;
         try {
-          const res = await fetch('/api/config?v=' + Date.now());
+          const res = await fetch(getApiUrl('/api/config?v=' + Date.now()));
           if (res.ok) {
             const data = await res.json();
             if (data && data.success && data.config) {
@@ -1480,14 +1542,21 @@
         const configData = collectFormData();
         const base64Data = encodeConfig(configData);
 
-        // Get base URL for index.html
+        // 1. Ưu tiên cao nhất: Đường truyền toàn cầu (Cloudflare Tunnel) để bé mở được trên mọi điện thoại qua 4G/Wi-Fi
+        if (currentGlobalTunnelUrl && currentGlobalTunnelUrl.startsWith('http')) {
+          const cleanTunnel = currentGlobalTunnelUrl.replace(/\/+$/, '');
+          return `${cleanTunnel}/#data=${base64Data}`;
+        }
+
+        // 2. Chế độ GitHub Pages hoặc chạy offline từ file
+        if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io')) {
+          return `https://lavang390-max.github.io/20-10/#data=${base64Data}`;
+        }
+
+        // 3. Chế độ máy chủ cục bộ
         let base = window.location.href.split('admin.html')[0];
         if (!base.endsWith('/')) base += '/';
-        let girlUrl = `${base}index.html#data=${base64Data}`;
-        if (window.location.protocol === 'file:') {
-          girlUrl = `https://lavang390-max.github.io/20-10/index.html#data=${base64Data}`;
-        }
-        return girlUrl;
+        return `${base}index.html#data=${base64Data}`;
       }
 
       function updateGeneratedShareLink() {
@@ -1512,7 +1581,7 @@
 
         // Also sync to backend Database server
         try {
-          await fetch('/api/config', {
+          await fetch(getApiUrl('/api/config'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1599,7 +1668,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         showToast('Đang đồng bộ và đẩy lên GitHub Pages... ⏳', '🚀');
 
         try {
-          const res = await fetch('/api/publish', { method: 'POST' });
+          const res = await fetch(getApiUrl('/api/publish'), { method: 'POST' });
           const result = await res.json().catch(() => ({}));
           if (res.ok && result.success) {
             showToast('Đã xuất bản web online cho bé thành công! 🎉', '✅');
@@ -1636,7 +1705,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         let notes = [];
         try {
-          const res = await fetch('/api/notes');
+          const res = await fetch(getApiUrl('/api/notes'));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.notes) && data.notes.length > 0) {
@@ -1685,7 +1754,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           delBtn.addEventListener('click', async () => {
             if (confirm('Xóa mẩu lời nhắn này?')) {
               try {
-                await fetch(`/api/notes/${encodeURIComponent(n.id)}`, { method: 'DELETE' });
+                await fetch(getApiUrl(`/api/notes/${encodeURIComponent(n.id)}`), { method: 'DELETE' });
               } catch(e) {}
               loadAdminNotes();
               broadcastToGirl('DATA_UPDATED', { module: 'notes' });
@@ -1754,7 +1823,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         let memories = [];
         try {
-          const res = await fetch('/api/memories?v=' + Date.now());
+          const res = await fetch(getApiUrl('/api/memories?v=' + Date.now()));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.memories) && data.memories.length > 0) {
@@ -1799,7 +1868,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           card.className = 'admin-memory-card';
           card.innerHTML = `
             <button type="button" class="btn-delete-item" data-id="${m.id}" title="Xóa ảnh này">✕ Xóa</button>
-            <img src="${m.src}" alt="${escapeHTML(m.caption)}" class="admin-memory-thumb" loading="lazy">
+            <img src="${resolveMediaUrl(m.src)}" alt="${escapeHTML(m.caption)}" class="admin-memory-thumb" loading="lazy">
             <div class="admin-memory-info">
               <div class="admin-memory-caption">${escapeHTML(m.caption)}</div>
               <div class="admin-memory-date">${escapeHTML(m.date || '')}</div>
@@ -1810,7 +1879,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           delBtn.addEventListener('click', async () => {
             if (confirm('Xóa bức ảnh này khỏi album kỷ niệm? Cả hai bạn sẽ không còn thấy ảnh này.')) {
               try {
-                await fetch(`/api/memories/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+                await fetch(getApiUrl(`/api/memories/${encodeURIComponent(m.id)}`), { method: 'DELETE' });
               } catch(e) {}
               await deleteMemoryFromAdminIDB(m.id);
               loadAdminMemories();
@@ -1860,7 +1929,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           formData.append('date', dateVal);
 
           try {
-            const res = await fetch('/api/memories', {
+            const res = await fetch(getApiUrl('/api/memories'), {
               method: 'POST',
               body: formData
             });
@@ -1900,7 +1969,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         let percent = 0;
 
         try {
-          const res = await fetch('/api/bucket');
+          const res = await fetch(getApiUrl('/api/bucket'));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.items) && data.items.length > 0) {
@@ -1959,7 +2028,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const chk = row.querySelector('.admin-bucket-checkbox');
           chk.addEventListener('change', async () => {
             try {
-              await fetch(`/api/bucket/${encodeURIComponent(item.id)}/toggle`, { method: 'PUT' });
+              await fetch(getApiUrl(`/api/bucket/${encodeURIComponent(item.id)}/toggle`), { method: 'PUT' });
             } catch(e) {}
             loadAdminBucket();
             broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
@@ -1970,7 +2039,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           delBtn.addEventListener('click', async () => {
             if (confirm(`Xóa điều ước "${item.title}" khỏi Bucket List?`)) {
               try {
-                await fetch(`/api/bucket/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
+                await fetch(getApiUrl(`/api/bucket/${encodeURIComponent(item.id)}`), { method: 'DELETE' });
               } catch(e) {}
               loadAdminBucket();
               broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
@@ -2004,7 +2073,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           btnAdminAddBucket.textContent = '⏳ Đang lưu...';
 
           try {
-            const res = await fetch('/api/bucket', {
+            const res = await fetch(getApiUrl('/api/bucket'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ title, icon, category })
@@ -2036,7 +2105,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         let items = [];
         try {
-          const res = await fetch('/api/locket');
+          const res = await fetch(getApiUrl('/api/locket'));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.items) && data.items.length > 0) {
@@ -2069,9 +2138,10 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           card.className = 'admin-memory-card';
 
           const isVideo = m.type === 'video';
+          const resolvedMediaUrl = resolveMediaUrl(m.mediaUrl);
           const mediaHtml = isVideo
-            ? `<video src="${m.mediaUrl}" class="admin-memory-thumb" controls loop playsinline style="object-fit: cover;"></video>`
-            : `<img src="${m.mediaUrl}" alt="${escapeHTML(m.caption)}" class="admin-memory-thumb" loading="lazy">`;
+            ? `<video src="${resolvedMediaUrl}" class="admin-memory-thumb" controls loop playsinline style="object-fit: cover;"></video>`
+            : `<img src="${resolvedMediaUrl}" alt="${escapeHTML(m.caption)}" class="admin-memory-thumb" loading="lazy">`;
 
           card.innerHTML = `
             <button type="button" class="btn-delete-item" data-id="${m.id}" title="Xóa khoảnh khắc này">✕ Xóa</button>
@@ -2092,7 +2162,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           delBtn.addEventListener('click', async () => {
             if (confirm('Xóa khoảnh khắc này?')) {
               try {
-                await fetch(`/api/locket/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+                await fetch(getApiUrl(`/api/locket/${encodeURIComponent(m.id)}`), { method: 'DELETE' });
               } catch(e) {}
               loadAdminLocket();
               broadcastToGirl('DATA_UPDATED', { module: 'locket' });
@@ -2134,7 +2204,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           formData.append('type', isVideo ? 'video' : 'photo');
 
           try {
-            const res = await fetch('/api/locket', {
+            const res = await fetch(getApiUrl('/api/locket'), {
               method: 'POST',
               body: formData
             });
@@ -2292,6 +2362,36 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           showToast('Đã áp dụng mẫu thư chân thành!', '✨');
         });
       }
+
+      // Copy global sync girl link
+      const btnCopyGlobalGirl = document.getElementById('btn-copy-global-girl');
+      const inputGlobalGirl = document.getElementById('global-sync-girl-input');
+      if (btnCopyGlobalGirl && inputGlobalGirl) {
+        btnCopyGlobalGirl.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(inputGlobalGirl.value);
+            showToast('Đã sao chép link đồng bộ toàn cầu gửi cho bé! 💖', '📋');
+          } catch(e) {
+            inputGlobalGirl.select();
+            document.execCommand('copy');
+            showToast('Đã sao chép link gửi bé!', '📋');
+          }
+        });
+      }
+
+      // Initial Sync Info Load
+      loadSyncInfo();
+
+      // Live 2-way Polling on Admin every 3 seconds for immediate updates from phone
+      setInterval(() => {
+        if (!document.hidden) {
+          loadAdminNotes();
+          loadAdminMemories();
+          loadAdminLocket();
+          loadAdminBucket();
+          loadSyncInfo();
+        }
+      }, 3000);
 
     })();
   </script>

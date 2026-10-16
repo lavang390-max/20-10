@@ -32,6 +32,50 @@
     boyfriendRealName: 'khúc gỗ'
   };
 
+  // --- MULTI-DEVICE CLOUD SYNC ENGINE ---
+  const DEFAULT_REMOTE_BACKEND = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+
+  function getApiUrl(endpoint) {
+    if (!endpoint) return '';
+    if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
+    const clean = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+
+    // When accessed directly via local server, LAN IP, or Cloudflare Tunnel
+    if (window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1' || 
+        window.location.hostname.endsWith('trycloudflare.com') ||
+        window.location.port === '3000') {
+      return clean;
+    }
+
+    // When accessed via GitHub Pages or static host, route to remote backend
+    const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
+                   localStorage.getItem('romantic_gift_server_url') || 
+                   DEFAULT_REMOTE_BACKEND;
+    return remote ? remote.replace(/\/+$/, '') + clean : clean;
+  }
+
+  function resolveMediaUrl(src) {
+    if (!src) return 'images/photo1.jpg';
+    if (src.startsWith('data:') || src.startsWith('blob:') || src.startsWith('http://') || src.startsWith('https://')) {
+      return src;
+    }
+    if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
+      const clean = src.startsWith('/') ? src : '/' + src;
+      if (window.location.hostname === 'localhost' || 
+          window.location.hostname === '127.0.0.1' || 
+          window.location.hostname.endsWith('trycloudflare.com') ||
+          window.location.port === '3000') {
+        return clean;
+      }
+      const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
+                     localStorage.getItem('romantic_gift_server_url') || 
+                     DEFAULT_REMOTE_BACKEND;
+      return remote ? remote.replace(/\/+$/, '') + clean : clean;
+    }
+    return src;
+  }
+
   // ImgBB Cloud Uploader Helper
   async function uploadToImgBB(fileOrBase64, apiKey) {
     if (!apiKey) return null;
@@ -2077,7 +2121,7 @@
       };
 
       try {
-        await fetch('/api/locket', {
+        await fetch(getApiUrl('/api/locket'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -2188,7 +2232,7 @@
 
     // 3. In background, fetch from server if backend is active
     try {
-      const res = await fetch('/api/locket');
+      const res = await fetch(getApiUrl('/api/locket'));
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.items) && data.items.length > 0) {
@@ -2242,9 +2286,10 @@
       card.className = 'locket-feed-card';
 
       const isVideo = item.type === 'video';
+      const resolvedMediaUrl = resolveMediaUrl(item.mediaUrl);
       const mediaHtml = isVideo
-        ? `<video src="${item.mediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" loop muted playsinline webkit-playsinline autoplay></video>`
-        : `<img src="${item.mediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" alt="${escapeHTML(item.caption)}" loading="lazy">`;
+        ? `<video src="${resolvedMediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" loop muted playsinline webkit-playsinline autoplay></video>`
+        : `<img src="${resolvedMediaUrl}" class="locket-feed-media filter-${item.filter || 'normal'}" alt="${escapeHTML(item.caption)}" loading="lazy">`;
 
       card.innerHTML = `
         ${mediaHtml}
@@ -2293,7 +2338,7 @@
 
           // Background sync to server
           try {
-            fetch(`/api/locket/${encodeURIComponent(item.id)}/react`, { method: 'POST' }).catch(() => {});
+            fetch(getApiUrl(`/api/locket/${encodeURIComponent(item.id)}/react`), { method: 'POST' }).catch(() => {});
           } catch(err) {}
         });
       }
@@ -2339,7 +2384,7 @@
   // --- DATABASE API FOR NOTES ---
   async function fetchNotesFromDatabase() {
     try {
-      const res = await fetch('/api/notes');
+      const res = await fetch(getApiUrl('/api/notes'));
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && Array.isArray(data.notes)) {
@@ -2380,7 +2425,7 @@
 
   async function postNoteToDatabase(noteObj) {
     try {
-      const res = await fetch('/api/notes', {
+      const res = await fetch(getApiUrl('/api/notes'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(noteObj)
@@ -2399,7 +2444,7 @@
 
   async function deleteNoteFromDatabase(noteId) {
     try {
-      await fetch(`/api/notes/${encodeURIComponent(noteId)}`, { method: 'DELETE' });
+      await fetch(getApiUrl(`/api/notes/${encodeURIComponent(noteId)}`), { method: 'DELETE' });
     } catch(e) {}
     broadcastRealtime('BÉ_ACTION', { module: 'notes' });
   }
@@ -2652,7 +2697,7 @@
 
     // 1. Fetch from live API
     try {
-      const res = await fetch('/api/memories?v=' + Date.now());
+      const res = await fetch(getApiUrl('/api/memories?v=' + Date.now()));
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && Array.isArray(data.memories) && data.memories.length > 0) {
@@ -2702,6 +2747,24 @@
     // First: load user-uploaded memories from localStorage and IndexedDB (prefer IndexedDB for full image src)
     [...localStoredMemories, ...idbMemories].forEach(m => {
       if (m && m.id) {
+        // Nếu ảnh từng ở trên server (/uploads/) nhưng remoteMemories không còn -> đã bị xóa -> xóa khỏi thiết bị này
+        if (remoteMemories.length > 0 && m.src && (m.src.startsWith('/uploads/') || m.src.startsWith('uploads/'))) {
+          if (!remoteMemories.some(rm => rm.id === m.id)) {
+            deleteMemoryFromIDB(m.id);
+            return;
+          }
+        }
+
+        // Tự động đẩy ảnh chụp/tải lên cục bộ lên máy chủ để các thiết bị khác xem được ngay
+        if (m.src && m.src.startsWith('data:image/') && !m.id.startsWith('mem-')) {
+          postMemoryToDatabase(m.src, m.caption || 'Kỷ niệm', m.date).then(savedMem => {
+            if (savedMem && savedMem.src) {
+              m.src = savedMem.src;
+              persistMemoryItemToIDB(m);
+            }
+          }).catch(() => {});
+        }
+
         const existing = memoryMap.get(m.id);
         if (!existing) {
           memoryMap.set(m.id, m);
@@ -2777,7 +2840,7 @@
 
   async function postMemoryToDatabase(imageBase64, caption, date) {
     try {
-      const res = await fetch('/api/memories', {
+      const res = await fetch(getApiUrl('/api/memories'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64, caption, date })
@@ -2796,7 +2859,7 @@
 
   async function deleteMemoryFromDatabase(memId) {
     try {
-      await fetch(`/api/memories/${encodeURIComponent(memId)}`, { method: 'DELETE' });
+      await fetch(getApiUrl(`/api/memories/${encodeURIComponent(memId)}`), { method: 'DELETE' });
     } catch(e) {}
     await deleteMemoryFromIDB(memId);
     broadcastRealtime('BÉ_ACTION', { module: 'memories' });
@@ -2997,7 +3060,7 @@
             formData.append('caption', caption);
             formData.append('date', dateVal);
 
-            const res = await fetch('/api/memories', {
+            const res = await fetch(getApiUrl('/api/memories'), {
               method: 'POST',
               body: formData
             });
@@ -3074,7 +3137,7 @@
       card.innerHTML = `
         <button type="button" class="btn-delete-memory" title="Xóa ảnh này">✕</button>
         <div class="memory-thumb-wrap">
-          <img src="${mem.src}" alt="${escapeHTML(mem.caption)}" loading="lazy" onerror="this.onerror=null;this.src='images/photo1.jpg';">
+          <img src="${resolveMediaUrl(mem.src)}" alt="${escapeHTML(mem.caption)}" loading="lazy" onerror="this.onerror=null;this.src='images/photo1.jpg';">
         </div>
         <div class="memory-card-caption">
           <h5>${escapeHTML(mem.caption)}</h5>
@@ -3114,7 +3177,7 @@
     if (!lightboxModal || !lightboxImg) return;
     sound.init();
     sound.playKeyClick();
-    lightboxImg.src = mem.src;
+    lightboxImg.src = resolveMediaUrl(mem.src);
     if (lightboxCaption) lightboxCaption.textContent = mem.caption || 'Kỷ niệm đôi ta';
     if (lightboxDate) lightboxDate.textContent = mem.date || '';
     lightboxModal.classList.add('show');
@@ -3190,7 +3253,7 @@
 
     // 2. Fetch from /api/bucket (local server)
     try {
-      const res = await fetch('/api/bucket');
+      const res = await fetch(getApiUrl('/api/bucket'));
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.items) && data.items.length > 0) {
@@ -3311,7 +3374,7 @@
 
     // Sync to backend database
     try {
-      await fetch(`/api/bucket/${encodeURIComponent(id)}/toggle`, { method: 'PUT' });
+      await fetch(getApiUrl(`/api/bucket/${encodeURIComponent(id)}/toggle`), { method: 'PUT' });
     } catch(e) {}
     broadcastRealtime('BÉ_ACTION', { module: 'bucket' });
   }
@@ -3381,7 +3444,7 @@
 
       // Send to server
       try {
-        await fetch('/api/bucket', {
+        await fetch(getApiUrl('/api/bucket'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newWish)
@@ -3734,7 +3797,7 @@
 
     // 1. Fetch from live /api/config
     try {
-      const res = await fetch('/api/config?v=' + Date.now());
+      const res = await fetch(getApiUrl('/api/config?v=' + Date.now()));
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && data.config) {
