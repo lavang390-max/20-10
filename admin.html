@@ -668,6 +668,97 @@
         font-size: 1.5rem;
       }
     }
+
+    /* ==============================================
+       QR CODE GENERATOR & LOVE CARD MODAL STYLES
+       ============================================== */
+    .qr-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 4, 20, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .qr-modal-overlay.show {
+      display: flex;
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    .qr-modal-box {
+      background: linear-gradient(135deg, rgba(28, 20, 45, 0.98), rgba(18, 12, 32, 0.98));
+      border: 2px solid rgba(255, 117, 140, 0.4);
+      border-radius: 28px;
+      padding: 28px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7), 0 0 40px rgba(255, 117, 140, 0.25);
+      position: relative;
+    }
+
+    .qr-modal-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .qr-modal-close-btn:hover {
+      background: #ff7675;
+      border-color: #ff7675;
+      transform: rotate(90deg);
+    }
+
+    .qr-url-radio-label {
+      flex: 1;
+      min-width: 160px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .qr-url-radio-label:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #55efc4;
+    }
+
+    .qr-url-radio-label.active {
+      background: rgba(85, 239, 196, 0.12);
+      border-color: #55efc4;
+    }
+
+    .qr-actions-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
@@ -726,6 +817,9 @@
         <button type="button" class="btn-admin btn-admin-pink" id="btn-copy-girl-link">
           📋 Sao Chép Link Gửi Bé
         </button>
+        <button type="button" class="btn-admin" id="btn-open-qr-modal" style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); border-color: #a29bfe; color: #fff; font-weight: 700;">
+          📱 Xuất Mã QR Quà Tặng
+        </button>
         <button type="button" class="btn-admin btn-admin-success" id="btn-publish-github" style="background: linear-gradient(135deg, #00b894, #00cec9); border-color: #55efc4; color: #fff; font-weight: 700;">
           🚀 Cập Nhật Cho Bé (Đẩy Lên GitHub)
         </button>
@@ -752,15 +846,89 @@
         <p style="margin: 8px 0 12px 0; color: #f1f2f6; font-size: 0.9rem; line-height: 1.5;">
           Gửi đường link này cho Bé để <b>mở trên điện thoại bất kỳ (4G / Wi-Fi)</b>. Mọi ảnh bé chụp từ Máy Ảnh, ảnh trong Kho Kỷ Niệm và thư nhắn sẽ <b>lập tức đồng bộ sang máy tính của anh</b>!
         </p>
-        <div class="share-link-box" style="display: flex; gap: 8px;">
-          <input type="text" class="share-link-input" id="global-sync-girl-input" readonly value="https://memphis-likes-timely-privileges.trycloudflare.com/" style="flex: 1; font-weight: 600; color: #55efc4; background: rgba(0,0,0,0.4); border: 1px solid #55efc4;">
+        <div class="share-link-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <input type="text" class="share-link-input" id="global-sync-girl-input" readonly value="https://memphis-likes-timely-privileges.trycloudflare.com/" style="flex: 1; min-width: 250px; font-weight: 600; color: #55efc4; background: rgba(0,0,0,0.4); border: 1px solid #55efc4;">
           <button type="button" class="btn-admin btn-admin-pink" id="btn-copy-global-girl" style="padding: 8px 18px; font-size: 0.88rem; font-weight: 700; white-space: nowrap; background: linear-gradient(135deg, #00b894, #00cec9); border: none;">
             📋 Sao Chép Link Gửi Bé
+          </button>
+          <button type="button" class="btn-admin" id="btn-banner-qr" style="padding: 8px 18px; font-size: 0.88rem; font-weight: 700; white-space: nowrap; background: linear-gradient(135deg, #a29bfe, #6c5ce7); border: none; color: #fff;">
+            📱 Xuất Mã QR Code
           </button>
         </div>
         <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.82rem; color: rgba(255,255,255,0.7); flex-wrap: wrap;">
           <span>📱 Link Bé: <b id="lbl-girl-link" style="color: #55efc4;">https://memphis-likes-timely-privileges.trycloudflare.com/</b></span>
           <span>🏠 Wi-Fi nội bộ: <b id="lbl-lan-link" style="color: #f6c85f;">http://192.168.30.54:3000/</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KHU VỰC: MÃ QR QUÀ TẶNG 20/10 DÀNH RIÊNG CHO BÉ -->
+    <div class="admin-card" id="card-qr-generator" style="border: 2px solid rgba(162, 155, 254, 0.45); background: linear-gradient(135deg, rgba(32, 22, 52, 0.85), rgba(18, 12, 34, 0.95)); box-shadow: 0 15px 40px rgba(108, 92, 231, 0.25);">
+      <div class="admin-card-head">
+        <span class="admin-card-icon">📱</span>
+        <div>
+          <h2>Mã QR Món Quà 20/10 Dành Riêng Cho Bé 💖</h2>
+          <p style="font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 2px;">Quét 0.1 giây bằng camera điện thoại để vào thẳng quà tặng • Có thể in ra thiệp kẹp vào bó hoa</p>
+        </div>
+        <span class="admin-badge" style="background: rgba(162, 155, 254, 0.2); border-color: #a29bfe; color: #a29bfe; margin-left: auto;">
+          ✨ Tải Thẻ Quà Tặng Đẹp
+        </span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 24px; align-items: center; margin-top: 10px;">
+        <!-- Cột 1: Xem trước Thẻ Quà Tặng thực tế -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.4); padding: 18px; border-radius: 20px; border: 1px dashed rgba(255, 255, 255, 0.18);">
+          <div style="font-size: 0.82rem; color: #a29bfe; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <span>🖼️ HÌNH ẢNH THẺ QUÀ TẶNG BÉ NHẬN ĐƯỢC:</span>
+          </div>
+          <canvas id="qr-love-card-canvas" width="600" height="820" style="width: 100%; max-width: 320px; height: auto; border-radius: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.6);"></canvas>
+          <div id="qr-raw-temp-holder" style="display: none;"></div>
+          <div style="font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 8px;">
+            (Hình ảnh tự động cập nhật theo tên Bé, Anh và đường link)
+          </div>
+        </div>
+
+        <!-- Cột 2: Tùy chọn đường link & Nút tải ảnh -->
+        <div>
+          <label style="font-size: 0.88rem; font-weight: 700; color: #f1f2f6; margin-bottom: 8px; display: block;">
+            🔗 Chọn đường link mã QR dẫn tới:
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
+            <label class="qr-url-radio-label active" id="lbl-qr-opt-global">
+              <input type="radio" name="qr-target-type" id="qr-radio-global" value="global" checked style="accent-color: #55efc4; width: 16px; height: 16px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: #55efc4;">🌐 Đường Link Toàn Cầu (Khuyên dùng)</div>
+                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.65); word-break: break-all;" id="txt-qr-url-global">https://memphis-likes-timely-privileges.trycloudflare.com/</div>
+              </div>
+            </label>
+            <label class="qr-url-radio-label" id="lbl-qr-opt-github">
+              <input type="radio" name="qr-target-type" id="qr-radio-github" value="github" style="accent-color: #55efc4; width: 16px; height: 16px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: #74b9ff;">🚀 Đường Link GitHub Pages</div>
+                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.65); word-break: break-all;">https://lavang390-max.github.io/20-10/</div>
+              </div>
+            </label>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" class="btn-admin" id="btn-download-card-png" style="background: linear-gradient(135deg, #ff758c, #ff85a2); color: #fff; font-weight: 700; padding: 13px 18px; justify-content: center; font-size: 0.95rem; border: none; box-shadow: 0 6px 20px rgba(255,117,140,0.45);">
+              📥 Tải Ảnh Thẻ Quà Tặng Lãng Mạn (PNG)
+            </button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <button type="button" class="btn-admin" id="btn-download-qr-only" style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #fff; font-weight: 700; padding: 10px 14px; justify-content: center; font-size: 0.85rem; border: none;">
+                📥 Tải Riêng Mã QR
+              </button>
+              <button type="button" class="btn-admin btn-admin-secondary" id="btn-copy-qr-clipboard" style="padding: 10px 14px; justify-content: center; font-size: 0.85rem;">
+                📋 Sao Chép Ảnh QR
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px 16px; background: rgba(85, 239, 196, 0.08); border: 1px solid rgba(85, 239, 196, 0.25); border-radius: 12px; font-size: 0.82rem; color: #55efc4; line-height: 1.6;">
+            💡 <b>Gợi ý tặng quà cực đỉnh:</b><br>
+            • <b>Cách 1:</b> Tải ảnh Thẻ Quà Tặng về và gửi thẳng qua tin nhắn Zalo/Messenger kèm lời chúc.<br>
+            • <b>Cách 2:</b> In ảnh ra khổ nhỏ (cỡ chiếc thiệp mini hoặc thẻ ATM) rồi kẹp vào <b>bó hoa hoặc dán lên hộp quà</b> tặng Bé. Bé mở camera quét một cái là vào ngay trang web ngập tràn tình yêu! ✨
+          </div>
         </div>
       </div>
     </div>
@@ -1086,13 +1254,16 @@
 
   <!-- STICKY BOTTOM ACTION BAR -->
   <div class="mobile-sticky-bar" id="mobile-sticky-bar" style="display: none;">
-    <button type="button" class="btn-admin btn-admin-pink" id="btn-sticky-copy-link" style="flex: 1.5;">
-      📋 Copy Link
+    <button type="button" class="btn-admin btn-admin-pink" id="btn-sticky-copy-link" style="flex: 1.2;">
+      📋 Link Bé
     </button>
-    <button type="button" class="btn-admin btn-admin-success" id="btn-sticky-publish" style="flex: 2; background: linear-gradient(135deg, #00b894, #00cec9); color: #fff; font-weight: 700;">
-      🚀 Đẩy Lên Web
+    <button type="button" class="btn-admin" id="btn-sticky-qr" style="flex: 1; background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #fff; font-weight: 700;">
+      📱 Mã QR
     </button>
-    <button type="button" class="btn-admin btn-admin-gold" id="btn-sticky-save" style="flex: 1;">
+    <button type="button" class="btn-admin btn-admin-success" id="btn-sticky-publish" style="flex: 1.5; background: linear-gradient(135deg, #00b894, #00cec9); color: #fff; font-weight: 700;">
+      🚀 Đẩy Web
+    </button>
+    <button type="button" class="btn-admin btn-admin-gold" id="btn-sticky-save" style="flex: 0.9;">
       💾 Lưu
     </button>
   </div>
@@ -1106,6 +1277,7 @@
   <!-- LOAD CONFIG FILE AND SEED DATA IF EXISTS -->
   <script src="data/seed_data.js?v=20261015_data_v9"></script>
   <script src="config.js?v=20261015_data_v9"></script>
+  <script src="qrcode.min.js"></script>
 
   <!-- ADMIN SCRIPT LOGIC -->
   <script>
@@ -2379,8 +2551,378 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         });
       }
 
-      // Initial Sync Info Load
-      loadSyncInfo();
+      // ==============================================
+      // QR CODE GENERATOR & ROMANTIC LOVE CARD ENGINE
+      // ==============================================
+      function getQrTargetUrl() {
+        const selectedRadio = document.querySelector('input[name="qr-target-type"]:checked');
+        const type = selectedRadio ? selectedRadio.value : 'global';
+        if (type === 'github') {
+          return 'https://lavang390-max.github.io/20-10/';
+        }
+        if (currentGlobalTunnelUrl && currentGlobalTunnelUrl.startsWith('http')) {
+          return currentGlobalTunnelUrl.replace(/\/+$/, '') + '/';
+        }
+        return 'https://memphis-likes-timely-privileges.trycloudflare.com/';
+      }
+
+      function roundRectPath(ctx, x, y, width, height, radius) {
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(x, y, width, height, radius);
+          return;
+        }
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      }
+
+      function drawRomanticLoveCard(canvas, targetUrl) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = 600;
+        const h = 820;
+        canvas.width = w;
+        canvas.height = h;
+
+        const gfName = (inputGfName && inputGfName.value.trim()) || currentConfig.girlfriendName || 'Bé Mèo';
+        const bfName = (inputBfName && inputBfName.value.trim()) || currentConfig.boyfriendName || 'Khúc Gỗ';
+        const passcode = (inputPasscode && inputPasscode.value.trim()) || currentConfig.passcode || '0702';
+
+        // 1. Nền Gradient Pastel Lãng Mạn
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#fff0f5');
+        grad.addColorStop(0.5, '#ffeef2');
+        grad.addColorStop(1, '#fde2e4');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Khung viền đôi sang trọng
+        ctx.strokeStyle = '#f8bbd0';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(12, 12, w - 24, h - 24);
+
+        ctx.strokeStyle = '#ff758c';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(18, 18, w - 36, h - 36);
+
+        // 2. Thẻ trắng trung tâm nổi bật với đổ bóng mềm mại
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(233, 30, 99, 0.16)';
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 8;
+        roundRectPath(ctx, 35, 35, w - 70, h - 70, 24);
+        ctx.fill();
+        ctx.restore();
+
+        // 3. Tiêu đề thiệp 20/10
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+
+        ctx.fillStyle = '#ff4d6d';
+        ctx.font = 'bold 14px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('🌸 20/10 • VIETNAMESE WOMEN\'S DAY 🌸', w / 2, 74);
+
+        ctx.fillStyle = '#c9184a';
+        ctx.font = 'bold 24px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('MÓN QUÀ ĐẶC BIỆT DÀNH CHO BÉ 💖', w / 2, 110);
+
+        ctx.fillStyle = '#590d22';
+        ctx.font = '600 16px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(`Gửi tặng: ${gfName} 💕 Từ: ${bfName}`, w / 2, 142);
+
+        // Đường kẻ phân cách hoa văn
+        ctx.strokeStyle = '#ffb3c1';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(90, 162);
+        ctx.lineTo(w - 90, 162);
+        ctx.stroke();
+
+        // 4. Tạo mã QR và vẽ lên Canvas
+        const qrSize = 300;
+        const qrX = (w - qrSize) / 2;
+        const qrY = 188;
+
+        const tempHolder = document.getElementById('qr-raw-temp-holder') || document.createElement('div');
+        tempHolder.innerHTML = '';
+
+        if (window.QRCode) {
+          try {
+            new window.QRCode(tempHolder, {
+              text: targetUrl,
+              width: qrSize,
+              height: qrSize,
+              colorDark: '#1a1a24',
+              colorLight: '#ffffff',
+              correctLevel: window.QRCode.CorrectLevel.H
+            });
+
+            const rawCanvas = tempHolder.querySelector('canvas');
+            if (rawCanvas) {
+              // Nền trắng và viền bao quanh mã QR
+              ctx.save();
+              ctx.fillStyle = '#ffffff';
+              ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+              ctx.shadowBlur = 16;
+              ctx.shadowOffsetY = 4;
+              roundRectPath(ctx, qrX - 12, qrY - 12, qrSize + 24, qrSize + 24, 18);
+              ctx.fill();
+              ctx.restore();
+
+              // Vẽ QR code lên thẻ
+              ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
+
+              // Icon trái tim ngọt ngào ngay chính giữa mã QR
+              const badgeSize = 46;
+              const badgeX = (w - badgeSize) / 2;
+              const badgeY = qrY + (qrSize - badgeSize) / 2;
+
+              ctx.fillStyle = '#ff758c';
+              roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+              ctx.fill();
+
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 3;
+              roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+              ctx.stroke();
+
+              ctx.font = '22px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+            }
+          } catch(err) {
+            console.warn('QRCode generate notice:', err);
+          }
+        }
+
+        // 5. Hướng dẫn quét và Mật mã mở khóa
+        ctx.textBaseline = 'alphabetic';
+        ctx.textAlign = 'center';
+
+        ctx.fillStyle = '#2b2d42';
+        ctx.font = 'bold 17px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('📱 Dùng Camera điện thoại quét mã để mở quà!', w / 2, 535);
+
+        // Hộp mật mã iPhone
+        const boxW = 320;
+        const boxH = 44;
+        const boxX = (w - boxW) / 2;
+        const boxY = 555;
+
+        ctx.fillStyle = '#fff5f7';
+        roundRectPath(ctx, boxX, boxY, boxW, boxH, 22);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ff758c';
+        ctx.lineWidth = 1.5;
+        roundRectPath(ctx, boxX, boxY, boxW, boxH, 22);
+        ctx.stroke();
+
+        ctx.fillStyle = '#c9184a';
+        ctx.font = 'bold 15px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(`🔑 Mật mã mở khóa iPhone: ${passcode}`, w / 2, boxY + 28);
+
+        // Hiển thị đường link nhỏ gọn
+        ctx.fillStyle = '#8d99ae';
+        ctx.font = '12px monospace';
+        const displayUrl = targetUrl.length > 52 ? targetUrl.slice(0, 50) + '...' : targetUrl;
+        ctx.fillText(displayUrl, w / 2, 630);
+
+        // 6. Lời chúc yêu thương ở chân thiệp
+        ctx.strokeStyle = '#ffccd5';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(110, 655);
+        ctx.lineTo(w - 110, 655);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ff4d6d';
+        ctx.font = 'italic 15px "Segoe UI", Roboto, serif';
+        ctx.fillText('✨ Yêu bé nhiều hơn mỗi ngày • Chúc bé luôn an yên & hạnh phúc! ✨', w / 2, 692);
+
+        ctx.fillStyle = '#c9184a';
+        ctx.font = 'bold 13px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('💖 MÓN QUÀ TỪ TRÁI TIM 20/10 💖', w / 2, 722);
+      }
+
+      function refreshQrCards() {
+        const url = getQrTargetUrl();
+        const mainCanvas = document.getElementById('qr-love-card-canvas');
+        if (mainCanvas) drawRomanticLoveCard(mainCanvas, url);
+        const modalCanvas = document.getElementById('qr-modal-card-canvas');
+        if (modalCanvas) drawRomanticLoveCard(modalCanvas, url);
+
+        const txtGlobal = document.getElementById('txt-qr-url-global');
+        if (txtGlobal) txtGlobal.textContent = currentGlobalTunnelUrl || url;
+      }
+
+      function downloadCanvasAsImage(canvas, filename) {
+        if (!canvas) return;
+        const link = document.createElement('a');
+        link.download = filename || 'The_Qua_Tang_20_10.png';
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Đã tải ảnh Thẻ Quà Tặng thành công! 💖', '📥');
+      }
+
+      function downloadPureQrImage(targetUrl, filename) {
+        const tempDiv = document.createElement('div');
+        if (window.QRCode) {
+          new window.QRCode(tempDiv, {
+            text: targetUrl,
+            width: 500,
+            height: 500,
+            colorDark: '#1a1a24',
+            colorLight: '#ffffff',
+            correctLevel: window.QRCode.CorrectLevel.H
+          });
+          setTimeout(() => {
+            const c = tempDiv.querySelector('canvas');
+            if (c) {
+              downloadCanvasAsImage(c, filename || 'QR_Qua_Tang_20_10.png');
+              showToast('Đã tải ảnh Mã QR Code thành công! 📱', '📥');
+            }
+          }, 80);
+        } else {
+          window.open(getApiUrl(`/api/qrcode?format=image&size=600&url=${encodeURIComponent(targetUrl)}`), '_blank');
+        }
+      }
+
+      async function copyCanvasImageToClipboard(canvas) {
+        if (!canvas) return;
+        try {
+          canvas.toBlob(async (blob) => {
+            if (!blob) return;
+            if (navigator.clipboard && window.ClipboardItem) {
+              await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+              showToast('Đã sao chép ảnh vào bộ nhớ tạm! Bạn chỉ cần nhấn Ctrl+V gửi cho bé 💖', '📋');
+            } else {
+              downloadCanvasAsImage(canvas);
+            }
+          }, 'image/png');
+        } catch(e) {
+          downloadCanvasAsImage(canvas);
+        }
+      }
+
+      // QR Code Listeners
+      const btnDlCardPng = document.getElementById('btn-download-card-png');
+      const btnDlQrOnly = document.getElementById('btn-download-qr-only');
+      const btnCopyQrClip = document.getElementById('btn-copy-qr-clipboard');
+      const qrMainCanvas = document.getElementById('qr-love-card-canvas');
+
+      const qrModal = document.getElementById('qr-modal-overlay');
+      const btnOpenQrModal = document.getElementById('btn-open-qr-modal');
+      const btnBannerQr = document.getElementById('btn-banner-qr');
+      const btnStickyQr = document.getElementById('btn-sticky-qr');
+      const btnCloseQrModal = document.getElementById('btn-close-qr-modal');
+
+      const btnModalDlCard = document.getElementById('btn-modal-dl-card');
+      const btnModalDlQr = document.getElementById('btn-modal-dl-qr');
+      const btnModalCopyQr = document.getElementById('btn-modal-copy-qr');
+      const qrModalCanvas = document.getElementById('qr-modal-card-canvas');
+
+      function openQrModal() {
+        if (qrModal) {
+          refreshQrCards();
+          qrModal.classList.add('show');
+        }
+      }
+
+      function closeQrModal() {
+        if (qrModal) qrModal.classList.remove('show');
+      }
+
+      if (btnOpenQrModal) btnOpenQrModal.addEventListener('click', openQrModal);
+      if (btnBannerQr) btnBannerQr.addEventListener('click', openQrModal);
+      if (btnStickyQr) btnStickyQr.addEventListener('click', openQrModal);
+      if (btnCloseQrModal) btnCloseQrModal.addEventListener('click', closeQrModal);
+
+      if (qrModal) {
+        qrModal.addEventListener('click', (e) => {
+          if (e.target === qrModal) closeQrModal();
+        });
+      }
+
+      if (btnDlCardPng) {
+        btnDlCardPng.addEventListener('click', () => {
+          const gfName = (inputGfName && inputGfName.value.trim().replace(/\s+/g, '_')) || 'Be_Meo';
+          downloadCanvasAsImage(qrMainCanvas, `The_Qua_Tang_20_10_${gfName}.png`);
+        });
+      }
+
+      if (btnModalDlCard) {
+        btnModalDlCard.addEventListener('click', () => {
+          const gfName = (inputGfName && inputGfName.value.trim().replace(/\s+/g, '_')) || 'Be_Meo';
+          downloadCanvasAsImage(qrModalCanvas, `The_Qua_Tang_20_10_${gfName}.png`);
+        });
+      }
+
+      if (btnDlQrOnly) {
+        btnDlQrOnly.addEventListener('click', () => {
+          downloadPureQrImage(getQrTargetUrl(), 'QR_Qua_Tang_20_10.png');
+        });
+      }
+
+      if (btnModalDlQr) {
+        btnModalDlQr.addEventListener('click', () => {
+          downloadPureQrImage(getQrTargetUrl(), 'QR_Qua_Tang_20_10.png');
+        });
+      }
+
+      if (btnCopyQrClip) {
+        btnCopyQrClip.addEventListener('click', () => copyCanvasImageToClipboard(qrMainCanvas));
+      }
+
+      if (btnModalCopyQr) {
+        btnModalCopyQr.addEventListener('click', () => copyCanvasImageToClipboard(qrModalCanvas));
+      }
+
+      // Radio target switch listeners
+      const radioGlobal = document.getElementById('qr-radio-global');
+      const radioGithub = document.getElementById('qr-radio-github');
+      const lblGlobal = document.getElementById('lbl-qr-opt-global');
+      const lblGithub = document.getElementById('lbl-qr-opt-github');
+
+      function handleQrRadioChange() {
+        if (radioGlobal && radioGlobal.checked) {
+          if (lblGlobal) lblGlobal.classList.add('active');
+          if (lblGithub) lblGithub.classList.remove('active');
+        } else if (radioGithub && radioGithub.checked) {
+          if (lblGithub) lblGithub.classList.add('active');
+          if (lblGlobal) lblGlobal.classList.remove('active');
+        }
+        refreshQrCards();
+      }
+
+      if (radioGlobal) radioGlobal.addEventListener('change', handleQrRadioChange);
+      if (radioGithub) radioGithub.addEventListener('change', handleQrRadioChange);
+
+      // Re-render QR card when names or passcode inputs change
+      [inputGfName, inputBfName, inputPasscode].forEach(inp => {
+        if (inp) inp.addEventListener('input', () => {
+          clearTimeout(window.__qrRenderDebounce);
+          window.__qrRenderDebounce = setTimeout(refreshQrCards, 250);
+        });
+      });
+
+      // Initial Sync Info Load & QR Card Render
+      loadSyncInfo().then(() => {
+        setTimeout(refreshQrCards, 200);
+      });
 
       // Live 2-way Polling on Admin every 3 seconds for immediate updates from phone
       setInterval(() => {
@@ -2395,5 +2937,33 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
     })();
   </script>
+
+  <!-- QR CODE MODAL POPUP -->
+  <div class="qr-modal-overlay" id="qr-modal-overlay">
+    <div class="qr-modal-box">
+      <button type="button" class="qr-modal-close-btn" id="btn-close-qr-modal" title="Đóng">✕</button>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <span style="font-size: 2.2rem; display: inline-block;">💖</span>
+        <h2 style="font-size: 1.35rem; color: #fff; margin: 4px 0;">Mã QR Món Quà 20/10 Dành Riêng Cho Bé</h2>
+        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7); margin: 0;">Dùng Camera điện thoại quét để vào thẳng quà tặng • Có thể tải về gửi hoặc in ra thiệp</p>
+      </div>
+
+      <div style="display: flex; justify-content: center; margin: 12px 0;">
+        <canvas id="qr-modal-card-canvas" width="600" height="820" style="width: 100%; max-width: 320px; height: auto; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></canvas>
+      </div>
+
+      <div class="qr-actions-row">
+        <button type="button" class="btn-admin" id="btn-modal-dl-card" style="background: linear-gradient(135deg, #ff758c, #ff85a2); color: #fff; font-weight: 700; justify-content: center; border: none; padding: 11px 16px;">
+          📥 Tải Thẻ Quà Tặng (PNG)
+        </button>
+        <button type="button" class="btn-admin" id="btn-modal-dl-qr" style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #fff; font-weight: 700; justify-content: center; border: none; padding: 11px 16px;">
+          📥 Tải Riêng Mã QR
+        </button>
+        <button type="button" class="btn-admin btn-admin-secondary" id="btn-modal-copy-qr" style="justify-content: center; padding: 11px 16px;">
+          📋 Sao Chép Ảnh QR
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

@@ -741,6 +741,46 @@ app.get('/api/sync-info', (req, res) => {
   });
 });
 
+// ==========================================================
+// 7. API: TẠO MÃ QR CODE (QR CODE GENERATOR)
+// ==========================================================
+app.get('/api/qrcode', async (req, res) => {
+  try {
+    const QRCode = require('qrcode');
+    const db = readDatabase();
+    const currentTunnel = cloudflareTunnelUrl || (db.config && db.config.serverUrl) || 'https://memphis-likes-timely-privileges.trycloudflare.com';
+    const targetUrl = (req.query.url || (currentTunnel ? currentTunnel + '/' : 'http://localhost:3000/')).trim();
+
+    const qrDataUrl = await QRCode.toDataURL(targetUrl, {
+      errorCorrectionLevel: 'H',
+      type: 'image/png',
+      quality: 0.95,
+      margin: 2,
+      color: {
+        dark: '#2d3436',
+        light: '#ffffff'
+      },
+      width: parseInt(req.query.size) || 360
+    });
+
+    if (req.query.format === 'image' || req.query.format === 'png') {
+      const imgBuffer = Buffer.from(qrDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', 'inline; filename="qr_gift_2010.png"');
+      return res.send(imgBuffer);
+    }
+
+    res.json({
+      success: true,
+      url: targetUrl,
+      qrDataUrl: qrDataUrl
+    });
+  } catch (err) {
+    console.error('Lỗi tạo mã QR:', err);
+    res.status(500).json({ success: false, message: 'Lỗi tạo mã QR: ' + err.message });
+  }
+});
+
 // Khởi động server
 app.listen(PORT, () => {
   const os = require('os');

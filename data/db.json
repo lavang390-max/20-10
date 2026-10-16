@@ -140,7 +140,7 @@
     "adminPin": "0702",
     "girlfriendName": "bé mèo",
     "boyfriendName": "khúc gỗ",
-    "startDate": "2026-02-07T12:00:00.000Z",
+    "startDate": "2026-02-07T05:00:00.000Z",
     "wheelPrizes": [
       {
         "title": "1 Cái Ôm Thật Chặt",
@@ -204,6 +204,20 @@
     }
   ],
   "locket": [
+    {
+      "id": "locket_1792170352852_289",
+      "type": "photo",
+      "mediaUrl": "/uploads/locket_1792170352841_525002.jpg",
+      "caption": "hii",
+      "sender": "khúc gỗ",
+      "senderRole": "boyfriend",
+      "sticker": "🌸",
+      "filter": "normal",
+      "filterLabel": "Tự nhiên",
+      "createdAt": 1792170352852,
+      "timeFormatted": "00:05 • 17/10",
+      "reactions": 1
+    },
     {
       "id": "locket_1792169889725_218",
       "type": "photo",
