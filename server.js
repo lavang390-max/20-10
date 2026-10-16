@@ -751,16 +751,19 @@ app.get('/api/qrcode', async (req, res) => {
     const currentTunnel = cloudflareTunnelUrl || (db.config && db.config.serverUrl) || 'https://memphis-likes-timely-privileges.trycloudflare.com';
     const targetUrl = (req.query.url || (currentTunnel ? currentTunnel + '/' : 'http://localhost:3000/')).trim();
 
+    const darkColor = req.query.dark || '#111118';
+    const lightColor = req.query.light || (req.query.theme === 'classic' ? '#ffffff' : '#ffccd5');
+
     const qrDataUrl = await QRCode.toDataURL(targetUrl, {
       errorCorrectionLevel: 'H',
       type: 'image/png',
       quality: 0.95,
       margin: 2,
       color: {
-        dark: '#2d3436',
-        light: '#ffffff'
+        dark: darkColor,
+        light: lightColor
       },
-      width: parseInt(req.query.size) || 360
+      width: parseInt(req.query.size) || 400
     });
 
     if (req.query.format === 'image' || req.query.format === 'png') {

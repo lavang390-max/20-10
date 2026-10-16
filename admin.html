@@ -910,13 +910,34 @@
             </label>
           </div>
 
+          <!-- Tùy chọn kiểu dáng mã QR -->
+          <label style="font-size: 0.88rem; font-weight: 700; color: #f1f2f6; margin-bottom: 8px; display: block;">
+            🎨 Kiểu dáng mã QR:
+          </label>
+          <div style="display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;">
+            <label class="qr-url-radio-label active" id="lbl-qr-style-heart" style="flex: 1; min-width: 140px;">
+              <input type="radio" name="qr-style-type" id="qr-style-heart" value="heart" checked style="accent-color: #ff758c; width: 16px; height: 16px;">
+              <div>
+                <div style="font-weight: 700; color: #ff758c;">💖 Trái Tim Pastel (Khuyên dùng)</div>
+                <div style="font-size: 0.74rem; color: rgba(255,255,255,0.65);">Mã đen nền hồng pastel cực xinh</div>
+              </div>
+            </label>
+            <label class="qr-url-radio-label" id="lbl-qr-style-classic" style="flex: 1; min-width: 140px;">
+              <input type="radio" name="qr-style-type" id="qr-style-classic" value="classic" style="accent-color: #ff758c; width: 16px; height: 16px;">
+              <div>
+                <div style="font-weight: 700; color: #f1f2f6;">🔲 Kiểu Cổ Điển</div>
+                <div style="font-size: 0.74rem; color: rgba(255,255,255,0.65);">Mã vuông đen trắng truyền thống</div>
+              </div>
+            </label>
+          </div>
+
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <button type="button" class="btn-admin" id="btn-download-card-png" style="background: linear-gradient(135deg, #ff758c, #ff85a2); color: #fff; font-weight: 700; padding: 13px 18px; justify-content: center; font-size: 0.95rem; border: none; box-shadow: 0 6px 20px rgba(255,117,140,0.45);">
-              📥 Tải Ảnh Thẻ Quà Tặng Lãng Mạn (PNG)
+              📥 Tải Ảnh Thẻ Trái Tim Lãng Mạn (PNG)
             </button>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <button type="button" class="btn-admin" id="btn-download-qr-only" style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #fff; font-weight: 700; padding: 10px 14px; justify-content: center; font-size: 0.85rem; border: none;">
-                📥 Tải Riêng Mã QR
+                📥 Tải Riêng QR Trái Tim
               </button>
               <button type="button" class="btn-admin btn-admin-secondary" id="btn-copy-qr-clipboard" style="padding: 10px 14px; justify-content: center; font-size: 0.85rem;">
                 📋 Sao Chép Ảnh QR
@@ -2566,6 +2587,11 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         return 'https://memphis-likes-timely-privileges.trycloudflare.com/';
       }
 
+      function getQrTargetStyle() {
+        const selected = document.querySelector('input[name="qr-style-type"]:checked');
+        return selected ? selected.value : 'heart';
+      }
+
       function roundRectPath(ctx, x, y, width, height, radius) {
         if (ctx.roundRect) {
           ctx.beginPath();
@@ -2585,19 +2611,37 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         ctx.closePath();
       }
 
+      function drawHeartPath(ctx, x, y, width, height) {
+        ctx.beginPath();
+        const topCurveHeight = height * 0.32;
+        const cx = x + width / 2;
+        const cy = y + topCurveHeight;
+        ctx.moveTo(cx, cy);
+        // Top left curve
+        ctx.bezierCurveTo(cx, y, x, y, x, cy);
+        // Left side down to bottom point
+        ctx.bezierCurveTo(x, y + height * 0.65, cx - width * 0.15, y + height * 0.85, cx, y + height);
+        // Right side up from bottom point
+        ctx.bezierCurveTo(cx + width * 0.15, y + height * 0.85, x + width, y + height * 0.65, x + width, cy);
+        // Top right curve
+        ctx.bezierCurveTo(x + width, y, cx, y, cx, cy);
+        ctx.closePath();
+      }
+
       function drawRomanticLoveCard(canvas, targetUrl) {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const w = 600;
-        const h = 820;
+        const h = 840;
         canvas.width = w;
         canvas.height = h;
 
         const gfName = (inputGfName && inputGfName.value.trim()) || currentConfig.girlfriendName || 'Bé Mèo';
         const bfName = (inputBfName && inputBfName.value.trim()) || currentConfig.boyfriendName || 'Khúc Gỗ';
         const passcode = (inputPasscode && inputPasscode.value.trim()) || currentConfig.passcode || '0702';
+        const qrStyle = getQrTargetStyle();
 
-        // 1. Nền Gradient Pastel Lãng Mạn
+        // 1. Nền Gradient Pastel Lãng Mạn Toàn Thiệp
         const grad = ctx.createLinearGradient(0, 0, w, h);
         grad.addColorStop(0, '#fff0f5');
         grad.addColorStop(0.5, '#ffeef2');
@@ -2648,61 +2692,157 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         ctx.lineTo(w - 90, 162);
         ctx.stroke();
 
-        // 4. Tạo mã QR và vẽ lên Canvas
-        const qrSize = 300;
-        const qrX = (w - qrSize) / 2;
-        const qrY = 188;
-
+        // 4. Tạo mã QR: TRÁI TIM PASTEL hoặc VUÔNG CỔ ĐIỂN
         const tempHolder = document.getElementById('qr-raw-temp-holder') || document.createElement('div');
         tempHolder.innerHTML = '';
 
-        if (window.QRCode) {
-          try {
-            new window.QRCode(tempHolder, {
-              text: targetUrl,
-              width: qrSize,
-              height: qrSize,
-              colorDark: '#1a1a24',
-              colorLight: '#ffffff',
-              correctLevel: window.QRCode.CorrectLevel.H
-            });
+        if (qrStyle === 'heart') {
+          // --- CHẾ ĐỘ 1: MÃ QR TRÁI TIM NỀN HỒNG PASTEL, MÃ ĐEN ---
+          const heartW = 360;
+          const heartH = 340;
+          const heartX = (w - heartW) / 2;
+          const heartY = 175;
 
-            const rawCanvas = tempHolder.querySelector('canvas');
-            if (rawCanvas) {
-              // Nền trắng và viền bao quanh mã QR
-              ctx.save();
-              ctx.fillStyle = '#ffffff';
-              ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-              ctx.shadowBlur = 16;
-              ctx.shadowOffsetY = 4;
-              roundRectPath(ctx, qrX - 12, qrY - 12, qrSize + 24, qrSize + 24, 18);
-              ctx.fill();
-              ctx.restore();
+          // Vẽ Trái Tim Nền Màu Hồng Pastel Lãng Mạn
+          ctx.save();
+          ctx.shadowColor = 'rgba(255, 117, 140, 0.4)';
+          ctx.shadowBlur = 24;
+          ctx.shadowOffsetY = 8;
+          drawHeartPath(ctx, heartX, heartY, heartW, heartH);
 
-              // Vẽ QR code lên thẻ
-              ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
+          const heartGrad = ctx.createLinearGradient(heartX, heartY, heartX + heartW, heartY + heartH);
+          heartGrad.addColorStop(0, '#ffe5ec'); // Soft pastel pink highlight
+          heartGrad.addColorStop(0.5, '#ffccd5'); // Rose pastel pink
+          heartGrad.addColorStop(1, '#ffb3c1'); // Warm rose blush
+          ctx.fillStyle = heartGrad;
+          ctx.fill();
 
-              // Icon trái tim ngọt ngào ngay chính giữa mã QR
-              const badgeSize = 46;
-              const badgeX = (w - badgeSize) / 2;
-              const badgeY = qrY + (qrSize - badgeSize) / 2;
+          // Viền đôi lấp lánh cho trái tim
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 4.5;
+          ctx.stroke();
 
-              ctx.fillStyle = '#ff758c';
-              roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
-              ctx.fill();
+          ctx.strokeStyle = '#ff758c';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
 
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 3;
-              roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
-              ctx.stroke();
+          // Tạo QR Code đen trên nền hồng pastel (#ffccd5)
+          const qrSize = 240;
+          const qrX = (w - qrSize) / 2;
+          const qrY = 215;
 
-              ctx.font = '22px sans-serif';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+          if (window.QRCode) {
+            try {
+              new window.QRCode(tempHolder, {
+                text: targetUrl,
+                width: qrSize,
+                height: qrSize,
+                colorDark: '#111118',
+                colorLight: '#ffccd5',
+                correctLevel: window.QRCode.CorrectLevel.H
+              });
+
+              const rawCanvas = tempHolder.querySelector('canvas');
+              if (rawCanvas) {
+                // Bo góc nhẹ cho QR để hài hòa với trái tim
+                ctx.save();
+                ctx.fillStyle = '#ffccd5';
+                roundRectPath(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 16);
+                ctx.fill();
+
+                ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
+                ctx.restore();
+
+                // Icon trái tim ngọt ngào ngay chính giữa mã QR
+                const badgeSize = 44;
+                const badgeX = (w - badgeSize) / 2;
+                const badgeY = qrY + (qrSize - badgeSize) / 2;
+
+                ctx.save();
+                ctx.fillStyle = '#ff758c';
+                ctx.shadowColor = 'rgba(0,0,0,0.18)';
+                ctx.shadowBlur = 10;
+                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+                ctx.stroke();
+
+                ctx.font = '22px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+                ctx.restore();
+              }
+            } catch(err) {
+              console.warn('QRCode generate notice:', err);
             }
-          } catch(err) {
-            console.warn('QRCode generate notice:', err);
+          }
+
+          // Họa tiết trái tim và ngôi sao lấp lánh bay quanh trái tim QR
+          ctx.font = '20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('✨', heartX + 16, heartY + 40);
+          ctx.fillText('💕', heartX + heartW - 16, heartY + 40);
+          ctx.fillText('🌸', heartX - 8, heartY + heartH * 0.55);
+          ctx.fillText('💖', heartX + heartW + 8, heartY + heartH * 0.55);
+          ctx.fillText('✨', w / 2, heartY + heartH + 18);
+
+        } else {
+          // --- CHẾ ĐỘ 2: MÃ QR VUÔNG CỔ ĐIỂN ---
+          const qrSize = 280;
+          const qrX = (w - qrSize) / 2;
+          const qrY = 195;
+
+          if (window.QRCode) {
+            try {
+              new window.QRCode(tempHolder, {
+                text: targetUrl,
+                width: qrSize,
+                height: qrSize,
+                colorDark: '#1a1a24',
+                colorLight: '#ffffff',
+                correctLevel: window.QRCode.CorrectLevel.H
+              });
+
+              const rawCanvas = tempHolder.querySelector('canvas');
+              if (rawCanvas) {
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+                ctx.shadowBlur = 16;
+                ctx.shadowOffsetY = 4;
+                roundRectPath(ctx, qrX - 12, qrY - 12, qrSize + 24, qrSize + 24, 18);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
+
+                const badgeSize = 46;
+                const badgeX = (w - badgeSize) / 2;
+                const badgeY = qrY + (qrSize - badgeSize) / 2;
+
+                ctx.fillStyle = '#ff758c';
+                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+                ctx.stroke();
+
+                ctx.font = '22px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+              }
+            } catch(err) {
+              console.warn('QRCode generate notice:', err);
+            }
           }
         }
 
@@ -2712,13 +2852,13 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         ctx.fillStyle = '#2b2d42';
         ctx.font = 'bold 17px "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('📱 Dùng Camera điện thoại quét mã để mở quà!', w / 2, 535);
+        ctx.fillText('📱 Dùng Camera điện thoại quét mã để mở quà!', w / 2, 555);
 
         // Hộp mật mã iPhone
         const boxW = 320;
         const boxH = 44;
         const boxX = (w - boxW) / 2;
-        const boxY = 555;
+        const boxY = 575;
 
         ctx.fillStyle = '#fff5f7';
         roundRectPath(ctx, boxX, boxY, boxW, boxH, 22);
@@ -2737,23 +2877,23 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         ctx.fillStyle = '#8d99ae';
         ctx.font = '12px monospace';
         const displayUrl = targetUrl.length > 52 ? targetUrl.slice(0, 50) + '...' : targetUrl;
-        ctx.fillText(displayUrl, w / 2, 630);
+        ctx.fillText(displayUrl, w / 2, 650);
 
         // 6. Lời chúc yêu thương ở chân thiệp
         ctx.strokeStyle = '#ffccd5';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(110, 655);
-        ctx.lineTo(w - 110, 655);
+        ctx.moveTo(110, 675);
+        ctx.lineTo(w - 110, 675);
         ctx.stroke();
 
         ctx.fillStyle = '#ff4d6d';
         ctx.font = 'italic 15px "Segoe UI", Roboto, serif';
-        ctx.fillText('✨ Yêu bé nhiều hơn mỗi ngày • Chúc bé luôn an yên & hạnh phúc! ✨', w / 2, 692);
+        ctx.fillText('✨ Yêu bé nhiều hơn mỗi ngày • Chúc bé luôn an yên & hạnh phúc! ✨', w / 2, 712);
 
         ctx.fillStyle = '#c9184a';
         ctx.font = 'bold 13px "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('💖 MÓN QUÀ TỪ TRÁI TIM 20/10 💖', w / 2, 722);
+        ctx.fillText('💖 MÓN QUÀ TỪ TRÁI TIM 20/10 💖', w / 2, 742);
       }
 
       function refreshQrCards() {
@@ -2779,25 +2919,124 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       }
 
       function downloadPureQrImage(targetUrl, filename) {
-        const tempDiv = document.createElement('div');
-        if (window.QRCode) {
-          new window.QRCode(tempDiv, {
-            text: targetUrl,
-            width: 500,
-            height: 500,
-            colorDark: '#1a1a24',
-            colorLight: '#ffffff',
-            correctLevel: window.QRCode.CorrectLevel.H
-          });
-          setTimeout(() => {
-            const c = tempDiv.querySelector('canvas');
-            if (c) {
-              downloadCanvasAsImage(c, filename || 'QR_Qua_Tang_20_10.png');
-              showToast('Đã tải ảnh Mã QR Code thành công! 📱', '📥');
-            }
-          }, 80);
+        const qrStyle = getQrTargetStyle();
+
+        if (qrStyle === 'heart') {
+          // Xuất file ảnh hình Trái Tim Hồng Pastel độc đáo
+          const size = 540;
+          const qrCanvas = document.createElement('canvas');
+          qrCanvas.width = size;
+          qrCanvas.height = size;
+          const ctx = qrCanvas.getContext('2d');
+
+          // Nền trong suốt
+          ctx.clearRect(0, 0, size, size);
+
+          // Vẽ Trái Tim Nền Hồng Pastel
+          const heartW = 490;
+          const heartH = 465;
+          const heartX = (size - heartW) / 2;
+          const heartY = (size - heartH) / 2 - 10;
+
+          ctx.save();
+          ctx.shadowColor = 'rgba(255, 117, 140, 0.4)';
+          ctx.shadowBlur = 30;
+          ctx.shadowOffsetY = 12;
+          drawHeartPath(ctx, heartX, heartY, heartW, heartH);
+
+          const heartGrad = ctx.createLinearGradient(heartX, heartY, heartX + heartW, heartY + heartH);
+          heartGrad.addColorStop(0, '#ffe5ec');
+          heartGrad.addColorStop(0.5, '#ffccd5');
+          heartGrad.addColorStop(1, '#ffb3c1');
+          ctx.fillStyle = heartGrad;
+          ctx.fill();
+
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 6;
+          ctx.stroke();
+
+          ctx.strokeStyle = '#ff758c';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.restore();
+
+          // QR Code đen trên nền hồng pastel
+          const qrSize = 310;
+          const qrX = (size - qrSize) / 2;
+          const qrY = heartY + 70;
+
+          const tempDiv = document.createElement('div');
+          if (window.QRCode) {
+            new window.QRCode(tempDiv, {
+              text: targetUrl,
+              width: qrSize,
+              height: qrSize,
+              colorDark: '#111118',
+              colorLight: '#ffccd5',
+              correctLevel: window.QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+              const rawCanvas = tempDiv.querySelector('canvas');
+              if (rawCanvas) {
+                ctx.save();
+                ctx.fillStyle = '#ffccd5';
+                roundRectPath(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 16);
+                ctx.fill();
+
+                ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
+                ctx.restore();
+
+                // Icon trái tim tâm
+                const badgeSize = 52;
+                const badgeX = (size - badgeSize) / 2;
+                const badgeY = qrY + (qrSize - badgeSize) / 2;
+
+                ctx.save();
+                ctx.fillStyle = '#ff758c';
+                ctx.shadowColor = 'rgba(0,0,0,0.18)';
+                ctx.shadowBlur = 10;
+                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 14);
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3.5;
+                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 14);
+                ctx.stroke();
+
+                ctx.font = '26px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+                ctx.restore();
+
+                downloadCanvasAsImage(qrCanvas, filename || 'QR_Trai_Tim_20_10.png');
+                showToast('Đã tải ảnh Mã QR Trái Tim Pastel thành công! 💖📱', '📥');
+              }
+            }, 80);
+          }
         } else {
-          window.open(getApiUrl(`/api/qrcode?format=image&size=600&url=${encodeURIComponent(targetUrl)}`), '_blank');
+          // Xuất file ảnh vuông cổ điển
+          const tempDiv = document.createElement('div');
+          if (window.QRCode) {
+            new window.QRCode(tempDiv, {
+              text: targetUrl,
+              width: 500,
+              height: 500,
+              colorDark: '#1a1a24',
+              colorLight: '#ffffff',
+              correctLevel: window.QRCode.CorrectLevel.H
+            });
+            setTimeout(() => {
+              const c = tempDiv.querySelector('canvas');
+              if (c) {
+                downloadCanvasAsImage(c, filename || 'QR_Qua_Tang_20_10.png');
+                showToast('Đã tải ảnh Mã QR Code thành công! 📱', '📥');
+              }
+            }, 80);
+          } else {
+            window.open(getApiUrl(`/api/qrcode?format=image&size=600&url=${encodeURIComponent(targetUrl)}`), '_blank');
+          }
         }
       }
 
@@ -2873,13 +3112,15 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
       if (btnDlQrOnly) {
         btnDlQrOnly.addEventListener('click', () => {
-          downloadPureQrImage(getQrTargetUrl(), 'QR_Qua_Tang_20_10.png');
+          const isHeart = getQrTargetStyle() === 'heart';
+          downloadPureQrImage(getQrTargetUrl(), isHeart ? 'QR_Trai_Tim_20_10.png' : 'QR_Qua_Tang_20_10.png');
         });
       }
 
       if (btnModalDlQr) {
         btnModalDlQr.addEventListener('click', () => {
-          downloadPureQrImage(getQrTargetUrl(), 'QR_Qua_Tang_20_10.png');
+          const isHeart = getQrTargetStyle() === 'heart';
+          downloadPureQrImage(getQrTargetUrl(), isHeart ? 'QR_Trai_Tim_20_10.png' : 'QR_Qua_Tang_20_10.png');
         });
       }
 
@@ -2910,6 +3151,26 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
       if (radioGlobal) radioGlobal.addEventListener('change', handleQrRadioChange);
       if (radioGithub) radioGithub.addEventListener('change', handleQrRadioChange);
+
+      // Radio style switch listeners
+      const radioStyleHeart = document.getElementById('qr-style-heart');
+      const radioStyleClassic = document.getElementById('qr-style-classic');
+      const lblStyleHeart = document.getElementById('lbl-qr-style-heart');
+      const lblStyleClassic = document.getElementById('lbl-qr-style-classic');
+
+      function handleQrStyleChange() {
+        if (radioStyleHeart && radioStyleHeart.checked) {
+          if (lblStyleHeart) lblStyleHeart.classList.add('active');
+          if (lblStyleClassic) lblStyleClassic.classList.remove('active');
+        } else if (radioStyleClassic && radioStyleClassic.checked) {
+          if (lblStyleClassic) lblStyleClassic.classList.add('active');
+          if (lblStyleHeart) lblStyleHeart.classList.remove('active');
+        }
+        refreshQrCards();
+      }
+
+      if (radioStyleHeart) radioStyleHeart.addEventListener('change', handleQrStyleChange);
+      if (radioStyleClassic) radioStyleClassic.addEventListener('change', handleQrStyleChange);
 
       // Re-render QR card when names or passcode inputs change
       [inputGfName, inputBfName, inputPasscode].forEach(inp => {
