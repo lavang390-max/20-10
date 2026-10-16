@@ -26,8 +26,37 @@
     boyfriendName: 'khúc gỗ',
     startDate: '2024-02-07T00:00:00',
     wheelPrizes: DEFAULT_WHEEL_PRIZES,
-    letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`
+    letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`,
+    imgbbApiKey: ''
   };
+
+  // ImgBB Cloud Uploader Helper
+  async function uploadToImgBB(fileOrBase64, apiKey) {
+    if (!apiKey) return null;
+    try {
+      const formData = new FormData();
+      if (typeof fileOrBase64 === 'string') {
+        const cleanBase64 = fileOrBase64.replace(/^data:image\/\w+;base64,/, '');
+        formData.append('image', cleanBase64);
+      } else {
+        formData.append('image', fileOrBase64);
+      }
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.data && data.data.url) {
+          console.log('☁️ Đã upload ảnh lên ImgBB Cloud thành công:', data.data.url);
+          return data.data.url;
+        }
+      }
+    } catch (err) {
+      console.warn('ImgBB Cloud Upload notice:', err.message);
+    }
+    return null;
+  }
 
   // Safe UTF-8 Base64 decoder for shared configuration from URL
   function decodeConfigFromUrl() {
@@ -1898,6 +1927,15 @@
         }
       }
 
+      // Upload to ImgBB Cloud if API key is provided
+      if (capturedMediaData.type === 'photo' && userConfig.imgbbApiKey) {
+        updateCameraStatus('uploading', '☁️ Đang tải lên Cloud...');
+        const cloudUrl = await uploadToImgBB(finalMediaUrl, userConfig.imgbbApiKey);
+        if (cloudUrl) {
+          finalMediaUrl = cloudUrl;
+        }
+      }
+
       const newMoment = {
         id: 'cam_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         type: capturedMediaData.type,
@@ -2662,12 +2700,20 @@
         if (parts.length === 3) dateVal = `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
 
-      // Try uploading to Database Server first
-      const serverMem = await postMemoryToDatabase(currentPendingImageData, caption, dateVal);
+      // 1. Try ImgBB Cloud API upload first if key exists
+      let cloudUrl = null;
+      if (userConfig.imgbbApiKey) {
+        cloudUrl = await uploadToImgBB(currentPendingImageData, userConfig.imgbbApiKey);
+      }
+
+      const finalImgSrc = cloudUrl || currentPendingImageData;
+
+      // 2. Try uploading to Database Server
+      const serverMem = await postMemoryToDatabase(finalImgSrc, caption, dateVal);
 
       const newMem = serverMem || {
         id: 'mem_' + Date.now(),
-        src: currentPendingImageData,
+        src: finalImgSrc,
         caption: caption,
         date: dateVal
       };

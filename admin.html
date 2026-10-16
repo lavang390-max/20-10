@@ -1029,6 +1029,46 @@
         </div>
       </div>
 
+      <!-- CARD 8: CẤU HÌNH LƯU TRỮ ẢNH ĐÁM MÂY (IMGBB API) -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="admin-card-icon">☁️</span>
+            <h2>8. Lưu Trữ Ảnh Đám Mây Vĩnh Viễn (ImgBB Cloud API)</h2>
+          </div>
+          <span class="admin-badge" style="background: rgba(85, 239, 196, 0.15); border-color: #55efc4; color: #55efc4;">
+            Miễn Phí 100%
+          </span>
+        </div>
+
+        <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 18px; line-height: 1.6;">
+          Khi tích hợp ImgBB Cloud, mọi bức ảnh bé chụp từ <b>Máy ảnh Locket</b> hoặc tải lên <b>Kho Kỷ Niệm</b> đều được tự động lưu trữ vĩnh viễn trên đám mây CDN toàn cầu. Cả hai bạn đều xem được ngay từ bất kỳ điện thoại hay máy tính nào!
+        </p>
+
+        <div class="admin-field">
+          <label for="admin-imgbb-key">
+            ImgBB API Key:
+            <span style="font-weight: 400; color: #f6c85f; font-size: 0.8rem; margin-left: 8px;">
+              (Lấy miễn phí trong 10 giây tại: <a href="https://api.imgbb.com/" target="_blank" style="color: #55efc4; text-decoration: underline;">api.imgbb.com</a>)
+            </span>
+          </label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="admin-imgbb-key" class="admin-input" placeholder="Dán mã API Key 32 ký tự vào đây..." style="flex: 1;">
+            <button type="button" class="btn-admin btn-admin-secondary" id="btn-test-imgbb" style="padding: 10px 16px; white-space: nowrap;">
+              ⚡ Kiểm Tra Key
+            </button>
+          </div>
+          <div id="imgbb-status-msg" style="font-size: 0.82rem; margin-top: 8px; min-height: 18px;"></div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.18); border-radius: 12px; padding: 14px 18px; font-size: 0.83rem; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          <b>📌 Cách lấy API Key miễn phí vĩnh viễn:</b><br>
+          1. Bấm vào link <a href="https://api.imgbb.com/" target="_blank" style="color: #ff9bbb; font-weight: 600;">api.imgbb.com</a> và đăng nhập bằng tài khoản Google.<br>
+          2. Bấm nút <b>"Get API Key"</b> (hoặc "Add API Key").<br>
+          3. Sao chép chuỗi mã 32 ký tự và dán vào ô bên trên rồi bấm <b>"💾 Lưu Cấu Hình"</b> (hoặc nút <b>"🚀 Đẩy Lên Web"</b>) là xong!
+        </div>
+      </div>
+
     </form>
   </div>
 
@@ -1089,7 +1129,7 @@
       // Default Config Template
       const DEFAULT_CONFIG = {
         passcode: '0702',
-        passcodeHint: 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! (0702) ✨',
+        passcodeHint: 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! ✨',
         adminPin: '0702',
         girlfriendName: 'bé mèo',
         boyfriendName: 'khúc gỗ',
@@ -1102,7 +1142,8 @@
           { title: 'Xoa Bóp Đấm Lưng', note: 'Bàn tay chuyên nghiệp ru bé vào giấc ngủ thật ngon và thư giãn', color: '#4facfe' },
           { title: 'Một Điều Ước Vô Điều Kiện', note: 'Bất cứ điều gì bé sai bảo hôm nay, anh đều ngoan ngoãn nghe lời!', color: '#9d4edd' }
         ],
-        letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`
+        letterBody: `Hellu bé - bé iu của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`,
+        imgbbApiKey: ''
       };
 
       // Current active admin configuration
@@ -1144,6 +1185,9 @@
       const inputLetterBody = document.getElementById('admin-letter-body');
       const wheelPrizesList = document.getElementById('admin-wheel-prizes-list');
       const liveShareLinkInput = document.getElementById('live-share-link-input');
+      const inputImgbbKey = document.getElementById('admin-imgbb-key');
+      const btnTestImgbb = document.getElementById('btn-test-imgbb');
+      const imgbbStatusMsg = document.getElementById('imgbb-status-msg');
 
       // Toast utility
       const toastEl = document.getElementById('admin-toast');
@@ -1254,6 +1298,7 @@
         if (inputGfName) inputGfName.value = currentConfig.girlfriendName || 'bé mèo';
         if (inputBfName) inputBfName.value = currentConfig.boyfriendName || 'khúc gỗ';
         if (inputLetterBody) inputLetterBody.value = currentConfig.letterBody || DEFAULT_CONFIG.letterBody;
+        if (inputImgbbKey) inputImgbbKey.value = currentConfig.imgbbApiKey || '';
 
         if (inputStartDate && currentConfig.startDate) {
           try {
@@ -1326,6 +1371,7 @@
         currentConfig.girlfriendName = (inputGfName.value || 'bé mèo').trim();
         currentConfig.boyfriendName = (inputBfName.value || 'khúc gỗ').trim();
         currentConfig.letterBody = (inputLetterBody.value || DEFAULT_CONFIG.letterBody).trim();
+        currentConfig.imgbbApiKey = (inputImgbbKey && inputImgbbKey.value.trim()) || '';
 
         if (inputStartDate.value) {
           currentConfig.startDate = new Date(inputStartDate.value).toISOString();
@@ -1974,6 +2020,45 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       if (btnExport) btnExport.addEventListener('click', exportConfigFile);
       if (btnPublishGitHub) btnPublishGitHub.addEventListener('click', publishToGitHub);
       if (btnStickyPublish) btnStickyPublish.addEventListener('click', publishToGitHub);
+
+      if (btnTestImgbb && inputImgbbKey) {
+        btnTestImgbb.addEventListener('click', async () => {
+          const key = inputImgbbKey.value.trim();
+          if (!key) {
+            alert('Vui lòng dán mã API Key trước khi kiểm tra!');
+            inputImgbbKey.focus();
+            return;
+          }
+          if (imgbbStatusMsg) {
+            imgbbStatusMsg.textContent = '⏳ Đang kiểm tra kết nối ImgBB Cloud...';
+            imgbbStatusMsg.style.color = '#f6c85f';
+          }
+          const testBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+          const formData = new FormData();
+          formData.append('image', testBase64);
+          try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              if (imgbbStatusMsg) {
+                imgbbStatusMsg.textContent = '✅ API Key chính xác! Đám mây lưu trữ ảnh đã sẵn sàng hoạt động vĩnh viễn!';
+                imgbbStatusMsg.style.color = '#55efc4';
+              }
+              showToast('Kết nối ImgBB Cloud thành công!', '☁️');
+            } else {
+              if (imgbbStatusMsg) {
+                imgbbStatusMsg.textContent = '❌ API Key không hợp lệ: ' + (data.error ? data.error.message : 'Vui lòng kiểm tra lại');
+                imgbbStatusMsg.style.color = '#ff7675';
+              }
+            }
+          } catch(err) {
+            if (imgbbStatusMsg) {
+              imgbbStatusMsg.textContent = '❌ Lỗi kết nối mạng đến ImgBB: ' + err.message;
+              imgbbStatusMsg.style.color = '#ff7675';
+            }
+          }
+        });
+      }
 
       // Letter Templates
       const btnTplSweet = document.getElementById('btn-tpl-sweet');
