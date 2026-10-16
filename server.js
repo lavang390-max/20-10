@@ -13,6 +13,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { exec } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -405,6 +406,55 @@ window.COUPLE_CONFIG = ${JSON.stringify(newConfig, null, 2)};
 
   console.log('[Database] 💾 Đã lưu và đồng bộ cấu hình cặp đôi thành công!');
   res.json({ success: true, message: 'Đã lưu cấu hình vào Database thành công', config: newConfig });
+});
+
+// Xuất bản toàn bộ cấu hình, dữ liệu và ảnh lên GitHub Pages vĩnh viễn
+app.post('/api/publish', (req, res) => {
+  const db = readDatabase();
+
+  // 1. Đồng bộ file config.js
+  if (db.config) {
+    const configJsContent = `/**
+ * ==========================================================
+ * CẤU HÌNH QUÀ TẶNG 20/10 - THÔNG TIN DÀNH CHO CẶP ĐÔI
+ * ==========================================================
+ * Tự động đồng bộ từ Database Server
+ */
+
+window.COUPLE_CONFIG = ${JSON.stringify(db.config, null, 2)};
+`;
+    fs.writeFileSync(path.join(__dirname, 'config.js'), configJsContent, 'utf8');
+  }
+
+  // 2. Đồng bộ file data/seed_data.js
+  const seedContent = `/**
+ * ==========================================================
+ * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
+ * ==========================================================
+ */
+
+const SEED_DATA = ${JSON.stringify({
+    notes: db.notes || [],
+    memories: db.memories || [],
+    bucketList: db.bucketList || [],
+    locket: db.locket || []
+  }, null, 2)};
+`;
+  fs.writeFileSync(path.join(DATA_DIR, 'seed_data.js'), seedContent, 'utf8');
+
+  // 3. Tự động commit và push lên GitHub
+  const gitCmd = 'git add config.js data/ uploads/ images/ && git commit -m "Auto-publish: Cập nhật cấu hình và dữ liệu từ Admin" && git push origin main';
+  exec(gitCmd, { cwd: __dirname }, (error, stdout, stderr) => {
+    if (error) {
+      console.warn('Git publish notice:', error.message);
+      if (error.message.includes('nothing to commit')) {
+        return res.json({ success: true, message: 'Dữ liệu đã được lưu trữ vĩnh viễn và đồng bộ mới nhất trên GitHub!' });
+      }
+      return res.status(500).json({ success: false, message: 'Lỗi khi đẩy lên GitHub: ' + error.message });
+    }
+    console.log('[Publish] 🚀 Đã xuất bản lên GitHub thành công!');
+    res.json({ success: true, message: 'Đã xuất bản lên GitHub thành công! Web online của bé đã tự cập nhật vĩnh viễn.' });
+  });
 });
 
 // ==========================================================

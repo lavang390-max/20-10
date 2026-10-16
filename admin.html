@@ -720,12 +720,15 @@
         <button type="button" class="btn-admin btn-admin-pink" id="btn-copy-girl-link">
           📋 Sao Chép Link Gửi Bé
         </button>
-        <a href="index.html" target="_blank" class="btn-admin btn-admin-secondary" id="btn-preview-girl-view">
-          👁️ Xem Thử Trang Của Bé
-        </a>
+        <button type="button" class="btn-admin btn-admin-success" id="btn-publish-github" style="background: linear-gradient(135deg, #00b894, #00cec9); border-color: #55efc4; color: #fff; font-weight: 700;">
+          🚀 Cập Nhật Cho Bé (Đẩy Lên GitHub)
+        </button>
         <button type="button" class="btn-admin btn-admin-gold" id="btn-save-all-admin">
           💾 Lưu Cấu Hình
         </button>
+        <a href="index.html" target="_blank" class="btn-admin btn-admin-secondary" id="btn-preview-girl-view">
+          👁️ Xem Thử Trang Của Bé
+        </a>
         <button type="button" class="btn-admin btn-admin-secondary" id="btn-export-config-file">
           📥 Xuất config.js
         </button>
@@ -1031,8 +1034,11 @@
 
   <!-- STICKY BOTTOM ACTION BAR -->
   <div class="mobile-sticky-bar" id="mobile-sticky-bar" style="display: none;">
-    <button type="button" class="btn-admin btn-admin-pink" id="btn-sticky-copy-link" style="flex: 2;">
-      📋 Sao Chép Link Gửi Bé
+    <button type="button" class="btn-admin btn-admin-pink" id="btn-sticky-copy-link" style="flex: 1.5;">
+      📋 Copy Link
+    </button>
+    <button type="button" class="btn-admin btn-admin-success" id="btn-sticky-publish" style="flex: 2; background: linear-gradient(135deg, #00b894, #00cec9); color: #fff; font-weight: 700;">
+      🚀 Đẩy Lên Web
     </button>
     <button type="button" class="btn-admin btn-admin-gold" id="btn-sticky-save" style="flex: 1;">
       💾 Lưu
@@ -1436,6 +1442,34 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         showToast('Đã tải xuống file config.js! Hãy lưu đè vào thư mục dự án 📂', '📥');
+      }
+
+      // Publish directly to GitHub Pages
+      async function publishToGitHub() {
+        const btn1 = document.getElementById('btn-publish-github');
+        const btn2 = document.getElementById('btn-sticky-publish');
+        if (btn1) { btn1.disabled = true; btn1.textContent = '⏳ Đang lưu & đẩy lên GitHub...'; }
+        if (btn2) { btn2.disabled = true; btn2.textContent = '⏳ Đang đẩy...'; }
+
+        await saveToLocalStorage();
+        showToast('Đang đồng bộ và đẩy lên GitHub Pages... ⏳', '🚀');
+
+        try {
+          const res = await fetch('/api/publish', { method: 'POST' });
+          const result = await res.json().catch(() => ({}));
+          if (res.ok && result.success) {
+            showToast('Đã xuất bản web online cho bé thành công! 🎉', '✅');
+            alert('🎉 THÀNH CÔNG!\n' + (result.message || 'Đã xuất bản toàn bộ nội dung và ảnh mới lên GitHub Pages!\nBé chỉ cần mở link online là sẽ thấy ngay nội dung mới nhất vĩnh viễn.'));
+          } else {
+            alert('Thông báo: ' + (result.message || 'Không thể đẩy tự động lên GitHub.'));
+          }
+        } catch(err) {
+          console.warn('Publish API error:', err);
+          alert('💡 Gợi ý:\n1. Hãy chắc chắn máy tính đang chạy file "Chay_Trang_Admin.bat" để tự động đẩy lên GitHub.\n2. Hoặc bấm nút "📋 Sao Chép Link Gửi Bé" để gửi link chứa toàn bộ nội dung cho bé!');
+        } finally {
+          if (btn1) { btn1.disabled = false; btn1.innerHTML = '🚀 Cập Nhật Cho Bé (Đẩy Lên GitHub)'; }
+          if (btn2) { btn2.disabled = false; btn2.innerHTML = '🚀 Đẩy Lên Web'; }
+        }
       }
 
       // HTML escaping helper
@@ -1928,6 +1962,9 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       const btnStickySave = document.getElementById('btn-sticky-save');
       const btnExport = document.getElementById('btn-export-config-file');
 
+      const btnPublishGitHub = document.getElementById('btn-publish-github');
+      const btnStickyPublish = document.getElementById('btn-sticky-publish');
+
       if (btnCopyGirlLink) btnCopyGirlLink.addEventListener('click', copyGirlLink);
       if (btnStickyCopy) btnStickyCopy.addEventListener('click', copyGirlLink);
       if (btnQuickCopy) btnQuickCopy.addEventListener('click', copyGirlLink);
@@ -1935,6 +1972,8 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       if (btnSaveAll) btnSaveAll.addEventListener('click', saveToLocalStorage);
       if (btnStickySave) btnStickySave.addEventListener('click', saveToLocalStorage);
       if (btnExport) btnExport.addEventListener('click', exportConfigFile);
+      if (btnPublishGitHub) btnPublishGitHub.addEventListener('click', publishToGitHub);
+      if (btnStickyPublish) btnStickyPublish.addEventListener('click', publishToGitHub);
 
       // Letter Templates
       const btnTplSweet = document.getElementById('btn-tpl-sweet');

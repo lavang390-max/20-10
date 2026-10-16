@@ -82,6 +82,9 @@
   const sharedConfig = decodeConfigFromUrl();
   if (sharedConfig && typeof sharedConfig === 'object') {
     userConfig = Object.assign({}, userConfig, sharedConfig);
+    try {
+      localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
+    } catch(e) {}
   }
 
   // --- AUDIO SYNTHESIZER (Web Audio API) ---
@@ -3323,9 +3326,65 @@
   loadLocketFeed();
   initAdminMode();
 
+  // Dynamic Sync Configuration from Database Server
+  async function syncConfigToUI() {
+    let newConfigData = null;
+
+    // 1. Fetch from live /api/config
+    try {
+      const res = await fetch('/api/config');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.config) {
+          newConfigData = data.config;
+        }
+      }
+    } catch(e) {}
+
+    // 2. Fallback to data/db.json
+    if (!newConfigData) {
+      try {
+        const res = await fetch('data/db.json?v=' + Date.now());
+        if (res.ok) {
+          const db = await res.json();
+          if (db && db.config) {
+            newConfigData = db.config;
+          }
+        }
+      } catch(e) {}
+    }
+
+    if (newConfigData) {
+      const prevGf = userConfig.girlfriendName;
+      const prevBf = userConfig.boyfriendName;
+      const prevDate = userConfig.startDate;
+      const prevLetter = userConfig.letterBody;
+
+      userConfig = Object.assign({}, userConfig, newConfigData);
+      try {
+        localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
+      } catch(e) {}
+
+      // Re-apply if any couple field changed
+      if (prevGf !== userConfig.girlfriendName || prevBf !== userConfig.boyfriendName || prevDate !== userConfig.startDate || prevLetter !== userConfig.letterBody) {
+        applyConfigToUI();
+        if (typeof drawLuckyWheel === 'function') drawLuckyWheel();
+        console.log('🔄 Đã tự động cập nhật nội dung cặp đôi mới từ Database!');
+      }
+    }
+  }
+
   // Async Sync with Database Server
+  syncConfigToUI();
   syncNotesToUI();
   syncMemoriesToUI();
   fetchBucketList();
+
+  // Polling every 8 seconds for live 2-way sync
+  setInterval(() => {
+    syncConfigToUI();
+    syncMemoriesToUI();
+    loadLocketFeed();
+  }, 8000);
 
 })();
