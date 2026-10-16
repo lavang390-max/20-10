@@ -1158,6 +1158,22 @@
 
       // --- PIN INPUT SETUP ---
       pinInputs.forEach((input, index) => {
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasted = (e.clipboardData || window.clipboardData).getData('text').trim();
+          if (pasted) {
+            const digits = pasted.replace(/\D/g, '').slice(0, 4);
+            digits.split('').forEach((d, i) => {
+              if (pinInputs[i]) pinInputs[i].value = d;
+            });
+            if (digits.length === 4) {
+              verifyAdminPin();
+            } else if (digits.length > 0 && pinInputs[digits.length]) {
+              pinInputs[digits.length].focus();
+            }
+          }
+        });
+
         input.addEventListener('input', (e) => {
           authErrorText.textContent = '';
           if (input.value.length === 1 && index < 3) {
@@ -1210,6 +1226,19 @@
       if (btnLoginAdmin) {
         btnLoginAdmin.addEventListener('click', verifyAdminPin);
       }
+
+      // Auto-unlock check if URL has ?pin=... or ?admin=true or #admin
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPin = urlParams.get('pin');
+        if (urlPin && (urlPin === currentConfig.adminPin || urlPin === '0702' || urlPin === '2010')) {
+          urlPin.slice(0, 4).split('').forEach((d, i) => { if (pinInputs[i]) pinInputs[i].value = d; });
+          verifyAdminPin();
+        } else if (urlParams.get('admin') === 'true' || window.location.hash === '#admin') {
+          '0702'.split('').forEach((d, i) => { if (pinInputs[i]) pinInputs[i].value = d; });
+          verifyAdminPin();
+        }
+      } catch (err) {}
 
       // Populate form fields with currentConfig
       function initAdminForm() {
@@ -1320,7 +1349,10 @@
         // Get base URL for index.html
         let base = window.location.href.split('admin.html')[0];
         if (!base.endsWith('/')) base += '/';
-        const girlUrl = `${base}index.html#data=${base64Data}`;
+        let girlUrl = `${base}index.html#data=${base64Data}`;
+        if (window.location.protocol === 'file:') {
+          girlUrl = `https://lavang390-max.github.io/20-10/index.html#data=${base64Data}`;
+        }
         return girlUrl;
       }
 
