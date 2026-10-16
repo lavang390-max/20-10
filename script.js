@@ -1521,6 +1521,7 @@
       locketPreviewVideo.style.display = 'none';
       locketPreviewVideo.pause();
     }
+    if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
     if (locketPreviewWrap) locketPreviewWrap.classList.add('active');
 
     // Sync live preview caption pill
@@ -1591,6 +1592,7 @@
       if (locketPreviewImg) {
         locketPreviewImg.style.display = 'none';
       }
+      if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
       if (locketPreviewWrap) locketPreviewWrap.classList.add('active');
 
       const currentText = (locketCaptionInput && locketCaptionInput.value.trim()) || 'Gửi người anh thương nhất';
@@ -1670,6 +1672,9 @@
       reader.onload = (loadEvent) => {
         const resultUrl = loadEvent.target.result;
 
+        // 1. Ẩn ngay màn hình khởi động / overlay để hiện ảnh preview trong ô vuông
+        if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
+
         if (isVideo) {
           capturedMediaData = {
             type: 'video',
@@ -1682,6 +1687,23 @@
           }
           if (locketPreviewImg) locketPreviewImg.style.display = 'none';
         } else {
+          // Hiển thị ảnh ngay lập tức trong ô vuông để xem lại trước khi upload
+          if (locketPreviewImg) {
+            locketPreviewImg.src = resultUrl;
+            locketPreviewImg.style.display = 'block';
+          }
+          if (locketPreviewVideo) {
+            locketPreviewVideo.style.display = 'none';
+            locketPreviewVideo.pause();
+          }
+
+          capturedMediaData = {
+            type: 'photo',
+            base64: resultUrl,
+            rawBase64: resultUrl
+          };
+
+          // Đồng thời crop vuông chuẩn 1:1 trong canvas nền chất lượng cao
           const tempImg = new Image();
           tempImg.onload = () => {
             if (locketCanvas) {
@@ -1703,11 +1725,6 @@
                 };
                 if (locketPreviewImg) {
                   locketPreviewImg.src = cleanSquareBase64;
-                  locketPreviewImg.style.display = 'block';
-                }
-                if (locketPreviewVideo) {
-                  locketPreviewVideo.style.display = 'none';
-                  locketPreviewVideo.pause();
                 }
               }
             }
@@ -1725,8 +1742,8 @@
         if (locketPreviewQuote) locketPreviewQuote.textContent = currentText;
         if (locketPreviewSticker) locketPreviewSticker.textContent = activeLocketSticker;
 
-        updateCameraStatus('ready', 'Xem trước tệp');
-        showLocketToast('Đã chọn tệp! Viết lời nhắn gửi người thương nhé 💕', '✨');
+        updateCameraStatus('ready', 'Xem trước ảnh');
+        showLocketToast('Đã chọn ảnh! Viết lời nhắn gửi người thương nhé 💕', '✨');
       };
       reader.readAsDataURL(file);
     });
@@ -1736,6 +1753,7 @@
   function retakeLocket() {
     capturedMediaData = null;
     closeRecipientSheet();
+    if (locketFileInput) locketFileInput.value = '';
     if (locketPreviewWrap) locketPreviewWrap.classList.remove('active');
     if (locketCaptionBox) locketCaptionBox.classList.remove('show');
     if (locketShutterBar) locketShutterBar.style.display = 'flex';
@@ -1749,10 +1767,15 @@
     if (locketRecBadge) locketRecBadge.style.display = 'none';
     if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '245';
 
-    updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
-
-    if (locketVideo && locketMediaStream && locketMediaStream.active && locketVideo.paused) {
-      locketVideo.play().catch(e => console.warn(e));
+    if (locketVideo && locketMediaStream && locketMediaStream.active) {
+      if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
+      if (locketVideo.paused) {
+        locketVideo.play().catch(e => console.warn(e));
+      }
+      updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
+    } else {
+      if (cameraStartOverlay) cameraStartOverlay.classList.remove('hidden');
+      updateCameraStatus('', 'Chạm để bật máy ảnh');
     }
   }
 

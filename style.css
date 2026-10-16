@@ -3128,16 +3128,18 @@ button {
   padding: 0 !important;
 }
 
-/* CAMERA APP CONTAINER: Mobile-first fullscreen layout with desktop chassis frame */
+/* CAMERA APP CONTAINER: Mobile-first layout with desktop chassis frame */
 .camera-app-container {
   width: 100%;
   height: 100vh;
   height: 100dvh;
   position: relative;
   overflow: hidden;
-  background: #000;
+  background: #09090f;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
 @media (min-width: 769px) {
@@ -3153,16 +3155,15 @@ button {
 
 /* TOP HUD BAR: ĐÓNG CAMERA, TRẠNG THÁI & CÔNG CỤ */
 .camera-hud-top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
   z-index: 60;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: max(16px, env(safe-area-inset-top)) 16px 12px 16px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.25) 60%, rgba(0, 0, 0, 0) 100%);
+  padding: max(14px, env(safe-area-inset-top)) 16px 8px 16px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
 }
 
@@ -3286,19 +3287,26 @@ button {
   gap: 8px;
 }
 
-/* KHU VỰC XEM TRƯỚC CAMERA: CHIẾM PHẦN LỚN MÀN HÌNH */
+/* KHU VỰC XEM TRƯỚC CAMERA: Ô VUÔNG LOCKET SQUIRCLE CHÍNH GIỮA (1:1 ASPECT-RATIO) */
 .camera-viewfinder-frame {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: min(84vw, 340px, calc(100dvh - 310px));
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 36px;
   overflow: hidden;
-  background: #000000;
+  background: #0d0d16;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  flex-shrink: 0;
+  margin: auto auto;
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 77, 136, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .camera-video-feed {
@@ -3306,6 +3314,7 @@ button {
   height: 100%;
   object-fit: cover;
   pointer-events: none;
+  border-radius: inherit;
   transform: scaleX(-1); /* Gương tự nhiên cho selfie */
   transition: filter 0.3s ease, transform 0.3s ease;
 }
@@ -3354,10 +3363,11 @@ button {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  padding: 72px 16px 140px 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  border-radius: inherit;
   z-index: 15;
 }
 
@@ -3437,8 +3447,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  z-index: 55;
+  padding: 16px;
+  border-radius: inherit;
+  z-index: 45;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
@@ -3446,25 +3457,25 @@ button {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  display: none !important;
 }
 
 .permission-card {
-  max-width: 310px;
+  max-width: 100%;
   width: 100%;
-  background: rgba(25, 25, 35, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 28px;
-  padding: 24px 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 8px 14px;
   text-align: center;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .permission-icon-pulse {
-  width: 68px;
-  height: 68px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(255, 42, 109, 0.25), rgba(246, 200, 95, 0.25));
   border: 2px solid rgba(255, 42, 109, 0.5);
@@ -3472,7 +3483,7 @@ button {
   align-items: center;
   justify-content: center;
   color: #ff758c;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   animation: pulseIconCamera 2s infinite ease-in-out;
 }
 
@@ -3482,38 +3493,43 @@ button {
 }
 
 .permission-title {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .permission-desc {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   color: rgba(255, 255, 255, 0.75);
-  line-height: 1.4;
-  margin-bottom: 18px;
+  line-height: 1.35;
+  margin-bottom: 14px;
 }
 
 .permission-btn-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
 .permission-btn-group button {
   width: 100%;
   justify-content: center;
+  padding: 9px 12px;
+  font-size: 0.8rem;
+  border-radius: 20px;
 }
 
-/* ẢNH XEM TRƯỚC: HIỂN THỊ ẢNH VỪA CHỤP ĐỂ KIỂM TRA TRƯỚC KHI GỬI */
+/* ẢNH XEM TRƯỚC: HIỂN THỊ ẢNH VỪA CHỤP / TẢI LÊN TRONG Ô VUÔNG ĐỂ KIỂM TRA TRƯỚC KHI GỬI */
 .camera-preview-overlay {
   position: absolute;
   inset: 0;
   background: #000;
-  z-index: 40;
+  border-radius: inherit;
+  z-index: 60;
   display: none;
+  overflow: hidden;
 }
 
 .camera-preview-overlay.active {
@@ -3525,32 +3541,38 @@ button {
   width: 100%;
   height: 100%;
   position: relative;
+  border-radius: inherit;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
 }
 
 .camera-preview-media {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: inherit;
   display: block;
 }
 
 .preview-corner-retake {
   position: absolute;
-  top: max(16px, env(safe-area-inset-top));
-  left: 16px;
-  background: rgba(18, 18, 26, 0.7);
+  top: 12px;
+  left: 12px;
+  background: rgba(18, 18, 26, 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #fff;
-  padding: 8px 14px;
-  border-radius: 24px;
-  font-size: 0.82rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
   z-index: 65;
   transition: all 0.2s;
@@ -3567,25 +3589,25 @@ button {
 
 .preview-caption-pill {
   position: absolute;
-  bottom: 160px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.68);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  padding: 6px 16px;
-  border-radius: 24px;
-  font-size: 0.8rem;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.76rem;
   color: #ffd6e0;
   font-weight: 600;
   border: 1.5px solid rgba(255, 77, 136, 0.45);
-  max-width: 86%;
+  max-width: 88%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   pointer-events: none;
-  z-index: 55;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  z-index: 65;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -3593,18 +3615,17 @@ button {
 
 /* BOTTOM CONTROLS: CHẾ ĐỘ QUAY VIDEO, NÚT CHỤP & LẬT CAMERA */
 .camera-bottom-controls {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 60;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  z-index: 30;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 16px max(24px, env(safe-area-inset-bottom)) 16px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+  padding: 8px 16px max(20px, env(safe-area-inset-bottom)) 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
-  gap: 12px;
+  gap: 10px;
 }
 
 .camera-bottom-controls > * {
@@ -3813,16 +3834,16 @@ button {
 }
 
 /* BẢNG ĐIỀU KHIỂN SAU KHI CHỤP: NHÃN DÁN, LỜI NHẮN & NÚT GỬI */
+/* BẢNG ĐIỀU KHIỂN SAU KHI CHỤP: NHÃN DÁN, LỜI NHẮN & NÚT GỬI */
 .camera-preview-editor-panel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 80;
-  background: linear-gradient(to top, rgba(10, 10, 16, 0.96) 0%, rgba(10, 10, 16, 0.85) 75%, rgba(10, 10, 16, 0) 100%);
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  z-index: 35;
+  background: linear-gradient(to top, rgba(10, 10, 16, 0.98) 0%, rgba(10, 10, 16, 0.88) 80%, rgba(10, 10, 16, 0) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 16px 18px max(24px, env(safe-area-inset-bottom)) 18px;
+  padding: 12px 18px max(20px, env(safe-area-inset-bottom)) 18px;
   display: none;
   flex-direction: column;
   gap: 10px;
