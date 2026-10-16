@@ -11,7 +11,7 @@ window.COUPLE_CONFIG = {
   "adminPin": "0702",
   "girlfriendName": "bé mèo",
   "boyfriendName": "khúc gỗ",
-  "startDate": "2026-02-07T12:00:00.000Z",
+  "startDate": "2026-02-07T05:00:00.000Z",
   "wheelPrizes": [
     {
       "title": "1 Cái Ôm Thật Chặt",
@@ -45,6 +45,7 @@ window.COUPLE_CONFIG = {
     }
   ],
   "letterBody": "Hellu bé - bé iu của anh\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!",
+  "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
   "girlfriendRealName": "N.T.B.N",
   "boyfriendRealName": "Huỳnh Ngọc Thắng"
 };
