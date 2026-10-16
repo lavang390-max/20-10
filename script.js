@@ -120,6 +120,61 @@
     } catch(e) {}
   }
 
+  // --- REALTIME 2-WAY BROADCAST CHANNEL BETWEEN BÉ & ADMIN ---
+  let syncChannel = null;
+  try {
+    syncChannel = new BroadcastChannel('love_gift_realtime_sync');
+    syncChannel.onmessage = (event) => {
+      const data = event.data;
+      if (!data) return;
+      console.log('[Bé] ⚡ Nhận tín hiệu thời gian thực từ Admin:', data);
+
+      if (data.type === 'CONFIG_UPDATED') {
+        if (data.payload && typeof data.payload === 'object') {
+          userConfig = Object.assign({}, userConfig, data.payload);
+          try {
+            localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
+          } catch(e) {}
+          if (typeof applyConfigToUI === 'function') applyConfigToUI();
+          if (typeof drawLuckyWheel === 'function') drawLuckyWheel();
+        } else if (typeof syncConfigToUI === 'function') {
+          syncConfigToUI();
+        }
+      } else if (data.type === 'DATA_UPDATED') {
+        const mod = data.payload && data.payload.module;
+        if ((!mod || mod === 'notes') && typeof syncNotesToUI === 'function') syncNotesToUI();
+        if ((!mod || mod === 'memories') && typeof syncMemoriesToUI === 'function') syncMemoriesToUI();
+        if ((!mod || mod === 'bucket') && typeof fetchBucketList === 'function') fetchBucketList();
+        if ((!mod || mod === 'locket') && typeof loadLocketFeed === 'function') loadLocketFeed();
+      }
+    };
+  } catch(e) {
+    console.warn('BroadcastChannel not available', e);
+  }
+
+  function broadcastRealtime(type = 'BÉ_ACTION', payload = {}) {
+    if (syncChannel) {
+      try {
+        syncChannel.postMessage({ type, payload, timestamp: Date.now() });
+      } catch(e) {}
+    }
+  }
+
+  // Fallback cross-window storage event listener
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'romantic_gift_config_2010' || event.key === 'romantic_gift_last_sync') {
+      if (typeof syncConfigToUI === 'function') syncConfigToUI();
+    } else if (event.key === 'romantic_gift_user_notes') {
+      if (typeof renderDiaryNotes === 'function') renderDiaryNotes();
+    } else if (event.key === 'romantic_gift_user_memories') {
+      if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
+    } else if (event.key === 'romantic_gift_bucket_list') {
+      if (typeof renderBucketList === 'function') renderBucketList();
+    } else if (event.key === 'romantic_gift_locket_feed') {
+      if (typeof loadLocketFeed === 'function') loadLocketFeed();
+    }
+  });
+
   // --- AUDIO SYNTHESIZER (Web Audio API) ---
   class SoundEngine {
     constructor() {
@@ -2031,6 +2086,8 @@
         console.log('GitHub Pages static mode: moment saved securely in device storage');
       }
 
+      broadcastRealtime('BÉ_ACTION', { module: 'locket' });
+
       const targetDesc = recipientLabel ? `đến ${recipientLabel}` : 'thành công';
       updateCameraStatus('success', '✅ Gửi thành công!');
       showLocketToast(`Đã gửi khoảnh khắc ${targetDesc}! 💖📸`, '🎉');
@@ -2344,6 +2401,7 @@
     try {
       await fetch(`/api/notes/${encodeURIComponent(noteId)}`, { method: 'DELETE' });
     } catch(e) {}
+    broadcastRealtime('BÉ_ACTION', { module: 'notes' });
   }
 
   function getSavedDiaryNotes() {
@@ -2461,6 +2519,7 @@
         burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
       } catch(err){}
       renderDiaryNotes();
+      broadcastRealtime('BÉ_ACTION', { module: 'notes' });
 
       const shareText = `💌 [Lời nhắn bé gửi khúc gỗ - ${selectedMood} ${selectedMoodLabel}]\n"${content}"\n(${dateStr})`;
       if (navigator.share) {
@@ -2594,6 +2653,7 @@
     try {
       await fetch(`/api/memories/${encodeURIComponent(memId)}`, { method: 'DELETE' });
     } catch(e) {}
+    broadcastRealtime('BÉ_ACTION', { module: 'memories' });
   }
 
   function getSavedMemories() {
@@ -2796,6 +2856,7 @@
         sound.playSuccessChime();
         burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
         renderMemoriesGrid();
+        broadcastRealtime('BÉ_ACTION', { module: 'memories' });
         alert('Đã lưu bức ảnh vào kho kỷ niệm thành công! 📸✨ Cả hai bạn đều sẽ thấy bức ảnh này mãi mãi!');
       } catch (err) {
         console.error('Lỗi khi lưu ảnh kỷ niệm:', err);
@@ -3058,6 +3119,7 @@
     try {
       await fetch(`/api/bucket/${encodeURIComponent(id)}/toggle`, { method: 'PUT' });
     } catch(e) {}
+    broadcastRealtime('BÉ_ACTION', { module: 'bucket' });
   }
 
   // Filter pills
@@ -3131,6 +3193,7 @@
           body: JSON.stringify(newWish)
         });
       } catch(e) {}
+      broadcastRealtime('BÉ_ACTION', { module: 'bucket' });
     });
   }
 
@@ -3376,7 +3439,7 @@
   function applyConfigToUI() {
     const displayNames = document.getElementById('display-couple-names');
     if (displayNames) {
-      displayNames.textContent = `${userConfig.boyfriendName} & ${userConfig.girlfriendName}`;
+      displayNames.textContent = `${userConfig.boyfriendName || 'khúc gỗ'} & ${userConfig.girlfriendName || 'bé mèo'}`;
     }
 
     const certRecipient = document.getElementById('cert-recipient-name');
@@ -3394,6 +3457,31 @@
     const hintSpan = document.querySelector('#hint-bubble span');
     if (hintSpan && userConfig.passcodeHint) {
       hintSpan.textContent = userConfig.passcodeHint;
+    }
+
+    // Camera recipient labels
+    const partnerName = (userConfig && userConfig.boyfriendName) || 'khúc gỗ';
+    if (typeof quickSendPersonName !== 'undefined' && quickSendPersonName) {
+      quickSendPersonName.textContent = `Gửi Cho ${partnerName} 💖`;
+    }
+    if (typeof choiceTitleBf !== 'undefined' && choiceTitleBf) {
+      choiceTitleBf.textContent = `Chàng Trai Của Bé (${partnerName})`;
+    }
+
+    // Letter modal salutation and sender
+    const letterSalutation = document.getElementById('letter-salutation');
+    if (letterSalutation) {
+      letterSalutation.textContent = `Gửi ${userConfig.girlfriendName || 'bé mèo'},`;
+    }
+    const letterSenderName = document.getElementById('letter-sender-name');
+    if (letterSenderName) {
+      letterSenderName.textContent = `${userConfig.boyfriendName || 'khúc gỗ'} ❤️`;
+    }
+
+    // If letter is currently displayed on screen, update typewriterText immediately
+    const typewriterText = document.getElementById('typewriter-text');
+    if (typewriterText && !isTyping && typewriterText.textContent.trim()) {
+      typewriterText.textContent = userConfig.letterBody || DEFAULT_CONFIG.letterBody;
     }
 
     updateLiveCounter();
@@ -3452,7 +3540,7 @@
 
     // 1. Fetch from live /api/config
     try {
-      const res = await fetch('/api/config');
+      const res = await fetch('/api/config?v=' + Date.now());
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && data.config) {
@@ -3475,36 +3563,42 @@
     }
 
     if (newConfigData) {
-      const prevGf = userConfig.girlfriendName;
-      const prevBf = userConfig.boyfriendName;
-      const prevDate = userConfig.startDate;
-      const prevLetter = userConfig.letterBody;
-
+      const prevConfigStr = JSON.stringify(userConfig);
       userConfig = Object.assign({}, userConfig, newConfigData);
+      const newConfigStr = JSON.stringify(userConfig);
+
       try {
         localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
       } catch(e) {}
 
-      // Re-apply if any couple field changed
-      if (prevGf !== userConfig.girlfriendName || prevBf !== userConfig.boyfriendName || prevDate !== userConfig.startDate || prevLetter !== userConfig.letterBody) {
+      // Re-apply if ANY field changed
+      if (prevConfigStr !== newConfigStr) {
         applyConfigToUI();
         if (typeof drawLuckyWheel === 'function') drawLuckyWheel();
-        console.log('🔄 Đã tự động cập nhật nội dung cặp đôi mới từ Database!');
+        console.log('🔄 Đã tự động cập nhật cấu hình mới từ Database!');
       }
     }
   }
 
-  // Async Sync with Database Server
-  syncConfigToUI();
-  syncNotesToUI();
-  syncMemoriesToUI();
-  fetchBucketList();
-
-  // Polling every 8 seconds for live 2-way sync
-  setInterval(() => {
+  // Unified Realtime Sync of All 5 Modules
+  function syncAllRealtimeData() {
     syncConfigToUI();
+    syncNotesToUI();
     syncMemoriesToUI();
+    fetchBucketList();
     loadLocketFeed();
-  }, 8000);
+  }
+
+  // Initial Sync with Database Server
+  syncAllRealtimeData();
+
+  // Fast Polling every 2.5 seconds for live 2-way sync across devices
+  setInterval(syncAllRealtimeData, 2500);
+
+  // Immediate refresh when tab becomes active / visible
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncAllRealtimeData();
+  });
+  window.addEventListener('focus', syncAllRealtimeData);
 
 })();

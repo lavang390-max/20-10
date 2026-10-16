@@ -153,7 +153,7 @@ function writeDatabase(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
 
-    // Tự động đồng bộ sang data/seed_data.js để GitHub Pages và chế độ tĩnh luôn luôn có đủ mọi ảnh kỷ niệm
+    // Tự động đồng bộ sang data/seed_data.js và config.js để toàn hệ thống luôn luôn đồng nhất
     try {
       const seedContent = `/**
  * ==========================================================
@@ -163,6 +163,7 @@ function writeDatabase(data) {
  */
 
 const SEED_DATA = ${JSON.stringify({
+        config: data.config || null,
         notes: data.notes || [],
         memories: data.memories || [],
         bucketList: data.bucketList || [],
@@ -170,8 +171,21 @@ const SEED_DATA = ${JSON.stringify({
       }, null, 2)};
 `;
       fs.writeFileSync(path.join(DATA_DIR, 'seed_data.js'), seedContent, 'utf8');
+
+      if (data.config) {
+        const configJsContent = `/**
+ * ==========================================================
+ * CẤU HÌNH QUÀ TẶNG 20/10 - THÔNG TIN DÀNH CHO CẶP ĐÔI
+ * ==========================================================
+ * Tự động đồng bộ từ Database Server
+ */
+
+window.COUPLE_CONFIG = ${JSON.stringify(data.config, null, 2)};
+`;
+        fs.writeFileSync(path.join(__dirname, 'config.js'), configJsContent, 'utf8');
+      }
     } catch (seedErr) {
-      console.warn('Lỗi đồng bộ seed_data.js:', seedErr);
+      console.warn('Lỗi đồng bộ seed_data.js / config.js:', seedErr);
     }
 
     return true;

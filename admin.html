@@ -710,9 +710,15 @@
       <div class="admin-title-wrap">
         <h1>⚙️ Trung Tâm Quản Trị 20/10</h1>
         <p>Soạn quà tặng lãng mạn dành riêng cho bé • Tạo đường link chỉ xem an toàn</p>
-        <div class="admin-badge">
-          <span class="admin-badge-dot"></span>
-          <span>Chế độ quản trị viên đã kích hoạt</span>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <div class="admin-badge">
+            <span class="admin-badge-dot"></span>
+            <span>Chế độ quản trị viên đã kích hoạt</span>
+          </div>
+          <div class="admin-badge" id="admin-sync-badge" style="background: rgba(85, 239, 196, 0.15); border-color: #55efc4; color: #55efc4;">
+            <span class="admin-badge-dot" style="background: #55efc4;"></span>
+            <span id="admin-sync-status-text">⚡ Đồng bộ trực tiếp với Bé: Sẵn sàng</span>
+          </div>
         </div>
       </div>
 
@@ -1290,10 +1296,46 @@
         }
       } catch (err) {}
 
+      // --- REALTIME 2-WAY BROADCAST CHANNEL BETWEEN ADMIN & BÉ ---
+      let syncChannel = null;
+      try {
+        syncChannel = new BroadcastChannel('love_gift_realtime_sync');
+        syncChannel.onmessage = (event) => {
+          console.log('[Admin] ⚡ Nhận tín hiệu thời gian thực từ trang của bé:', event.data);
+          loadAdminNotes();
+          loadAdminMemories();
+          loadAdminBucket();
+          loadAdminLocket();
+          const syncStatusText = document.getElementById('admin-sync-status-text');
+          if (syncStatusText) {
+            syncStatusText.textContent = `⚡ Bé vừa tương tác: ${new Date().toLocaleTimeString('vi-VN')}`;
+          }
+        };
+      } catch(e) {}
+
+      function broadcastToGirl(type = 'CONFIG_UPDATED', payload = {}) {
+        const syncStatusText = document.getElementById('admin-sync-status-text');
+        if (syncStatusText) {
+          syncStatusText.textContent = `🟢 Đã đồng bộ sang Bé: ${new Date().toLocaleTimeString('vi-VN')}`;
+        }
+        if (syncChannel) {
+          try {
+            syncChannel.postMessage({ type, payload, timestamp: Date.now() });
+          } catch(e) {}
+        }
+      }
+
       // Populate form fields with currentConfig
-      function initAdminForm() {
+      function populateAdminFormFields(onlyIfUnfocused = false) {
+        if (onlyIfUnfocused) {
+          const active = document.activeElement;
+          if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) {
+            return; // Don't interrupt while user is actively typing
+          }
+        }
+
         if (inputPasscode) inputPasscode.value = currentConfig.passcode || '0702';
-        if (inputPasscodeHint) inputPasscodeHint.value = currentConfig.passcodeHint || 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! (0702) ✨';
+        if (inputPasscodeHint) inputPasscodeHint.value = currentConfig.passcodeHint || 'Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè! ✨';
         if (inputAdminPin) inputAdminPin.value = currentConfig.adminPin || '0702';
         if (inputGfName) inputGfName.value = currentConfig.girlfriendName || 'bé mèo';
         if (inputBfName) inputBfName.value = currentConfig.boyfriendName || 'khúc gỗ';
@@ -1309,7 +1351,49 @@
           } catch(e) {}
         }
 
+        renderPrizesEditor();
         updateGeneratedShareLink();
+      }
+
+      // Fetch fresh server configuration from database
+      async function syncServerConfigToAdmin(onlyIfUnfocused = false) {
+        let serverConfig = null;
+        try {
+          const res = await fetch('/api/config?v=' + Date.now());
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.config) {
+              serverConfig = data.config;
+            }
+          }
+        } catch(e) {}
+
+        if (!serverConfig) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && db.config) serverConfig = db.config;
+            }
+          } catch(e) {}
+        }
+
+        if (serverConfig) {
+          currentConfig = Object.assign({}, currentConfig, serverConfig);
+          try {
+            localStorage.setItem('romantic_gift_config_2010', JSON.stringify(currentConfig));
+          } catch(e) {}
+          populateAdminFormFields(onlyIfUnfocused);
+        }
+      }
+
+      // Eagerly sync server config right away on page load
+      syncServerConfigToAdmin(false);
+
+      function initAdminForm() {
+        populateAdminFormFields(false);
+        syncServerConfigToAdmin(false);
+
         loadAdminNotes();
         loadAdminMemories();
         loadAdminBucket();
@@ -1330,15 +1414,6 @@
         liveCalcDaysPill.innerHTML = `⏳ Đã bên nhau: <b>${totalDays} ngày</b> (${years > 0 ? years + ' năm ' : ''}${remDays} ngày)`;
       }
 
-      if (inputStartDate) {
-        inputStartDate.addEventListener('input', () => {
-          if (inputStartDate.value) {
-            updateDaysPreview(new Date(inputStartDate.value));
-          }
-          updateGeneratedShareLink();
-        });
-      }
-
       // Render 6 prizes in form
       function renderPrizesEditor() {
         if (!wheelPrizesList) return;
@@ -1353,13 +1428,18 @@
           item.innerHTML = `
             <span class="wheel-prize-badge" style="background: ${p.color};">Ô ${idx + 1}</span>
             <div class="admin-field" style="margin-bottom: 8px;">
-              <input type="text" class="admin-input input-prize-title" data-idx="${idx}" value="${p.title}" placeholder="Tên phần thưởng">
+              <input type="text" class="admin-input input-prize-title" data-idx="${idx}" value="${escapeHTML(p.title)}" placeholder="Tên phần thưởng">
             </div>
             <div class="admin-field" style="margin-bottom: 0;">
-              <input type="text" class="admin-input input-prize-note" data-idx="${idx}" value="${p.note}" placeholder="Lời nhắn chi tiết">
+              <input type="text" class="admin-input input-prize-note" data-idx="${idx}" value="${escapeHTML(p.note)}" placeholder="Lời nhắn chi tiết">
             </div>
           `;
           wheelPrizesList.appendChild(item);
+        });
+
+        // Attach listeners for wheel prizes inputs to auto-save
+        wheelPrizesList.querySelectorAll('input').forEach(inp => {
+          inp.addEventListener('input', triggerAutoSave);
         });
       }
 
@@ -1375,7 +1455,7 @@
         currentConfig.letterBody = (inputLetterBody.value || DEFAULT_CONFIG.letterBody).trim();
         currentConfig.imgbbApiKey = (inputImgbbKey && inputImgbbKey.value.trim()) || '';
 
-        if (inputStartDate.value) {
+        if (inputStartDate && inputStartDate.value) {
           currentConfig.startDate = new Date(inputStartDate.value).toISOString();
         }
 
@@ -1417,24 +1497,18 @@
         if (previewBtn) previewBtn.href = link;
       }
 
-      // Listen to inputs to update link dynamically
-      const allInputs = [inputPasscode, inputPasscodeHint, inputAdminPin, inputGfName, inputBfName, inputLetterBody];
-      allInputs.forEach(inp => {
-        if (inp) inp.addEventListener('input', updateGeneratedShareLink);
-      });
-      if (wheelPrizesList) {
-        wheelPrizesList.addEventListener('input', updateGeneratedShareLink);
-      }
-
-      // Save to localStorage and Database
-      async function saveToLocalStorage() {
+      // Save to localStorage, Database, and Broadcast instantly to Bé
+      async function saveToLocalStorage(isAutoSave = false) {
         const data = collectFormData();
         try {
           localStorage.setItem('romantic_gift_config_2010', JSON.stringify(data));
-          showToast('Đã lưu cấu hình vào trình duyệt thành công! 💾', '✅');
-        } catch(e) {
-          console.error(e);
-        }
+          if (!isAutoSave) {
+            showToast('Đã lưu cấu hình và đồng bộ tức thì sang Bé! 💾', '✅');
+          }
+        } catch(e) {}
+
+        // Broadcast immediately to Bé's tab (0ms latency!)
+        broadcastToGirl('CONFIG_UPDATED', data);
 
         // Also sync to backend Database server
         try {
@@ -1445,6 +1519,28 @@
           });
         } catch(err) {}
       }
+
+      // Debounced Auto-Save on any input change (400ms)
+      let autoSaveTimer = null;
+      function triggerAutoSave() {
+        updateGeneratedShareLink();
+        clearTimeout(autoSaveTimer);
+        const syncStatusText = document.getElementById('admin-sync-status-text');
+        if (syncStatusText) {
+          syncStatusText.textContent = '⏳ Đang truyền dữ liệu sang bé...';
+        }
+        autoSaveTimer = setTimeout(() => {
+          saveToLocalStorage(true);
+        }, 400);
+      }
+
+      // Listen to inputs to auto-save and update link dynamically
+      const allInputs = [inputPasscode, inputPasscodeHint, inputAdminPin, inputGfName, inputBfName, inputStartDate, inputLetterBody, inputImgbbKey];
+      allInputs.forEach(inp => {
+        if (inp) {
+          inp.addEventListener('input', triggerAutoSave);
+        }
+      });
 
       // Copy link to clipboard
       function copyGirlLink() {
@@ -1592,6 +1688,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
                 await fetch(`/api/notes/${encodeURIComponent(n.id)}`, { method: 'DELETE' });
               } catch(e) {}
               loadAdminNotes();
+              broadcastToGirl('DATA_UPDATED', { module: 'notes' });
               showToast('Đã xóa lời nhắn', '🗑️');
             }
           });
@@ -1655,6 +1752,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
                 await fetch(`/api/memories/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
               } catch(e) {}
               loadAdminMemories();
+              broadcastToGirl('DATA_UPDATED', { module: 'memories' });
               showToast('Đã xóa ảnh khỏi album', '🗑️');
             }
           });
@@ -1710,6 +1808,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               fileInputAdmin.value = '';
               if (captionInputAdmin) captionInputAdmin.value = '';
               loadAdminMemories();
+              broadcastToGirl('DATA_UPDATED', { module: 'memories' });
             } else {
               alert('Không thể lưu ảnh lên server. Hãy kiểm tra kết nối.');
             }
@@ -1797,6 +1896,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               await fetch(`/api/bucket/${encodeURIComponent(item.id)}/toggle`, { method: 'PUT' });
             } catch(e) {}
             loadAdminBucket();
+            broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
             showToast(chk.checked ? 'Đã đánh dấu hoàn thành điều ước! 🎉' : 'Đã bỏ đánh dấu hoàn thành', '🎯');
           });
 
@@ -1807,6 +1907,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
                 await fetch(`/api/bucket/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
               } catch(e) {}
               loadAdminBucket();
+              broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
               showToast('Đã xóa điều ước khỏi Bucket List', '🗑️');
             }
           });
@@ -1847,6 +1948,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               showToast('Đã thêm điều ước mới vào Love Bucket List! 🎯💖', '✅');
               if (inputBucketTitle) inputBucketTitle.value = '';
               loadAdminBucket();
+              broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
             } else {
               alert('Không thể lưu vào server. Hãy kiểm tra kết nối.');
             }
@@ -1927,6 +2029,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
                 await fetch(`/api/locket/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
               } catch(e) {}
               loadAdminLocket();
+              broadcastToGirl('DATA_UPDATED', { module: 'locket' });
               showToast('Đã xóa khoảnh khắc', '🗑️');
             }
           });
@@ -1975,6 +2078,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               fileInputLocketAdmin.value = '';
               if (captionInputLocketAdmin) captionInputLocketAdmin.value = '';
               loadAdminLocket();
+              broadcastToGirl('DATA_UPDATED', { module: 'locket' });
             } else {
               alert('Không thể lưu ảnh/video lên máy chủ.');
             }
@@ -1997,10 +2101,42 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       if (btnRefreshBucket) btnRefreshBucket.addEventListener('click', loadAdminBucket);
       if (btnRefreshLocket) btnRefreshLocket.addEventListener('click', loadAdminLocket);
 
-      // Auto poll notes, bucket, and locket
-      setInterval(loadAdminNotes, 15000);
-      setInterval(loadAdminBucket, 20000);
-      setInterval(loadAdminLocket, 15000);
+      // Fast Real-Time Polling & Sync (2.5s)
+      function refreshAllAdminData() {
+        loadAdminNotes();
+        loadAdminMemories();
+        loadAdminBucket();
+        loadAdminLocket();
+      }
+
+      setInterval(refreshAllAdminData, 2500);
+
+      // Instant refresh on focus / visibility change
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          syncServerConfigToAdmin(true);
+          refreshAllAdminData();
+        }
+      });
+      window.addEventListener('focus', () => {
+        syncServerConfigToAdmin(true);
+        refreshAllAdminData();
+      });
+
+      // Storage event listener for cross-window instantaneous sync
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'romantic_gift_user_notes') {
+          loadAdminNotes();
+        } else if (event.key === 'romantic_gift_user_memories') {
+          loadAdminMemories();
+        } else if (event.key === 'romantic_gift_bucket_list' || event.key === 'romantic_gift_user_bucket') {
+          loadAdminBucket();
+        } else if (event.key === 'romantic_gift_locket_feed') {
+          loadAdminLocket();
+        } else if (event.key === 'romantic_gift_last_sync' || event.key === 'romantic_gift_config_2010') {
+          syncServerConfigToAdmin(true);
+        }
+      });
 
       // Attach button listeners
       const btnCopyGirlLink = document.getElementById('btn-copy-girl-link');
