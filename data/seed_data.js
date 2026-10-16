@@ -111,18 +111,18 @@ const SEED_DATA = {
   "bucketList": [],
   "locket": [
     {
-      "id": "locket_1792036596385_1",
+      "id": "locket_1792150485625_600",
       "type": "photo",
-      "mediaUrl": "/uploads/locket_1792036596384_440047.jpg",
-      "caption": "Em vEm vua chup locket gui anh ne! <3",
-      "sender": "bé mèo",
-      "senderRole": "girlfriend",
-      "sticker": "😽",
-      "filter": "pink",
+      "mediaUrl": "/uploads/locket_1792150485619_971122.jpg",
+      "caption": "bông hoa",
+      "sender": "khúc gỗ",
+      "senderRole": "boyfriend",
+      "sticker": "💕",
+      "filter": "normal",
       "filterLabel": "Tự nhiên",
-      "createdAt": 1792036596385,
-      "timeFormatted": "10:56 • 15/10",
-      "reactions": 3
+      "createdAt": 1792150485625,
+      "timeFormatted": "18:34 • 16/10",
+      "reactions": 1
     },
     {
       "id": "locket-sample-1",
