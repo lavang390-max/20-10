@@ -152,6 +152,28 @@ function readDatabase() {
 function writeDatabase(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+
+    // Tự động đồng bộ sang data/seed_data.js để GitHub Pages và chế độ tĩnh luôn luôn có đủ mọi ảnh kỷ niệm
+    try {
+      const seedContent = `/**
+ * ==========================================================
+ * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
+ * Tự động cập nhật: ${new Date().toISOString()}
+ * ==========================================================
+ */
+
+const SEED_DATA = ${JSON.stringify({
+        notes: data.notes || [],
+        memories: data.memories || [],
+        bucketList: data.bucketList || [],
+        locket: data.locket || []
+      }, null, 2)};
+`;
+      fs.writeFileSync(path.join(DATA_DIR, 'seed_data.js'), seedContent, 'utf8');
+    } catch (seedErr) {
+      console.warn('Lỗi đồng bộ seed_data.js:', seedErr);
+    }
+
     return true;
   } catch (err) {
     console.error('Lỗi khi ghi file db.json:', err);
@@ -298,20 +320,26 @@ app.post('/api/memories', upload.single('photo'), (req, res) => {
   if (req.file) {
     photoSrc = '/uploads/' + req.file.filename;
   }
-  // 2. Nếu upload qua base64 string
-  else if (req.body && req.body.imageBase64) {
-    try {
-      const base64Data = req.body.imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      const extMatch = req.body.imageBase64.match(/^data:image\/(\w+);base64,/);
-      const ext = extMatch ? '.' + extMatch[1] : '.jpg';
-      const filename = 'memory_' + Date.now() + '_' + Math.round(Math.random() * 1e6) + ext;
-      const filePath = path.join(UPLOADS_DIR, filename);
+  // 2. Nếu upload qua base64 string hoặc URL đám mây trực tiếp
+  else if (req.body && (req.body.imageBase64 || req.body.photoSrc || req.body.src || req.body.url)) {
+    const rawImage = (req.body.imageBase64 || req.body.photoSrc || req.body.src || req.body.url).trim();
+    if (rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+      // URL đám mây trực tiếp (ImgBB, Cloudflare CDN) - giữ nguyên để truy cập vĩnh viễn
+      photoSrc = rawImage;
+    } else {
+      try {
+        const base64Data = rawImage.replace(/^data:image\/\w+;base64,/, '');
+        const extMatch = rawImage.match(/^data:image\/(\w+);base64,/);
+        const ext = extMatch ? '.' + extMatch[1] : '.jpg';
+        const filename = 'memory_' + Date.now() + '_' + Math.round(Math.random() * 1e6) + ext;
+        const filePath = path.join(UPLOADS_DIR, filename);
 
-      fs.writeFileSync(filePath, base64Data, 'base64');
-      photoSrc = '/uploads/' + filename;
-    } catch (err) {
-      console.error('Lỗi lưu file ảnh base64:', err);
-      return res.status(500).json({ success: false, message: 'Lỗi xử lý file ảnh' });
+        fs.writeFileSync(filePath, base64Data, 'base64');
+        photoSrc = '/uploads/' + filename;
+      } catch (err) {
+        console.error('Lỗi lưu file ảnh base64:', err);
+        return res.status(500).json({ success: false, message: 'Lỗi xử lý file ảnh' });
+      }
     }
   } else {
     return res.status(400).json({ success: false, message: 'Không tìm thấy file ảnh hoặc dữ liệu ảnh' });
@@ -572,25 +600,31 @@ app.post('/api/locket', uploadLocket.single('media'), (req, res) => {
     if (req.file.mimetype && req.file.mimetype.includes('video')) {
       mediaType = 'video';
     }
-  } else if (req.body && req.body.mediaBase64) {
-    try {
-      const isVideo = req.body.mediaBase64.startsWith('data:video');
-      mediaType = isVideo ? 'video' : 'photo';
-      const base64Data = req.body.mediaBase64.replace(/^data:[^;]+;base64,/, '');
-      const extMatch = req.body.mediaBase64.match(/^data:([^;]+);base64,/);
-      let ext = isVideo ? '.webm' : '.jpg';
-      if (extMatch) {
-        if (extMatch[1].includes('mp4')) ext = '.mp4';
-        else if (extMatch[1].includes('png')) ext = '.png';
-        else if (extMatch[1].includes('webp')) ext = '.webp';
+  } else if (req.body && (req.body.mediaBase64 || req.body.mediaUrl || req.body.url)) {
+    const rawMedia = (req.body.mediaBase64 || req.body.mediaUrl || req.body.url).trim();
+    if (rawMedia.startsWith('http://') || rawMedia.startsWith('https://')) {
+      mediaUrl = rawMedia;
+      mediaType = type || 'photo';
+    } else {
+      try {
+        const isVideo = rawMedia.startsWith('data:video');
+        mediaType = isVideo ? 'video' : 'photo';
+        const base64Data = rawMedia.replace(/^data:[^;]+;base64,/, '');
+        const extMatch = rawMedia.match(/^data:([^;]+);base64,/);
+        let ext = isVideo ? '.webm' : '.jpg';
+        if (extMatch) {
+          if (extMatch[1].includes('mp4')) ext = '.mp4';
+          else if (extMatch[1].includes('png')) ext = '.png';
+          else if (extMatch[1].includes('webp')) ext = '.webp';
+        }
+        const filename = 'locket_' + Date.now() + '_' + Math.round(Math.random() * 1e6) + ext;
+        const filePath = path.join(UPLOADS_DIR, filename);
+        fs.writeFileSync(filePath, base64Data, 'base64');
+        mediaUrl = '/uploads/' + filename;
+      } catch (err) {
+        console.error('Lỗi lưu file locket base64:', err);
+        return res.status(500).json({ success: false, message: 'Lỗi xử lý file locket' });
       }
-      const filename = 'locket_' + Date.now() + '_' + Math.round(Math.random() * 1e6) + ext;
-      const filePath = path.join(UPLOADS_DIR, filename);
-      fs.writeFileSync(filePath, base64Data, 'base64');
-      mediaUrl = '/uploads/' + filename;
-    } catch (err) {
-      console.error('Lỗi lưu file locket base64:', err);
-      return res.status(500).json({ success: false, message: 'Lỗi xử lý file locket' });
     }
   } else {
     return res.status(400).json({ success: false, message: 'Thiếu file ảnh hoặc video Locket' });

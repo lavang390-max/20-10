@@ -26,7 +26,7 @@
     boyfriendName: 'khúc gỗ',
     startDate: '2024-02-07T00:00:00',
     wheelPrizes: DEFAULT_WHEEL_PRIZES,
-    letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`,
+    letterBody: `Hellu bé - bé iu của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh và luôn đồng hành với anh.\n\nAnh cũng mong anh sẽ là chỗ dựa của bé như cách bé vẫn luôn bên cạnh anh. Để khi bé mệt mỏi hay bé buồn, bé biết rằng vẫn sẽ có một người sẵn sàng lắng nghe và sẻ chia, nắm tay bé đi tiếp trên những chặng đường sắp tới. \n\nChúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.Và anh sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày.\n\nTuy món quà này hơi đơn sơ nhưng đây là công sức anh tranh thủ lúc rảnh làm trong mấy ngày vừa qua, mong là bé sẽ đón nhận món quá này từ anh nhá.`,
     imgbbApiKey: '',
     girlfriendRealName: 'bé mèo',
     boyfriendRealName: 'khúc gỗ'
@@ -585,6 +585,7 @@
       renderDiaryNotes();
     } else if (index === 5) {
       renderMemoriesGrid();
+      syncMemoriesToUI();
     } else if (index === 6) {
       renderBucketList();
       fetchBucketList();
@@ -2520,37 +2521,52 @@
     { id: 'mem-12', src: 'images/photo12.jpg', caption: 'Chúc mừng 20/10 người anh yêu nhất trần đời 💐', date: '20.10.2026 ❤️' }
   ];
 
+  let cachedMemories = [];
+
   // --- DATABASE API FOR MEMORIES ---
   async function fetchMemoriesFromDatabase() {
+    // 1. Fetch from live API
     try {
       const res = await fetch('/api/memories');
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && Array.isArray(data.memories) && data.memories.length > 0) {
-          localStorage.setItem('romantic_gift_user_memories', JSON.stringify(data.memories));
+          cachedMemories = data.memories;
+          try {
+            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(data.memories));
+          } catch(e) {}
           return data.memories;
         }
       }
     } catch(e) {}
 
-    // Static fallback: data/db.json
+    // 2. Static fallback: data/db.json
     try {
-      const res = await fetch('data/db.json');
+      const res = await fetch('data/db.json?v=' + Date.now());
       if (res.ok) {
         const dbData = await res.json();
         if (dbData && Array.isArray(dbData.memories) && dbData.memories.length > 0) {
-          localStorage.setItem('romantic_gift_user_memories', JSON.stringify(dbData.memories));
+          cachedMemories = dbData.memories;
+          try {
+            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(dbData.memories));
+          } catch(e) {}
           return dbData.memories;
         }
       }
     } catch(e) {}
+
+    // 3. Fallback to SEED_DATA
+    if (window.SEED_DATA && Array.isArray(window.SEED_DATA.memories) && window.SEED_DATA.memories.length > 0) {
+      cachedMemories = JSON.parse(JSON.stringify(window.SEED_DATA.memories));
+      return cachedMemories;
+    }
 
     return null;
   }
 
   async function syncMemoriesToUI() {
     const remoteMem = await fetchMemoriesFromDatabase();
-    if (remoteMem) {
+    if (remoteMem && remoteMem.length > 0) {
       renderMemoriesGrid();
     }
   }
@@ -2581,26 +2597,35 @@
   }
 
   function getSavedMemories() {
+    if (Array.isArray(cachedMemories) && cachedMemories.length > 0) {
+      return cachedMemories;
+    }
     try {
       const raw = localStorage.getItem('romantic_gift_user_memories');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length >= DEFAULT_MEMORIES.length) {
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cachedMemories = parsed;
+          return cachedMemories;
         }
       }
     } catch(e) {}
     if (window.SEED_DATA && Array.isArray(window.SEED_DATA.memories) && window.SEED_DATA.memories.length > 0) {
-      return JSON.parse(JSON.stringify(window.SEED_DATA.memories));
+      cachedMemories = JSON.parse(JSON.stringify(window.SEED_DATA.memories));
+      return cachedMemories;
     }
-    return JSON.parse(JSON.stringify(DEFAULT_MEMORIES));
+    cachedMemories = JSON.parse(JSON.stringify(DEFAULT_MEMORIES));
+    return cachedMemories;
   }
 
   function saveMemories(memories) {
+    if (Array.isArray(memories)) {
+      cachedMemories = memories;
+    }
     try {
       localStorage.setItem('romantic_gift_user_memories', JSON.stringify(memories));
     } catch(e) {
-      alert('Bộ nhớ trình duyệt đã đầy ảnh. Bạn có thể xóa bớt một vài ảnh cũ để lưu thêm nhé!');
+      console.warn('LocalStorage quota exceeded for memories:', e);
     }
   }
 
@@ -2717,50 +2742,68 @@
       sound.init();
       sound.playKeyClick();
 
-      const caption = (memoryCaptionInput && memoryCaptionInput.value.trim()) || 'Khoảnh khắc đáng nhớ';
-      let dateVal = memoryDateInput ? memoryDateInput.value : '';
-      if (!dateVal) {
-        const d = new Date();
-        dateVal = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-      } else {
-        const parts = dateVal.split('-');
-        if (parts.length === 3) dateVal = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      const origBtnHtml = btnSaveMemoryPhoto.innerHTML;
+      btnSaveMemoryPhoto.disabled = true;
+      btnSaveMemoryPhoto.innerHTML = '⏳ Đang lưu ảnh...';
+
+      try {
+        const caption = (memoryCaptionInput && memoryCaptionInput.value.trim()) || 'Khoảnh khắc đáng nhớ';
+        let dateVal = memoryDateInput ? memoryDateInput.value : '';
+        if (!dateVal) {
+          const d = new Date();
+          dateVal = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        } else {
+          const parts = dateVal.split('-');
+          if (parts.length === 3) dateVal = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        // 1. Try ImgBB Cloud API upload first if key exists
+        let cloudUrl = null;
+        if (userConfig.imgbbApiKey) {
+          cloudUrl = await uploadToImgBB(currentPendingImageData, userConfig.imgbbApiKey);
+        }
+
+        const finalImgSrc = cloudUrl || currentPendingImageData;
+
+        // 2. Try uploading to Database Server
+        const serverMem = await postMemoryToDatabase(finalImgSrc, caption, dateVal);
+
+        const newMem = serverMem || {
+          id: 'mem_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          src: finalImgSrc,
+          caption: caption,
+          date: dateVal,
+          createdAt: Date.now()
+        };
+
+        const memories = getSavedMemories();
+        // Remove if existing id already in array to avoid duplicates
+        const existingIdx = memories.findIndex(m => m.id === newMem.id);
+        if (existingIdx !== -1) {
+          memories.splice(existingIdx, 1);
+        }
+        memories.unshift(newMem);
+        saveMemories(memories);
+
+        // Reset preview
+        currentPendingImageData = null;
+        if (previewImg) previewImg.src = '';
+        if (memoryCaptionInput) memoryCaptionInput.value = '';
+        if (memoryFileInput) memoryFileInput.value = '';
+        if (uploadPreviewForm) uploadPreviewForm.style.display = 'none';
+        if (dropzoneTrigger) dropzoneTrigger.style.display = 'block';
+
+        sound.playSuccessChime();
+        burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
+        renderMemoriesGrid();
+        alert('Đã lưu bức ảnh vào kho kỷ niệm thành công! 📸✨ Cả hai bạn đều sẽ thấy bức ảnh này mãi mãi!');
+      } catch (err) {
+        console.error('Lỗi khi lưu ảnh kỷ niệm:', err);
+        alert('Có lỗi xảy ra khi lưu ảnh. Bé hãy thử lại nhé!');
+      } finally {
+        btnSaveMemoryPhoto.disabled = false;
+        btnSaveMemoryPhoto.innerHTML = origBtnHtml;
       }
-
-      // 1. Try ImgBB Cloud API upload first if key exists
-      let cloudUrl = null;
-      if (userConfig.imgbbApiKey) {
-        cloudUrl = await uploadToImgBB(currentPendingImageData, userConfig.imgbbApiKey);
-      }
-
-      const finalImgSrc = cloudUrl || currentPendingImageData;
-
-      // 2. Try uploading to Database Server
-      const serverMem = await postMemoryToDatabase(finalImgSrc, caption, dateVal);
-
-      const newMem = serverMem || {
-        id: 'mem_' + Date.now(),
-        src: finalImgSrc,
-        caption: caption,
-        date: dateVal
-      };
-
-      const memories = getSavedMemories();
-      memories.unshift(newMem);
-      saveMemories(memories);
-
-      // Reset preview
-      currentPendingImageData = null;
-      if (previewImg) previewImg.src = '';
-      if (memoryCaptionInput) memoryCaptionInput.value = '';
-      if (memoryFileInput) memoryFileInput.value = '';
-      if (uploadPreviewForm) uploadPreviewForm.style.display = 'none';
-      if (dropzoneTrigger) dropzoneTrigger.style.display = 'block';
-
-      sound.playSuccessChime();
-      burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
-      renderMemoriesGrid();
-      alert('Đã lưu bức ảnh vào kho kỷ niệm thành công! 📸✨ Cả hai bạn đều sẽ thấy bức ảnh này!');
     });
   }
 
@@ -2776,7 +2819,7 @@
       card.innerHTML = `
         <button type="button" class="btn-delete-memory" title="Xóa ảnh này">✕</button>
         <div class="memory-thumb-wrap">
-          <img src="${mem.src}" alt="${escapeHTML(mem.caption)}" loading="lazy">
+          <img src="${mem.src}" alt="${escapeHTML(mem.caption)}" loading="lazy" onerror="this.onerror=null;this.src='images/photo1.jpg';">
         </div>
         <div class="memory-card-caption">
           <h5>${escapeHTML(mem.caption)}</h5>
@@ -2798,8 +2841,12 @@
           sound.init();
           sound.playKeyClick();
           await deleteMemoryFromDatabase(mem.id);
-          memories.splice(index, 1);
-          saveMemories(memories);
+          const currentList = getSavedMemories();
+          const targetIdx = currentList.findIndex(m => m.id === mem.id);
+          if (targetIdx !== -1) {
+            currentList.splice(targetIdx, 1);
+          }
+          saveMemories(currentList);
           renderMemoriesGrid();
         }
       });

@@ -39,34 +39,6 @@
   ],
   "memories": [
     {
-      "id": "mem_1792153183141_758",
-      "src": "/uploads/memory_1792153183140_422080.jpg",
-      "caption": "anh,bé và hoa",
-      "date": "16/10/2026",
-      "createdAt": 1792153183142
-    },
-    {
-      "id": "mem_1792153182951_132",
-      "src": "/uploads/memory_1792153182950_294502.jpg",
-      "caption": "anh,bé và hoa",
-      "date": "16/10/2026",
-      "createdAt": 1792153182951
-    },
-    {
-      "id": "mem_1792153182573_515",
-      "src": "/uploads/memory_1792153182571_342802.jpg",
-      "caption": "anh,bé và hoa",
-      "date": "16/10/2026",
-      "createdAt": 1792153182573
-    },
-    {
-      "id": "mem_1792153182480_938",
-      "src": "/uploads/memory_1792153182479_179381.jpg",
-      "caption": "anh,bé và hoa",
-      "date": "16/10/2026",
-      "createdAt": 1792153182480
-    },
-    {
       "id": "mem-1",
       "src": "images/photo1.jpg",
       "caption": "Bên bé mọi khoảnh khắc đều đẹp 💖",
@@ -145,7 +117,7 @@
     "adminPin": "0702",
     "girlfriendName": "bé mèo",
     "boyfriendName": "khúc gỗ",
-    "startDate": "2026-02-07T05:00:00.000Z",
+    "startDate": "2026-02-06T22:00:00.000Z",
     "wheelPrizes": [
       {
         "title": "1 Cái Ôm Thật Chặt",
