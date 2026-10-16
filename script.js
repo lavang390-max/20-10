@@ -512,11 +512,15 @@
   const slideSections = document.querySelectorAll('.slide-section');
   const dockButtons = document.querySelectorAll('.dock-btn');
   let currentSlide = 0;
+  let previousSlide = 0;
 
   function goToSlide(index) {
     sound.init();
     sound.playKeyClick();
     if (index < 0 || index >= slideSections.length) return;
+    if (index !== currentSlide) {
+      previousSlide = currentSlide;
+    }
     currentSlide = index;
 
     slideSections.forEach((section, idx) => {
@@ -948,6 +952,17 @@
   const locketFocusRing = document.getElementById('locket-focus-ring');
   const locketToast = document.getElementById('locket-toast');
 
+  // Navigation, HUD & Status elements
+  const btnCameraClose = document.getElementById('btn-camera-close');
+  const cameraStatusPill = document.getElementById('camera-status-pill');
+  const cameraStatusDot = document.getElementById('camera-status-dot');
+  const cameraStatusText = document.getElementById('camera-status-text');
+  const btnToggleFeedDrawer = document.getElementById('btn-toggle-feed-drawer');
+  const btnCloseFeedDrawer = document.getElementById('btn-close-feed-drawer');
+  const feedDrawerBackdrop = document.getElementById('feed-drawer-backdrop');
+  const cameraFeedDrawer = document.getElementById('camera-feed-drawer');
+  const cameraFeedBadge = document.getElementById('camera-feed-badge');
+
   // Tool buttons
   const btnFlipCamera = document.getElementById('btn-flip-camera');
   const btnToggleFlash = document.getElementById('btn-toggle-flash');
@@ -960,27 +975,36 @@
   const btnLocketShutter = document.getElementById('btn-locket-shutter');
   const locketProgressFill = document.getElementById('locket-progress-fill');
   const btnLocketBrowseFile = document.getElementById('btn-locket-browse-file');
+  const btnCameraFallbackFile = document.getElementById('btn-camera-fallback-file');
   const locketFileInput = document.getElementById('locket-file-input');
   const locketShutterBar = document.getElementById('locket-shutter-bar');
 
-  // Caption & Send
+  // Caption & Recipient Send Sheet
   const locketCaptionBox = document.getElementById('locket-caption-box');
   const locketCaptionInput = document.getElementById('locket-caption-input');
+  const btnOpenRecipientSheet = document.getElementById('btn-open-recipient-sheet');
+  const btnCloseRecipientSheet = document.getElementById('btn-close-recipient-sheet');
+  const recipientSheetBackdrop = document.getElementById('recipient-sheet-backdrop');
+  const cameraRecipientSheet = document.getElementById('camera-recipient-sheet');
+  const btnInstantSend = document.getElementById('btn-instant-send');
   const btnSendLocket = document.getElementById('btn-send-locket');
   const btnCancelSendLocket = document.getElementById('btn-cancel-send-locket');
+  const quickSendPersonName = document.getElementById('quick-send-person-name');
+  const choiceTitleBf = document.getElementById('choice-title-bf');
+  const recipientCheckboxes = document.querySelectorAll('input[name="camera_target_recipient"]');
+  const recipientChoiceItems = document.querySelectorAll('.recipient-choice-item');
   const stickerBtns = document.querySelectorAll('.locket-sticker-btn');
 
-  // Camera Overlay & Status
+  // Camera Overlay & Prompt
   const cameraStartOverlay = document.getElementById('camera-start-overlay');
   const btnStartCamera = document.getElementById('btn-start-camera');
   const cameraPromptTip = document.getElementById('camera-prompt-tip');
-  const cameraStatusPill = document.getElementById('camera-status-pill');
 
   // Feed
   const locketFeedGrid = document.getElementById('locket-feed-grid');
   const locketFeedCount = document.getElementById('locket-feed-count');
 
-  let currentCameraFacing = 'user'; // 'user' or 'environment'
+  let currentCameraFacing = 'user'; // 'user' (selfie/front) or 'environment' (rear)
   let isFlashActive = false;
   let activeLocketFilter = 'normal';
   let activeLocketSticker = '💕';
@@ -991,7 +1015,7 @@
   let recordedBlobs = [];
   let isRecordingVideo = false;
   let recordingInterval = null;
-  let capturedMediaData = null; // { type: 'photo' | 'video', base64: '...' }
+  let capturedMediaData = null; // { type: 'photo' | 'video', base64: '...', rawBase64: '...' }
   let cachedLocketItems = (function() {
     try {
       const raw = localStorage.getItem('romantic_gift_locket_feed');
@@ -1006,7 +1030,16 @@
     return [];
   })();
 
-  // 1. Clock & HUD updates
+  // 1. Dynamic Status Indicator & Clock
+  function updateCameraStatus(statusClass, statusText) {
+    if (cameraStatusText) {
+      cameraStatusText.textContent = statusText;
+    }
+    if (cameraStatusDot) {
+      cameraStatusDot.className = 'camera-status-dot ' + (statusClass || '');
+    }
+  }
+
   function updateLocketClock() {
     if (!locketLiveClock) return;
     const now = new Date();
@@ -1017,11 +1050,16 @@
   setInterval(updateLocketClock, 1000);
   updateLocketClock();
 
-  if (locketDisplayName && userConfig) {
-    locketDisplayName.textContent = `${userConfig.girlfriendName || 'Bé Mèo'} & ${userConfig.boyfriendName || 'Khúc Gỗ'}`;
+  // Personalize recipient names in UI
+  const partnerBoyfriendName = (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ';
+  if (quickSendPersonName) {
+    quickSendPersonName.textContent = `Gửi Cho ${partnerBoyfriendName} 💖`;
+  }
+  if (choiceTitleBf) {
+    choiceTitleBf.textContent = `Chàng Trai Của Bé (${partnerBoyfriendName})`;
   }
 
-  // Toast Notification for Locket
+  // Toast Notification for Camera
   function showLocketToast(message, emoji = '💖') {
     if (!locketToast) return;
     locketToast.innerHTML = `<span>${emoji}</span><span>${message}</span>`;
@@ -1032,7 +1070,20 @@
     }, 2800);
   }
 
-  // Tap-to-focus and double-tap-to-flip on viewfinder
+  // Close camera button: Return to previous screen & turn off camera
+  if (btnCameraClose) {
+    btnCameraClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.init();
+      sound.playKeyClick();
+      stopLocketCamera();
+      const targetSlide = (typeof previousSlide === 'number' && previousSlide !== 3) ? previousSlide : 0;
+      goToSlide(targetSlide);
+      showLocketToast('Đã đóng máy ảnh ✨', '📸');
+    });
+  }
+
+  // Tap-to-focus on camera viewfinder
   if (locketViewportFrame) {
     let lastTapTime = 0;
     const handleViewportTap = (e) => {
@@ -1045,10 +1096,7 @@
         // Double tap: flip camera!
         sound.init();
         sound.playKeyClick();
-        currentCameraFacing = currentCameraFacing === 'user' ? 'environment' : 'user';
-        stopLocketCamera();
-        initLocketCamera();
-        showLocketToast(`Đã lật camera ${currentCameraFacing === 'user' ? 'Trước 🤳' : 'Sau 📸'}`, '🔄');
+        toggleFlipCamera();
         return;
       }
 
@@ -1068,7 +1116,7 @@
         clearTimeout(locketFocusRing._timer);
         locketFocusRing._timer = setTimeout(() => {
           locketFocusRing.classList.remove('active');
-        }, 350);
+        }, 400);
       }
       burstHeartsAt(clientX, clientY);
     };
@@ -1076,13 +1124,13 @@
     locketViewportFrame.addEventListener('click', handleViewportTap);
   }
 
-  // Multi-tier safe camera stream acquirer (works on all iOS Safari & Android Chrome versions)
+  // Multi-tier safe camera stream acquirer
   async function getCameraStream(facing) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       throw new Error('Trình duyệt không hỗ trợ getUserMedia');
     }
 
-    // Tier 1: Try ideal facingMode with standard mobile resolution
+    // Tier 1: Try ideal facingMode with mobile 16:9 / 4:3 high-definition resolution
     try {
       return await navigator.mediaDevices.getUserMedia({
         video: {
@@ -1121,11 +1169,13 @@
       if (locketVideo.paused) {
         locketVideo.play().catch(e => console.warn(e));
       }
+      updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
       return;
     }
 
+    updateCameraStatus('capturing', '⏳ Đang khởi động máy ảnh...');
     if (cameraPromptTip) {
-      cameraPromptTip.textContent = '⏳ Đang khởi động máy ảnh...';
+      cameraPromptTip.textContent = '⏳ Đang kết nối máy ảnh thiết bị...';
     }
 
     try {
@@ -1139,7 +1189,7 @@
       locketVideo.setAttribute('disablePictureInPicture', '');
       locketVideo.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
 
-      // CRITICAL: Intercept and prevent any native QuickTime fullscreen popup on iOS Safari & mobile Chrome
+      // Prevent native fullscreen video popups on mobile Safari & mobile Chrome
       locketVideo.onwebkitbeginfullscreen = (e) => {
         if (e && e.preventDefault) e.preventDefault();
         if (typeof locketVideo.webkitExitFullscreen === 'function') {
@@ -1157,7 +1207,7 @@
 
       const onVideoReady = () => {
         if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
-        if (cameraStatusPill) cameraStatusPill.textContent = '🟢 Máy ảnh sẵn sàng • 🔋 100%';
+        updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
       };
 
       locketVideo.onplaying = onVideoReady;
@@ -1165,10 +1215,9 @@
         locketVideo.play().then(onVideoReady).catch(err => console.warn('Autoplay prevented:', err));
       };
 
-      // Direct trigger
       const playPromise = locketVideo.play();
       if (playPromise !== undefined) {
-        playPromise.then(onVideoReady).catch(err => console.warn('Autoplay prevented, requires tap:', err));
+        playPromise.then(onVideoReady).catch(err => console.warn('Autoplay prevented:', err));
       }
 
       if (currentCameraFacing === 'user') {
@@ -1178,21 +1227,21 @@
       }
 
       if (cameraStartOverlay) cameraStartOverlay.classList.add('hidden');
-      if (cameraStatusPill) cameraStatusPill.textContent = '🟢 Máy ảnh sẵn sàng • 🔋 100%';
+      updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
     } catch(err) {
       console.warn('Direct camera access failed:', err);
       if (cameraStartOverlay) cameraStartOverlay.classList.remove('hidden');
+      updateCameraStatus('error', 'Không thể mở máy ảnh');
       if (cameraPromptTip) {
-        cameraPromptTip.innerHTML = 'Không thể mở máy ảnh trực tiếp.<br><span style="color:#ff2a6d;font-weight:700;">Chạm vào đây</span> hoặc nút 📁 để chọn ảnh từ máy nhé! 💕';
+        cameraPromptTip.innerHTML = 'Không thể mở trực tiếp máy ảnh.<br><span style="color:#ff2a6d;font-weight:700;">Chạm vào nút bên dưới</span> để chọn ảnh/video từ máy nhé! 💕';
       }
       if (btnStartCamera) {
-        btnStartCamera.innerHTML = '<span>📁 Chọn Ảnh / Video Từ Máy</span>';
+        btnStartCamera.innerHTML = '<span>🔄 Thử Bật Lại Camera</span>';
         btnStartCamera.onclick = (ev) => {
           ev.stopPropagation();
-          if (locketFileInput) locketFileInput.click();
+          initLocketCamera();
         };
       }
-      if (cameraStatusPill) cameraStatusPill.textContent = '📁 Chọn ảnh từ máy • 🔋 100%';
     }
   }
 
@@ -1207,9 +1256,7 @@
     if (cameraStartOverlay) {
       cameraStartOverlay.classList.remove('hidden');
     }
-    if (cameraStatusPill) {
-      cameraStatusPill.textContent = '🟢 Chạm để bật máy ảnh • 🔋 100%';
-    }
+    updateCameraStatus('', 'Chạm để bật máy ảnh');
   }
 
   // Camera start overlay gesture triggers
@@ -1221,27 +1268,28 @@
       initLocketCamera();
     });
   }
-  if (cameraStartOverlay) {
-    cameraStartOverlay.addEventListener('click', () => {
+  if (btnCameraFallbackFile && locketFileInput) {
+    btnCameraFallbackFile.addEventListener('click', (e) => {
+      e.stopPropagation();
       sound.init();
       sound.playKeyClick();
-      if (btnStartCamera && btnStartCamera.textContent && btnStartCamera.textContent.includes('Chọn Ảnh')) {
-        if (locketFileInput) locketFileInput.click();
-      } else {
-        initLocketCamera();
-      }
+      locketFileInput.click();
     });
   }
 
-  // Flip Camera
+  // Flip Camera Functionality
+  function toggleFlipCamera() {
+    sound.init();
+    sound.playKeyClick();
+    currentCameraFacing = currentCameraFacing === 'user' ? 'environment' : 'user';
+    stopLocketCamera();
+    initLocketCamera();
+    showLocketToast(`Đã lật camera ${currentCameraFacing === 'user' ? 'Trước 🤳' : 'Sau 📸'}`, '🔄');
+  }
+
   if (btnFlipCamera) {
     btnFlipCamera.addEventListener('click', () => {
-      sound.init();
-      sound.playKeyClick();
-      currentCameraFacing = currentCameraFacing === 'user' ? 'environment' : 'user';
-      stopLocketCamera();
-      initLocketCamera();
-      showLocketToast(`Đã lật camera ${currentCameraFacing === 'user' ? 'Trước 🤳' : 'Sau 📸'}`, '🔄');
+      toggleFlipCamera();
     });
   }
 
@@ -1252,6 +1300,7 @@
       sound.playKeyClick();
       isFlashActive = !isFlashActive;
       btnToggleFlash.classList.toggle('active', isFlashActive);
+      showLocketToast(`Đèn Flash trợ sáng: ${isFlashActive ? 'BẬT ⚡' : 'TẮT ⚪'}`, '⚡');
     });
   }
 
@@ -1265,18 +1314,18 @@
       activeLocketFilter = chip.getAttribute('data-filter') || 'normal';
 
       if (locketVideo) {
-        locketVideo.className = `locket-video-stream filter-${activeLocketFilter} ${currentCameraFacing === 'environment' ? 'rear-camera' : ''}`;
+        locketVideo.className = `camera-video-feed filter-${activeLocketFilter} ${currentCameraFacing === 'environment' ? 'rear-camera' : ''}`;
       }
       if (locketPreviewImg) {
-        locketPreviewImg.className = `locket-preview-media filter-${activeLocketFilter}`;
+        locketPreviewImg.className = `camera-preview-media filter-${activeLocketFilter}`;
       }
       if (locketPreviewVideo) {
-        locketPreviewVideo.className = `locket-preview-media filter-${activeLocketFilter}`;
+        locketPreviewVideo.className = `camera-preview-media filter-${activeLocketFilter}`;
       }
     });
   });
 
-  // Mode Selection (Photo / Video 5s)
+  // Mode Selection (Chụp Ảnh / Quay Video)
   if (tabModePhoto && tabModeVideo) {
     tabModePhoto.addEventListener('click', () => {
       sound.init();
@@ -1284,7 +1333,10 @@
       currentLocketMode = 'photo';
       tabModePhoto.classList.add('active');
       tabModeVideo.classList.remove('active');
-      if (btnLocketShutter) btnLocketShutter.title = 'Bấm để chụp ảnh tức thì';
+      if (btnLocketShutter) {
+        btnLocketShutter.classList.remove('video-mode');
+        btnLocketShutter.title = 'Bấm để chụp ảnh tức thì';
+      }
     });
 
     tabModeVideo.addEventListener('click', () => {
@@ -1293,19 +1345,21 @@
       currentLocketMode = 'video';
       tabModeVideo.classList.add('active');
       tabModePhoto.classList.remove('active');
-      if (btnLocketShutter) btnLocketShutter.title = 'Bấm để quay video ngắn 5 giây';
+      if (btnLocketShutter) {
+        btnLocketShutter.classList.add('video-mode');
+        btnLocketShutter.title = 'Bấm để quay video ngắn 5 giây';
+      }
     });
   }
 
-  // Shutter Button Action
+  // Shutter Button Action Trigger
   async function triggerShutterAction() {
     sound.init();
 
-    // Check if camera stream is active and video is rendering frames
     const hasLiveVideo = locketVideo && locketMediaStream && locketMediaStream.active && (locketVideo.videoWidth > 0 || locketVideo.readyState >= 2);
 
     if (!hasLiveVideo) {
-      if (cameraPromptTip) cameraPromptTip.textContent = '⏳ Đang khởi động máy ảnh...';
+      updateCameraStatus('capturing', '⏳ Đang khởi động...');
       showLocketToast('Đang kết nối máy ảnh, bé chờ xíu nhé! ⏳', '📸');
       try {
         await initLocketCamera();
@@ -1313,7 +1367,6 @@
         console.warn('initLocketCamera error:', err);
       }
 
-      // If camera started successfully, proceed!
       if (locketMediaStream && locketMediaStream.active) {
         setTimeout(() => {
           if (currentLocketMode === 'photo') {
@@ -1321,14 +1374,11 @@
           } else {
             startLocketVideoRecording();
           }
-        }, 300);
+        }, 350);
         return;
       } else {
-        // Fallback: If camera access is blocked or unavailable, open file picker!
         showLocketToast('Chạm vào 📁 để chọn ảnh từ máy gửi anh nhé! 💕', '📷');
-        if (locketFileInput) {
-          locketFileInput.click();
-        }
+        if (locketFileInput) locketFileInput.click();
         return;
       }
     }
@@ -1352,13 +1402,12 @@
         e.stopPropagation();
       }
       const now = Date.now();
-      if (now - lastShutterTime < 400) return; // avoid duplicate tap/click
+      if (now - lastShutterTime < 450) return;
       lastShutterTime = now;
       triggerShutterAction();
     };
 
     btnLocketShutter.addEventListener('click', onShutterTrigger);
-    btnLocketShutter.addEventListener('touchend', onShutterTrigger);
   }
 
   // 3. Take Photo Mode
@@ -1368,7 +1417,9 @@
       sound.playCameraShutter();
     } catch(e) {}
 
-    // Screen flash
+    updateCameraStatus('capturing', '⚡ Đang chụp ảnh...');
+
+    // Screen flash animation
     if (locketFlashOverlay) {
       locketFlashOverlay.classList.add('flashing');
       setTimeout(() => locketFlashOverlay.classList.remove('flashing'), 220);
@@ -1398,11 +1449,14 @@
         const sx = (w - minSide) / 2;
         const sy = (h - minSide) / 2;
         ctx.save();
-        // KHÔNG LẬT MẶT - VẼ ĐÚNG CHIỀU TỰ NHIÊN
+        if (currentCameraFacing === 'user') {
+          // Flip selfie back to natural orientation
+          ctx.translate(720, 0);
+          ctx.scale(-1, 1);
+        }
         ctx.drawImage(locketVideo, sx, sy, minSide, minSide, 0, 0, 720, 720);
         ctx.restore();
       } else {
-        // Fallback snapshot if video hasn't rendered dimensions
         const grad = ctx.createLinearGradient(0, 0, 720, 720);
         grad.addColorStop(0, '#ff4d88');
         grad.addColorStop(1, '#ff9a8b');
@@ -1418,7 +1472,6 @@
       ctx.fillRect(0, 0, 720, 720);
     }
 
-    // Save clean raw snapshot (without baked caption yet)
     ctx.filter = 'none';
     const cleanPhotoBase64 = locketCanvas.toDataURL('image/jpeg', 0.92);
 
@@ -1438,7 +1491,7 @@
     }
     if (locketPreviewWrap) locketPreviewWrap.classList.add('active');
 
-    // Sync live preview caption pill inside squircle
+    // Sync live preview caption pill
     const currentText = (locketCaptionInput && locketCaptionInput.value.trim()) || 'Gửi người anh thương nhất';
     if (locketPreviewQuote) locketPreviewQuote.textContent = currentText;
     if (locketPreviewSticker) locketPreviewSticker.textContent = activeLocketSticker;
@@ -1448,7 +1501,8 @@
       locketCaptionBox.classList.add('show');
     }
 
-    showLocketToast('Ảnh đã chụp xong! Gõ lời nhắn gửi anh nha 💌', '📸');
+    updateCameraStatus('ready', 'Xem trước ảnh');
+    showLocketToast('Ảnh đã chụp xong! Gõ lời nhắn gửi người thương nha 💌', '📸');
   }
 
   // 4. Record 5s Video Mode
@@ -1466,7 +1520,6 @@
     recordedBlobs = [];
     isRecordingVideo = true;
 
-    // Supported mimeTypes
     let options = { mimeType: 'video/webm;codecs=vp8,opus' };
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
       options = { mimeType: 'video/webm' };
@@ -1478,7 +1531,6 @@
     try {
       mediaRecorder = new MediaRecorder(locketMediaStream, options);
     } catch(e) {
-      console.warn('MediaRecorder error:', e);
       mediaRecorder = new MediaRecorder(locketMediaStream);
     }
 
@@ -1518,12 +1570,14 @@
         locketCaptionBox.classList.add('show');
       }
 
-      showLocketToast('Đã quay video 5s xong! Gõ lời nhắn gửi anh nha 💌', '🎥');
+      updateCameraStatus('ready', 'Xem trước video');
+      showLocketToast('Đã quay video 5s xong! Gõ lời nhắn gửi người thương nha 💌', '🎥');
     };
 
     mediaRecorder.start(100);
 
     // UI state for recording
+    updateCameraStatus('recording', '🔴 Đang quay video...');
     if (btnLocketShutter) btnLocketShutter.classList.add('recording');
     if (locketRecBadge) locketRecBadge.style.display = 'inline-flex';
 
@@ -1567,7 +1621,7 @@
     sound.playSuccessChime();
   }
 
-  // 5. Fallback File Upload
+  // 5. Fallback Album File Upload
   if (btnLocketBrowseFile && locketFileInput) {
     btnLocketBrowseFile.addEventListener('click', () => {
       sound.init();
@@ -1575,7 +1629,7 @@
       locketFileInput.click();
     });
 
-    locketFileInput.addEventListener('change', (e) => {
+    locketFileInput.addEventListener('change', () => {
       if (!locketFileInput.files || !locketFileInput.files[0]) return;
       const file = locketFileInput.files[0];
       const isVideo = file.type.startsWith('video');
@@ -1596,7 +1650,6 @@
           }
           if (locketPreviewImg) locketPreviewImg.style.display = 'none';
         } else {
-          // Crop square image onto canvas for consistent Locket widget ratio
           const tempImg = new Image();
           tempImg.onload = () => {
             if (locketCanvas) {
@@ -1640,23 +1693,17 @@
         if (locketPreviewQuote) locketPreviewQuote.textContent = currentText;
         if (locketPreviewSticker) locketPreviewSticker.textContent = activeLocketSticker;
 
-        showLocketToast('Đã chọn tệp! Viết lời nhắn gửi anh nhé 💕', '✨');
+        updateCameraStatus('ready', 'Xem trước tệp');
+        showLocketToast('Đã chọn tệp! Viết lời nhắn gửi người thương nhé 💕', '✨');
       };
       reader.readAsDataURL(file);
     });
   }
 
-  // Heart Pulse button
-  if (btnLocketHeartPulse) {
-    btnLocketHeartPulse.addEventListener('click', (e) => {
-      burstHeartsAt(e.clientX, e.clientY);
-      sound.playSuccessChime();
-    });
-  }
-
-  // Retake / Reset
+  // Retake / Reset Viewfinder
   function retakeLocket() {
     capturedMediaData = null;
+    closeRecipientSheet();
     if (locketPreviewWrap) locketPreviewWrap.classList.remove('active');
     if (locketCaptionBox) locketCaptionBox.classList.remove('show');
     if (locketShutterBar) locketShutterBar.style.display = 'flex';
@@ -1670,7 +1717,8 @@
     if (locketRecBadge) locketRecBadge.style.display = 'none';
     if (locketProgressFill) locketProgressFill.style.strokeDashoffset = '245';
 
-    // Resume video feed if active
+    updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
+
     if (locketVideo && locketMediaStream && locketMediaStream.active && locketVideo.paused) {
       locketVideo.play().catch(e => console.warn(e));
     }
@@ -1687,20 +1735,9 @@
     showLocketToast('Sẵn sàng chụp lại khoảnh khắc mới! 📸', '🔄');
   };
 
-  if (btnRetakeLocket) {
-    btnRetakeLocket.addEventListener('click', handleRetakeClick);
-    btnRetakeLocket.addEventListener('touchend', handleRetakeClick);
-  }
-
-  if (btnRetakeCorner) {
-    btnRetakeCorner.addEventListener('click', handleRetakeClick);
-    btnRetakeCorner.addEventListener('touchend', handleRetakeClick);
-  }
-
-  if (btnCancelSendLocket) {
-    btnCancelSendLocket.addEventListener('click', handleRetakeClick);
-    btnCancelSendLocket.addEventListener('touchend', handleRetakeClick);
-  }
+  if (btnRetakeLocket) btnRetakeLocket.addEventListener('click', handleRetakeClick);
+  if (btnRetakeCorner) btnRetakeCorner.addEventListener('click', handleRetakeClick);
+  if (btnCancelSendLocket) btnCancelSendLocket.addEventListener('click', handleRetakeClick);
 
   // Real-time caption sync to preview pill
   if (locketCaptionInput) {
@@ -1725,19 +1762,69 @@
     });
   });
 
-  // 6. Send Camera Moment (Local-first & Server sync)
-  if (btnSendLocket) {
-    btnSendLocket.addEventListener('click', async () => {
-      if (!capturedMediaData) {
-        showLocketToast('Bé hãy chụp ảnh hoặc quay video trước khi gửi nhé! 💕', '📷');
-        return;
+  // 6. Recipient Selection Sheet & Quick Send Logic
+  function openRecipientSheet() {
+    if (!capturedMediaData) {
+      showLocketToast('Bé hãy chụp ảnh hoặc quay video trước khi gửi nhé! 💕', '📷');
+      return;
+    }
+    sound.init();
+    sound.playKeyClick();
+    if (cameraRecipientSheet) {
+      cameraRecipientSheet.classList.add('show');
+      cameraRecipientSheet.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function closeRecipientSheet() {
+    if (cameraRecipientSheet) {
+      cameraRecipientSheet.classList.remove('show');
+      cameraRecipientSheet.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  if (btnOpenRecipientSheet) {
+    btnOpenRecipientSheet.addEventListener('click', openRecipientSheet);
+  }
+  if (btnCloseRecipientSheet) {
+    btnCloseRecipientSheet.addEventListener('click', closeRecipientSheet);
+  }
+  if (recipientSheetBackdrop) {
+    recipientSheetBackdrop.addEventListener('click', closeRecipientSheet);
+  }
+
+  // Recipient item selection toggle
+  recipientChoiceItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      const checkbox = item.querySelector('input[type="checkbox"]');
+      if (checkbox && e.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
       }
+      if (checkbox) {
+        item.classList.toggle('active', checkbox.checked);
+      }
+    });
+  });
 
-      sound.init();
-      sound.playSuccessChime();
-      btnSendLocket.disabled = true;
-      btnSendLocket.textContent = '⏳ Đang lưu khoảnh khắc...';
+  // Send Moment Controller (supports Quick Send and Selected Recipients)
+  async function performSendCameraMoment(recipientLabel = '') {
+    if (!capturedMediaData) {
+      showLocketToast('Bé hãy chụp ảnh hoặc quay video trước khi gửi nhé! 💕', '📷');
+      return;
+    }
 
+    sound.init();
+    updateCameraStatus('uploading', '⏳ Đang tải ảnh lên...');
+    showLocketToast('Đang tải ảnh lên và đồng bộ khoảnh khắc... ⏳', '🚀');
+
+    const sendBtns = [btnSendLocket, btnInstantSend].filter(Boolean);
+    sendBtns.forEach(b => {
+      b.disabled = true;
+      if (b === btnSendLocket) b.innerHTML = '<span>⏳ Đang tải ảnh lên...</span>';
+      if (b === btnInstantSend) b.innerHTML = '<span>⏳ Đang gửi...</span>';
+    });
+
+    try {
       const userCaption = (locketCaptionInput && locketCaptionInput.value.trim()) || 'Gửi người anh thương nhất 💕';
       const now = new Date();
       const hours = now.getHours().toString().padStart(2, '0');
@@ -1746,7 +1833,7 @@
 
       let finalMediaUrl = capturedMediaData.base64;
 
-      // If photo, stamp the watermark (top clock + bottom custom caption & sticker) onto the final high-res image!
+      // Watermark stamping on captured photos
       if (capturedMediaData.type === 'photo' && capturedMediaData.rawBase64 && locketCanvas) {
         try {
           const img = new Image();
@@ -1764,19 +1851,19 @@
             ctx.drawImage(img, 0, 0, 720, 720);
 
             // 1. Watermark Top: Time Pill
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             ctx.beginPath();
             if (typeof ctx.roundRect === 'function') {
-              ctx.roundRect(24, 24, 210, 40, 20);
+              ctx.roundRect(24, 24, 210, 42, 21);
             } else {
-              ctx.rect(24, 24, 210, 40);
+              ctx.rect(24, 24, 210, 42);
             }
             ctx.fill();
 
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText(timeFormatted, 40, 50);
+            ctx.fillText(timeFormatted, 42, 51);
 
             // 2. Watermark Bottom: Custom Caption & Sticker Pill
             const fullText = `${activeLocketSticker} ${userCaption}`;
@@ -1784,23 +1871,22 @@
             const textWidth = Math.min(640, Math.max(220, ctx.measureText(fullText).width + 50));
             const pillX = (720 - textWidth) / 2;
 
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
             ctx.beginPath();
             if (typeof ctx.roundRect === 'function') {
-              ctx.roundRect(pillX, 646, textWidth, 46, 23);
+              ctx.roundRect(pillX, 646, textWidth, 48, 24);
             } else {
-              ctx.rect(pillX, 646, textWidth, 46);
+              ctx.rect(pillX, 646, textWidth, 48);
             }
             ctx.fill();
 
-            // Border for bottom pill
-            ctx.strokeStyle = 'rgba(255, 77, 136, 0.5)';
+            ctx.strokeStyle = 'rgba(255, 77, 136, 0.55)';
             ctx.lineWidth = 2;
             ctx.stroke();
 
             ctx.fillStyle = '#ffd6e0';
             ctx.textAlign = 'center';
-            ctx.fillText(fullText, 360, 675);
+            ctx.fillText(fullText, 360, 676);
 
             finalMediaUrl = locketCanvas.toDataURL('image/jpeg', 0.92);
           }
@@ -1816,6 +1902,7 @@
         caption: userCaption,
         sender: (userConfig && userConfig.girlfriendName) || 'Bé Mèo',
         senderRole: 'girlfriend',
+        recipient: recipientLabel || partnerBoyfriendName,
         sticker: activeLocketSticker,
         filter: activeLocketFilter,
         reactions: 1,
@@ -1823,7 +1910,7 @@
         timestamp: now.toISOString()
       };
 
-      // 1. ALWAYS save to local device storage (localStorage) first
+      // 1. ALWAYS save to local device storage (localStorage)
       let localFeed = [];
       try {
         const raw = localStorage.getItem('romantic_gift_locket_feed');
@@ -1832,52 +1919,120 @@
       } catch(e) { localFeed = []; }
 
       localFeed.unshift(newMoment);
-      const trimmedFeed = localFeed.slice(0, 20); // Keep 20 recent items to prevent quota overflow
+      const trimmedFeed = localFeed.slice(0, 25);
       try {
         localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(trimmedFeed));
       } catch(quotaErr) {
-        console.warn('LocalStorage quota limit, keeping fewer items:', quotaErr);
         try {
-          localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(trimmedFeed.slice(0, 8)));
+          localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(trimmedFeed.slice(0, 10)));
         } catch(e) {}
       }
 
       cachedLocketItems = trimmedFeed;
       renderLocketFeed(cachedLocketItems);
 
-      // 2. Play celebration effects
+      // 2. Play celebration sound and confetti
       sound.playWinFanfare();
       burstHeartsAt(window.innerWidth / 2, window.innerHeight / 2);
       launchCelebrationConfetti();
+
+      // 3. Reset UI & view
+      closeRecipientSheet();
       retakeLocket();
 
-      // 3. Background server sync (fails silently on static hosting like GitHub Pages)
+      // 4. Background server sync
       const payload = {
         type: newMoment.type,
         caption: newMoment.caption,
         sender: newMoment.sender,
         senderRole: newMoment.senderRole,
+        recipient: newMoment.recipient,
         sticker: newMoment.sticker,
         filter: newMoment.filter,
         mediaBase64: finalMediaUrl
       };
 
       try {
-        fetch('/api/locket', {
+        await fetch('/api/locket', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
-        }).then(res => {
-          if (res.ok) console.log('Synced to backend database');
-        }).catch(err => {
-          console.log('GitHub Pages static mode: saved to device storage');
         });
-      } catch(e) {}
+      } catch(e) {
+        console.log('GitHub Pages static mode: moment saved securely in device storage');
+      }
 
-      btnSendLocket.disabled = false;
-      btnSendLocket.textContent = '🚀 Gửi Cho Anh 💖';
-      showLocketToast('Đã lưu khoảnh khắc vào Máy Ảnh Đôi Ta rồi nè! 💖📸', '🎉');
+      const targetDesc = recipientLabel ? `đến ${recipientLabel}` : 'thành công';
+      updateCameraStatus('success', '✅ Gửi thành công!');
+      showLocketToast(`Đã gửi khoảnh khắc ${targetDesc}! 💖📸`, '🎉');
+
+      setTimeout(() => {
+        updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
+      }, 3500);
+    } catch (sendError) {
+      console.error('Camera send error:', sendError);
+      updateCameraStatus('error', '❌ Gửi thất bại');
+      showLocketToast('Gửi khoảnh khắc thất bại. Vui lòng thử lại! 😢', '❌');
+      setTimeout(() => {
+        updateCameraStatus('ready', 'Máy ảnh sẵn sàng');
+      }, 3500);
+    } finally {
+      sendBtns.forEach(b => {
+        b.disabled = false;
+        if (b === btnSendLocket) b.innerHTML = '<span>🚀 Xác Nhận Gửi Khoảnh Khắc</span>';
+        if (b === btnInstantSend) b.innerHTML = '<span>Gửi Ngay 🚀</span>';
+      });
+    }
+  }
+
+  // Quick Send Action (1 chạm)
+  if (btnInstantSend) {
+    btnInstantSend.addEventListener('click', () => {
+      performSendCameraMoment(partnerBoyfriendName);
     });
+  }
+
+  // Multi-recipient Send Action
+  if (btnSendLocket) {
+    btnSendLocket.addEventListener('click', () => {
+      const selected = [];
+      recipientCheckboxes.forEach(cb => {
+        if (cb.checked) {
+          if (cb.value === 'boyfriend') selected.push(partnerBoyfriendName);
+          else if (cb.value === 'feed') selected.push('Bảng Tin');
+          else if (cb.value === 'best_friends') selected.push('Bạn Bè');
+        }
+      });
+      const label = selected.length > 0 ? selected.join(' & ') : partnerBoyfriendName;
+      performSendCameraMoment(label);
+    });
+  }
+
+  // Feed Drawer Controls
+  function openFeedDrawer() {
+    sound.init();
+    sound.playKeyClick();
+    if (cameraFeedDrawer) {
+      cameraFeedDrawer.classList.add('show');
+      cameraFeedDrawer.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function closeFeedDrawer() {
+    if (cameraFeedDrawer) {
+      cameraFeedDrawer.classList.remove('show');
+      cameraFeedDrawer.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  if (btnToggleFeedDrawer) {
+    btnToggleFeedDrawer.addEventListener('click', openFeedDrawer);
+  }
+  if (btnCloseFeedDrawer) {
+    btnCloseFeedDrawer.addEventListener('click', closeFeedDrawer);
+  }
+  if (feedDrawerBackdrop) {
+    feedDrawerBackdrop.addEventListener('click', closeFeedDrawer);
   }
 
   // 7. Camera Feed Rendering & Auto-Sync
@@ -1945,6 +2100,9 @@
     if (!locketFeedGrid) return;
     if (locketFeedCount) {
       locketFeedCount.textContent = `${items.length} khoảnh khắc`;
+    }
+    if (cameraFeedBadge) {
+      cameraFeedBadge.textContent = items.length;
     }
 
     locketFeedGrid.innerHTML = '';

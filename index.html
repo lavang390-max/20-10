@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261015_data_v9">
+  <link rel="stylesheet" href="style.css?v=20261016_camera_v10">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -369,179 +369,306 @@
         </div>
       </section>
 
-      <!-- SLIDE 4: MÁY ẢNH ĐÔI TA (CHỤP ẢNH TỨC THÌ & VIDEO 5S) -->
+      <!-- SLIDE 4: MÁY ẢNH ĐÔI TA - TRẢI NGHIỆM CAMERA TOÀN MÀN HÌNH HIỆN ĐẠI -->
       <section class="slide-section" id="slide-locket" data-slide-index="3">
-        <div class="slide-content locket-slide-content">
-          <div class="locket-top-pill-header">
-            <span class="locket-pill-tag">✨ Máy Ảnh Đôi Ta 📸</span>
+        <div class="camera-app-container" id="camera-app-container">
+          
+          <!-- TOP HUD BAR: ĐÓNG CAMERA, TRẠNG THÁI & CÔNG CỤ -->
+          <div class="camera-hud-top">
+            <!-- Nút đóng camera: Quay về màn hình trước đó -->
+            <button type="button" class="camera-hud-circle-btn" id="btn-camera-close" title="Đóng máy ảnh & Quay lại" aria-label="Đóng máy ảnh">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </button>
+
+            <!-- Thông báo trạng thái camera động -->
+            <div class="camera-status-hud" id="camera-status-pill">
+              <span class="camera-status-dot" id="camera-status-dot"></span>
+              <span class="camera-status-text" id="camera-status-text">Máy ảnh sẵn sàng</span>
+            </div>
+
+            <!-- Công cụ Flash & Mở album khoảnh khắc -->
+            <div class="camera-hud-tools">
+              <button type="button" class="camera-hud-circle-btn" id="btn-toggle-flash" title="Bật / Tắt Flash trợ sáng" aria-label="Bật tắt flash">
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">
+                  <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+                </svg>
+              </button>
+              <button type="button" class="camera-hud-circle-btn" id="btn-toggle-feed-drawer" title="Xem Bảng tin khoảnh khắc" aria-label="Xem khoảnh khắc">
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="4" ry="4"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span class="camera-badge-counter" id="camera-feed-badge">0</span>
+              </button>
+            </div>
           </div>
 
-          <div class="locket-card-wrapper">
-            <!-- HUD TOP -->
-            <div class="locket-hud-top">
-              <div class="locket-user-badge">
-                <div class="locket-avatar-circle">
-                  <img src="images/avatar.jpg" alt="Avatar đôi mình" id="locket-user-avatar">
-                </div>
-                <div class="locket-user-meta">
-                  <span class="locket-user-name" id="locket-display-name">Bé Mèo &amp; Khúc Gỗ</span>
-                  <span class="locket-user-status" id="camera-status-pill">🟢 Máy ảnh sẵn sàng • 🔋 100%</span>
-                </div>
+          <!-- KHU VỰC XEM TRƯỚC CAMERA: CHIẾM PHẦN LỚN MÀN HÌNH -->
+          <div class="camera-viewfinder-frame" id="locket-viewport-frame">
+            <!-- Luồng video trực tiếp từ điện thoại / webcam -->
+            <video id="locket-video" class="camera-video-feed filter-normal" playsinline="true" webkit-playsinline="true" x5-playsinline="true" x5-video-player-type="h5-page" x5-video-player-fullscreen="false" muted disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback"></video>
+            <canvas id="locket-canvas" style="display: none;"></canvas>
+
+            <!-- Vòng lấy nét chạm (Tap to focus) -->
+            <div class="camera-focus-ring" id="locket-focus-ring"></div>
+
+            <!-- Màn chớp sáng giả lập Flash khi chụp -->
+            <div class="camera-flash-overlay" id="locket-flash-overlay"></div>
+
+            <!-- Watermark HUD góc màn hình chụp -->
+            <div class="camera-live-watermark" id="locket-watermark-overlay">
+              <div class="watermark-top-row">
+                <span class="watermark-time-chip" id="locket-live-clock">10:45 AM • Hôm nay</span>
+                <span class="watermark-rec-chip" id="locket-rec-badge" style="display: none;">
+                  <span class="rec-dot-pulse"></span>
+                  <span>REC</span>
+                  <span id="locket-rec-seconds">0:05</span>
+                </span>
               </div>
-              <div class="locket-tools-row">
-                <button type="button" class="locket-tool-btn" id="btn-toggle-flash" title="Bật / Tắt đèn Flash giả lập">
-                  ⚡
-                </button>
+              <div class="watermark-bottom-row">
+                <span class="watermark-caption-chip">
+                  <span id="locket-live-sticker">💕</span>
+                  <span id="locket-quote-tag">Gửi người anh thương nhất</span>
+                </span>
               </div>
             </div>
 
-            <!-- SQUIRCLE VIEWPORT (CAMERA & PREVIEW) -->
-            <div class="locket-viewport-frame" id="locket-viewport-frame">
-              <!-- Live Video (Strictly Inline - Block Fullscreen Player) -->
-              <video id="locket-video" class="locket-video-stream filter-normal" playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5-page" x5-video-player-fullscreen="false" autoplay muted loop disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback"></video>
-              <canvas id="locket-canvas" style="display: none;"></canvas>
-
-              <!-- Tap to focus ring -->
-              <div class="locket-focus-ring" id="locket-focus-ring"></div>
-
-              <!-- Camera Start / Permission Overlay -->
-              <div class="camera-start-overlay" id="camera-start-overlay">
-                <div class="camera-start-pulse">
-                  <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Màn hình yêu cầu quyền / Khởi động camera -->
+            <div class="camera-permission-overlay" id="camera-start-overlay">
+              <div class="permission-card glass-panel">
+                <div class="permission-icon-pulse">
+                  <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                     <circle cx="12" cy="13" r="4"></circle>
                   </svg>
                 </div>
-                <button type="button" class="btn-start-camera" id="btn-start-camera">
-                  <span>📸 Bật Máy Ảnh</span>
-                </button>
-                <p class="camera-prompt-tip" id="camera-prompt-tip">Chạm để mở camera chụp ảnh tức thì</p>
-              </div>
-
-              <!-- Screen Flash Animation -->
-              <div class="locket-flash-overlay" id="locket-flash-overlay"></div>
-
-              <!-- HUD Watermark Overlay on Live View -->
-              <div class="locket-watermark-overlay" id="locket-watermark-overlay">
-                <div class="locket-watermark-top">
-                  <span class="locket-time-pill" id="locket-live-clock">10:45 AM • Hôm nay</span>
-                  <span class="locket-rec-badge" id="locket-rec-badge">
-                    <span>🔴 REC</span>
-                    <span id="locket-rec-seconds">0:05</span>
-                  </span>
-                </div>
-                <div class="locket-watermark-bottom">
-                  <span class="locket-love-tag" id="locket-love-tag">
-                    <span id="locket-live-sticker">💕</span>
-                    <span id="locket-quote-tag">Gửi người anh thương nhất</span>
-                  </span>
-                </div>
-              </div>
-
-              <!-- Preview Overlay (When photo snapped or 5s video recorded) -->
-              <div class="locket-preview-wrap" id="locket-preview-wrap">
-                <img id="locket-preview-img" class="locket-preview-media" style="display: none;" alt="Xem trước ảnh chụp">
-                <video id="locket-preview-video" class="locket-preview-media" style="display: none;" loop playsinline webkit-playsinline autoplay></video>
-                <button type="button" class="btn-retake-corner" id="btn-retake-corner" title="Chụp lại">
-                  ✕
-                </button>
-                <!-- Live Caption Pill on Preview -->
-                <div class="locket-preview-caption-pill" id="locket-preview-caption-pill">
-                  <span id="locket-preview-sticker">💕</span>
-                  <span id="locket-preview-quote">Gửi người anh thương nhất</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- SHUTTER & RECORDING BAR (ALWAYS VISIBLE RIGHT BELOW CAMERA) -->
-            <div class="locket-shutter-bar" id="locket-shutter-bar">
-              <!-- Mode Tabs -->
-              <div class="locket-mode-tabs">
-                <button type="button" class="locket-mode-tab active" id="tab-mode-photo">📸 Chụp Ảnh</button>
-                <button type="button" class="locket-mode-tab" id="tab-mode-video">🎥 Video 5s</button>
-              </div>
-
-              <div class="locket-shutter-row">
-                <!-- Lật camera Trước / Sau -->
-                <button type="button" class="locket-action-sub-btn" id="btn-flip-camera" title="Lật camera Trước / Sau">
-                  🔄
-                </button>
-
-                <!-- Big Iconic Locket Shutter Button with Circular 5s Progress Ring -->
-                <div class="locket-shutter-btn-wrapper">
-                  <svg class="locket-progress-svg" viewBox="0 0 86 86">
-                    <circle class="locket-progress-bg" cx="43" cy="43" r="39"></circle>
-                    <circle class="locket-progress-fill" id="locket-progress-fill" cx="43" cy="43" r="39"></circle>
-                  </svg>
-                  <button type="button" class="locket-shutter-btn" id="btn-locket-shutter" aria-label="Bấm chụp hoặc quay video 5s" title="Bấm chụp ảnh tức thì">
-                    <div class="locket-shutter-inner-dot" id="locket-shutter-inner-dot"></div>
+                <h3 class="permission-title">Máy Ảnh Đôi Ta</h3>
+                <p class="permission-desc" id="camera-prompt-tip">Chạm để mở camera và bắt trọn những khoảnh khắc ngọt ngào nhất</p>
+                <div class="permission-btn-group">
+                  <button type="button" class="luxury-btn btn-pink" id="btn-start-camera">
+                    <span>📸 Bật Máy Ảnh</span>
+                  </button>
+                  <button type="button" class="sub-btn" id="btn-camera-fallback-file">
+                    <span>📁 Chọn Ảnh / Video Từ Máy</span>
                   </button>
                 </div>
-
-                <!-- Tải ảnh hoặc video từ máy -->
-                <button type="button" class="locket-action-sub-btn" id="btn-locket-browse-file" title="Tải ảnh hoặc video từ album máy">
-                  📁
-                </button>
-                <input type="file" id="locket-file-input" accept="image/*,video/*" style="display: none;">
-              </div>
-
-              <!-- FILTERS SELECTOR BAR -->
-              <div class="locket-filter-bar">
-                <button type="button" class="locket-filter-chip active" data-filter="normal">✨ Tự Nhiên</button>
-                <button type="button" class="locket-filter-chip" data-filter="pink">🌸 Hồng Pastel</button>
-                <button type="button" class="locket-filter-chip" data-filter="vintage">🎞️ Vintage</button>
-                <button type="button" class="locket-filter-chip" data-filter="warm">🌅 Hoàng Hôn</button>
-                <button type="button" class="locket-filter-chip" data-filter="bw">🖤 B&amp;W</button>
               </div>
             </div>
 
-            <!-- CAPTION & SEND CONTAINER (Revealed after capturing) -->
-            <div class="locket-caption-box" id="locket-caption-box">
-              <div class="locket-sticker-row" id="locket-sticker-row">
-                <button type="button" class="locket-sticker-btn active" data-sticker="💕">💕</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="😽">😽</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="🌸">🌸</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="🥺">🥺</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="☕">☕</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="💤">💤</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="✨">✨</button>
-                <button type="button" class="locket-sticker-btn" data-sticker="💌">💌</button>
+            <!-- ẢNH XEM TRƯỚC: HIỂN THỊ ẢNH VỪA CHỤP ĐỂ KIỂM TRA TRƯỚC KHI GỬI -->
+            <div class="camera-preview-overlay" id="locket-preview-wrap">
+              <div class="preview-media-container">
+                <img id="locket-preview-img" class="camera-preview-media" style="display: none;" alt="Xem trước ảnh chụp">
+                <video id="locket-preview-video" class="camera-preview-media" style="display: none;" loop playsinline webkit-playsinline autoplay muted></video>
               </div>
 
-              <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào gửi anh... 💕" maxlength="80">
+              <!-- Nút chụp lại ở góc trên -->
+              <button type="button" class="preview-corner-retake" id="btn-retake-corner" title="Chụp lại ảnh khác">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <span>Chụp lại</span>
+              </button>
 
-              <div style="display: flex; gap: 10px; width: 100%;">
-                <button type="button" class="btn-cancel-send-locket" id="btn-cancel-send-locket" style="flex: 1; background: rgba(255,255,255,0.14); color: #fff; border: 1px solid rgba(255,255,255,0.28); border-radius: 30px; padding: 12px 14px; font-weight: 700; cursor: pointer; font-size: 0.9rem; touch-action: manipulation;">
-                  ✕ Chụp Lại
+              <!-- Tem chú thích xem trước trên ảnh -->
+              <div class="preview-caption-pill" id="locket-preview-caption-pill">
+                <span id="locket-preview-sticker">💕</span>
+                <span id="locket-preview-quote">Gửi người anh thương nhất</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM CONTROLS: CHẾ ĐỘ QUAY VIDEO, NÚT CHỤP & LẬT CAMERA -->
+          <div class="camera-bottom-controls" id="locket-shutter-bar">
+            <!-- Chuyển đổi chế độ: Chụp ảnh & Quay video -->
+            <div class="camera-mode-tabs">
+              <button type="button" class="mode-tab-btn active" id="tab-mode-photo">
+                <span>📸 Chụp Ảnh</span>
+              </button>
+              <button type="button" class="mode-tab-btn" id="tab-mode-video">
+                <span>🎥 Quay Video</span>
+              </button>
+            </div>
+
+            <!-- Hàng thao tác chính: Lật camera - Chụp lớn - Chọn file -->
+            <div class="camera-shutter-action-row">
+              <!-- Nút chuyển đổi camera trước / sau -->
+              <button type="button" class="camera-circle-action-btn" id="btn-flip-camera" title="Chuyển camera Trước / Sau" aria-label="Lật camera">
+                <svg class="flip-icon-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8c0 2.21 1.005 4.195 2.59 5.5"/>
+                  <polyline points="7 15 4 15 4 18"/>
+                  <path d="M4 14c0 4.418 3.582 8 8 8s8-3.582 8-8c0-2.21-1.005-4.195-2.59-5.5"/>
+                  <polyline points="17 9 20 9 20 6"/>
+                </svg>
+              </button>
+
+              <!-- Nút chụp ảnh: Nút tròn lớn nằm chính giữa, một tay thao tác mượt mà -->
+              <div class="camera-shutter-outer-ring">
+                <svg class="camera-progress-svg" viewBox="0 0 88 88">
+                  <circle class="camera-progress-bg" cx="44" cy="44" r="39"></circle>
+                  <circle class="camera-progress-fill" id="locket-progress-fill" cx="44" cy="44" r="39"></circle>
+                </svg>
+                <button type="button" class="camera-large-shutter-btn" id="btn-locket-shutter" aria-label="Bấm chụp ảnh hoặc quay video" title="Bấm chụp ảnh tức thì">
+                  <div class="shutter-inner-core" id="locket-shutter-inner-dot"></div>
                 </button>
-                <button type="button" class="btn-send-locket" id="btn-send-locket" style="flex: 2;">
-                  <span>🚀 Gửi Ngay Cho Anh</span>
+              </div>
+
+              <!-- Tải ảnh hoặc video từ máy -->
+              <button type="button" class="camera-circle-action-btn" id="btn-locket-browse-file" title="Tải ảnh hoặc video từ album máy" aria-label="Chọn từ thư viện">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="4" ry="4"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </button>
+              <input type="file" id="locket-file-input" accept="image/*,video/*" style="display: none;">
+            </div>
+
+            <!-- Thanh bộ lọc màu sắc (Natural, Pink, Sunset, Vintage, B&W) -->
+            <div class="camera-filters-scroll-bar">
+              <button type="button" class="locket-filter-chip active" data-filter="normal">✨ Tự Nhiên</button>
+              <button type="button" class="locket-filter-chip" data-filter="pink">🌸 Hồng Pastel</button>
+              <button type="button" class="locket-filter-chip" data-filter="warm">🌅 Hoàng Hôn</button>
+              <button type="button" class="locket-filter-chip" data-filter="vintage">🎞️ Vintage</button>
+              <button type="button" class="locket-filter-chip" data-filter="bw">🖤 B&amp;W</button>
+            </div>
+          </div>
+
+          <!-- BẢNG ĐIỀU KHIỂN SAU KHI CHỤP: NHÃN DÁN, LỜI NHẮN & NÚT GỬI -->
+          <div class="camera-preview-editor-panel" id="locket-caption-box">
+            <!-- Nhãn dán cảm xúc nhanh -->
+            <div class="editor-stickers-row" id="locket-sticker-row">
+              <button type="button" class="locket-sticker-btn active" data-sticker="💕">💕</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="😽">😽</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="🌸">🌸</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="🥺">🥺</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="☕">☕</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="💌">💌</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="✨">✨</button>
+              <button type="button" class="locket-sticker-btn" data-sticker="🥰">🥰</button>
+            </div>
+
+            <!-- Ô nhập lời nhắn ngọt ngào -->
+            <div class="editor-input-wrapper">
+              <input type="text" class="locket-caption-input" id="locket-caption-input" placeholder="Viết một lời nhắn ngọt ngào gửi anh... 💕" maxlength="80">
+            </div>
+
+            <!-- Nút chụp lại & Nút gửi ảnh chuyển sang chọn người nhận -->
+            <div class="editor-actions-row">
+              <button type="button" class="btn-cancel-send-locket" id="btn-cancel-send-locket">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                <span>Chụp Lại</span>
+              </button>
+              <button type="button" class="btn-open-recipient-sheet" id="btn-open-recipient-sheet">
+                <span>Gửi Khoảnh Khắc</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- MÀN HÌNH CHỌN NGƯỜI NHẬN HOẶC GỬI NHANH (RECIPIENT SHEET) -->
+          <div class="camera-recipient-sheet" id="camera-recipient-sheet" aria-hidden="true">
+            <div class="recipient-sheet-backdrop" id="recipient-sheet-backdrop"></div>
+            <div class="recipient-sheet-panel">
+              <div class="recipient-sheet-bar-handle"></div>
+              <div class="recipient-sheet-header">
+                <div class="recipient-sheet-title-meta">
+                  <h3 class="recipient-sheet-title">Gửi Khoảnh Khắc 📸</h3>
+                  <p class="recipient-sheet-desc">Gửi nhanh cho người thương hoặc chọn người nhận</p>
+                </div>
+                <button type="button" class="recipient-sheet-close-btn" id="btn-close-recipient-sheet" aria-label="Đóng bảng">✕</button>
+              </div>
+
+              <!-- Thẻ gửi nhanh cho đối phương 1 chạm -->
+              <div class="quick-send-hero-card" id="quick-send-hero-card">
+                <div class="quick-send-avatar-wrap">
+                  <img src="images/avatar.jpg" alt="Avatar người nhận" id="quick-send-avatar">
+                  <span class="quick-send-floating-badge">💖</span>
+                </div>
+                <div class="quick-send-details">
+                  <span class="quick-send-tag">⚡ Gửi Nhanh 1 Chạm</span>
+                  <h4 class="quick-send-person-name" id="quick-send-person-name">Gửi Cho Anh Yêu (Khúc Gỗ)</h4>
+                  <small class="quick-send-status-text">Đang trực tuyến • Sẵn sàng nhận ảnh</small>
+                </div>
+                <button type="button" class="btn-instant-send" id="btn-instant-send" title="Gửi nhanh ngay lập tức">
+                  <span>Gửi Ngay 🚀</span>
+                </button>
+              </div>
+
+              <!-- Danh sách lựa chọn người nhận -->
+              <div class="recipient-selection-group">
+                <span class="recipient-group-label">Hoặc chọn người nhận gửi đến:</span>
+                <div class="recipient-checkbox-list">
+                  <label class="recipient-choice-item active">
+                    <input type="checkbox" name="camera_target_recipient" value="boyfriend" checked>
+                    <span class="choice-icon">🪵</span>
+                    <div class="choice-meta">
+                      <strong class="choice-title" id="choice-title-bf">Chàng Trai Của Bé (Khúc Gỗ)</strong>
+                      <span class="choice-desc">Hộp thư riêng tư của anh</span>
+                    </div>
+                    <span class="choice-check-indicator">✓</span>
+                  </label>
+
+                  <label class="recipient-choice-item active">
+                    <input type="checkbox" name="camera_target_recipient" value="feed" checked>
+                    <span class="choice-icon">📸</span>
+                    <div class="choice-meta">
+                      <strong class="choice-title">Bảng Tin Máy Ảnh Đôi Ta</strong>
+                      <span class="choice-desc">Lưu lại dòng thời gian kỷ niệm</span>
+                    </div>
+                    <span class="choice-check-indicator">✓</span>
+                  </label>
+
+                  <label class="recipient-choice-item">
+                    <input type="checkbox" name="camera_target_recipient" value="best_friends">
+                    <span class="choice-icon">✨</span>
+                    <div class="choice-meta">
+                      <strong class="choice-title">Bạn Bè Thân Thiết</strong>
+                      <span class="choice-desc">Khoe khoảnh khắc ngọt ngào 20/10</span>
+                    </div>
+                    <span class="choice-check-indicator">✓</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Nút xác nhận gửi -->
+              <div class="recipient-sheet-actions">
+                <button type="button" class="btn-confirm-send-all" id="btn-send-locket">
+                  <span>🚀 Xác Nhận Gửi Khoảnh Khắc</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Locket Romantic Toast Notification -->
+          <!-- BẢNG TIN KHOẢNH KHẮC ĐÃ GỬI (DRAWER SHEET) -->
+          <div class="camera-feed-drawer" id="camera-feed-drawer" aria-hidden="true">
+            <div class="feed-drawer-backdrop" id="feed-drawer-backdrop"></div>
+            <div class="feed-drawer-panel">
+              <div class="recipient-sheet-bar-handle"></div>
+              <div class="feed-drawer-header">
+                <div class="feed-drawer-title-row">
+                  <span class="feed-drawer-icon">📸</span>
+                  <h3>Bảng Tin Khoảnh Khắc Đôi Ta</h3>
+                  <span class="feed-drawer-count-badge" id="locket-feed-count">0 khoảnh khắc</span>
+                </div>
+                <button type="button" class="recipient-sheet-close-btn" id="btn-close-feed-drawer" aria-label="Đóng bảng tin">✕</button>
+              </div>
+
+              <div class="feed-drawer-body">
+                <div class="locket-feed-grid" id="locket-feed-grid">
+                  <div class="admin-empty-state" style="grid-column: 1 / -1;">Đang tải khoảnh khắc máy ảnh...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- THÔNG BÁO TRẠNG THÁI TOAST LÃNG MẠN -->
           <div class="locket-toast" id="locket-toast"></div>
 
-          <!-- FEED: RECENT MOMENTS -->
-          <div class="locket-feed-wrap">
-            <div class="locket-feed-title-bar">
-              <h3><span>📸</span> Bảng Tin Máy Ảnh Đôi Ta</h3>
-              <span id="locket-feed-count" style="font-size: 0.8rem; color: #ff9bbb;">0 khoảnh khắc</span>
-            </div>
-
-            <div class="locket-feed-grid" id="locket-feed-grid">
-              <div class="admin-empty-state" style="grid-column: 1 / -1;">Đang tải khoảnh khắc máy ảnh...</div>
-            </div>
-          </div>
-
-          <div class="slide-nav-action" style="margin-top: 26px;">
-            <button class="luxury-btn btn-next-slide" data-goto="4">
-              <span>Góc Nhỏ Của Bé 💭</span>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-          </div>
         </div>
       </section>
 
@@ -969,11 +1096,11 @@
     <span>🎵 Bấm để bật nhạc lãng mạn</span>
   </div>
 
-  <!-- System Seed Data (Offline & Static fallback for all 21 bucket items, notes, memories) -->
-  <script src="data/seed_data.js?v=20261015_data_v9"></script>
+  <!-- System Seed Data (Offline & Static fallback for notes, memories, etc.) -->
+  <script src="data/seed_data.js?v=20261016_v10"></script>
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261015_data_v9"></script>
+  <script src="config.js?v=20261016_v10"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261015_data_v9"></script>
+  <script src="script.js?v=20261016_v10"></script>
 </body>
 </html>
