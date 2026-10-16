@@ -2582,45 +2582,190 @@
 
   let cachedMemories = [];
 
+  // --- INDEXEDDB STORAGE FOR UNLIMITED LOCAL MEMORIES STORAGE ---
+  const MEMORIES_IDB_NAME = 'LoveGiftMemoriesDB';
+  const MEMORIES_STORE_NAME = 'memories_store';
+
+  function openMemoriesIDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) {
+        resolve(null);
+        return;
+      }
+      try {
+        const req = indexedDB.open(MEMORIES_IDB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(MEMORIES_STORE_NAME)) {
+            db.createObjectStore(MEMORIES_STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      } catch(e) {
+        resolve(null);
+      }
+    });
+  }
+
+  async function persistMemoryItemToIDB(item) {
+    if (!item || !item.id) return;
+    try {
+      const db = await openMemoriesIDB();
+      if (!db) return;
+      const tx = db.transaction(MEMORIES_STORE_NAME, 'readwrite');
+      tx.objectStore(MEMORIES_STORE_NAME).put(item);
+    } catch(e) {
+      console.warn('IDB put error:', e);
+    }
+  }
+
+  async function getAllMemoriesFromIDB() {
+    try {
+      const db = await openMemoriesIDB();
+      if (!db) return [];
+      return new Promise((resolve) => {
+        const tx = db.transaction(MEMORIES_STORE_NAME, 'readonly');
+        const store = tx.objectStore(MEMORIES_STORE_NAME);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch(e) {
+      return [];
+    }
+  }
+
+  async function deleteMemoryFromIDB(id) {
+    if (!id) return;
+    try {
+      const db = await openMemoriesIDB();
+      if (!db) return;
+      const tx = db.transaction(MEMORIES_STORE_NAME, 'readwrite');
+      tx.objectStore(MEMORIES_STORE_NAME).delete(id);
+    } catch(e) {}
+  }
+
   // --- DATABASE API FOR MEMORIES ---
   async function fetchMemoriesFromDatabase() {
+    let remoteMemories = [];
+
     // 1. Fetch from live API
     try {
-      const res = await fetch('/api/memories');
+      const res = await fetch('/api/memories?v=' + Date.now());
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && Array.isArray(data.memories) && data.memories.length > 0) {
-          cachedMemories = data.memories;
-          try {
-            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(data.memories));
-          } catch(e) {}
-          return data.memories;
+          remoteMemories = data.memories;
         }
       }
     } catch(e) {}
 
     // 2. Static fallback: data/db.json
-    try {
-      const res = await fetch('data/db.json?v=' + Date.now());
-      if (res.ok) {
-        const dbData = await res.json();
-        if (dbData && Array.isArray(dbData.memories) && dbData.memories.length > 0) {
-          cachedMemories = dbData.memories;
-          try {
-            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(dbData.memories));
-          } catch(e) {}
-          return dbData.memories;
+    if (remoteMemories.length === 0) {
+      try {
+        const res = await fetch('data/db.json?v=' + Date.now());
+        if (res.ok) {
+          const dbData = await res.json();
+          if (dbData && Array.isArray(dbData.memories) && dbData.memories.length > 0) {
+            remoteMemories = dbData.memories;
+          }
         }
+      } catch(e) {}
+    }
+
+    // 3. Fallback to SEED_DATA
+    if (remoteMemories.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.memories)) {
+      remoteMemories = JSON.parse(JSON.stringify(window.SEED_DATA.memories));
+    }
+
+    if (remoteMemories.length === 0) {
+      remoteMemories = JSON.parse(JSON.stringify(DEFAULT_MEMORIES));
+    }
+
+    // 4. Load persisted memories from IndexedDB (survives reload & quota errors)
+    const idbMemories = await getAllMemoriesFromIDB();
+
+    // 5. Load persisted memories from localStorage
+    let localStoredMemories = [];
+    try {
+      const raw = localStorage.getItem('romantic_gift_user_memories');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) localStoredMemories = parsed;
       }
     } catch(e) {}
 
-    // 3. Fallback to SEED_DATA
-    if (window.SEED_DATA && Array.isArray(window.SEED_DATA.memories) && window.SEED_DATA.memories.length > 0) {
-      cachedMemories = JSON.parse(JSON.stringify(window.SEED_DATA.memories));
-      return cachedMemories;
+    // 6. Intelligent Merge preserving all user uploaded memories & default memories
+    const memoryMap = new Map();
+
+    // First: load user-uploaded memories from localStorage and IndexedDB (prefer IndexedDB for full image src)
+    [...localStoredMemories, ...idbMemories].forEach(m => {
+      if (m && m.id) {
+        const existing = memoryMap.get(m.id);
+        if (!existing) {
+          memoryMap.set(m.id, m);
+        } else {
+          // If existing had empty or short src, prefer m.src
+          if ((!existing.src || existing.src.length < 50) && m.src) {
+            existing.src = m.src;
+          }
+          if (m.caption) existing.caption = m.caption;
+          if (m.date) existing.date = m.date;
+          memoryMap.set(m.id, existing);
+        }
+      }
+    });
+
+    // Second: merge remote memories
+    remoteMemories.forEach(m => {
+      if (m && m.id) {
+        if (!memoryMap.has(m.id)) {
+          memoryMap.set(m.id, m);
+        } else {
+          // If server memory has an uploaded file path, prefer it
+          const existing = memoryMap.get(m.id);
+          if (m.src && (m.src.startsWith('/uploads/') || m.src.startsWith('uploads/'))) {
+            existing.src = m.src;
+          }
+          if (m.caption) existing.caption = m.caption;
+          if (m.date) existing.date = m.date;
+          memoryMap.set(m.id, existing);
+        }
+      }
+    });
+
+    // Third: make sure all 12 initial default memories are present
+    DEFAULT_MEMORIES.forEach(dm => {
+      if (!memoryMap.has(dm.id)) memoryMap.set(dm.id, dm);
+    });
+
+    const merged = Array.from(memoryMap.values());
+    // Sort: user-uploaded photos (newer createdAt/date) first, then default photos
+    merged.sort((a, b) => {
+      const isDefaultA = a.id && a.id.startsWith('mem-') && !a.id.includes('_');
+      const isDefaultB = b.id && b.id.startsWith('mem-') && !b.id.includes('_');
+      if (isDefaultA && !isDefaultB) return 1;
+      if (!isDefaultA && isDefaultB) return -1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+
+    cachedMemories = merged;
+
+    // Persist all user memories to IndexedDB so they never get lost
+    idbMemories.forEach(im => persistMemoryItemToIDB(im));
+
+    try {
+      localStorage.setItem('romantic_gift_user_memories', JSON.stringify(merged));
+    } catch(e) {
+      // If quota exceeded, store lightweight metadata in localStorage
+      try {
+        const lightweight = merged.map(m => m.src && m.src.length > 2000 ? { ...m, src: '' } : m);
+        localStorage.setItem('romantic_gift_user_memories', JSON.stringify(lightweight));
+      } catch(err) {}
     }
 
-    return null;
+    return cachedMemories;
   }
 
   async function syncMemoriesToUI() {
@@ -2653,6 +2798,7 @@
     try {
       await fetch(`/api/memories/${encodeURIComponent(memId)}`, { method: 'DELETE' });
     } catch(e) {}
+    await deleteMemoryFromIDB(memId);
     broadcastRealtime('BÉ_ACTION', { module: 'memories' });
   }
 
@@ -2681,11 +2827,21 @@
   function saveMemories(memories) {
     if (Array.isArray(memories)) {
       cachedMemories = memories;
+      // Backup each user memory to IndexedDB
+      memories.forEach(m => {
+        if (m && m.id && (!m.id.startsWith('mem-') || m.id.includes('_'))) {
+          persistMemoryItemToIDB(m);
+        }
+      });
     }
     try {
       localStorage.setItem('romantic_gift_user_memories', JSON.stringify(memories));
     } catch(e) {
       console.warn('LocalStorage quota exceeded for memories:', e);
+      try {
+        const lightweight = memories.map(m => m.src && m.src.length > 2000 ? { ...m, src: '' } : m);
+        localStorage.setItem('romantic_gift_user_memories', JSON.stringify(lightweight));
+      } catch(err) {}
     }
   }
 
@@ -2723,11 +2879,15 @@
     reader.readAsDataURL(file);
   }
 
+  let currentSelectedMemoryFile = null;
+
   function handleFileSelected(file) {
     if (!file || !file.type.startsWith('image/')) {
       alert('Vui lòng chọn một file ảnh hợp lệ (JPG, PNG, WebP...)');
       return;
     }
+
+    currentSelectedMemoryFile = file;
 
     compressImageFile(file, (dataUrl) => {
       currentPendingImageData = dataUrl;
@@ -2789,6 +2949,7 @@
   if (btnCancelPreview) {
     btnCancelPreview.addEventListener('click', () => {
       currentPendingImageData = null;
+      currentSelectedMemoryFile = null;
       if (previewImg) previewImg.src = '';
       if (memoryFileInput) memoryFileInput.value = '';
       if (uploadPreviewForm) uploadPreviewForm.style.display = 'none';
@@ -2798,7 +2959,7 @@
 
   if (btnSaveMemoryPhoto) {
     btnSaveMemoryPhoto.addEventListener('click', async () => {
-      if (!currentPendingImageData) return;
+      if (!currentPendingImageData && !currentSelectedMemoryFile) return;
       sound.init();
       sound.playKeyClick();
 
@@ -2817,16 +2978,45 @@
           if (parts.length === 3) dateVal = `${parts[2]}/${parts[1]}/${parts[0]}`;
         }
 
+        let finalImgSrc = currentPendingImageData;
+        let serverMem = null;
+
         // 1. Try ImgBB Cloud API upload first if key exists
-        let cloudUrl = null;
-        if (userConfig.imgbbApiKey) {
-          cloudUrl = await uploadToImgBB(currentPendingImageData, userConfig.imgbbApiKey);
+        if (userConfig.imgbbApiKey && currentPendingImageData) {
+          try {
+            const cloudUrl = await uploadToImgBB(currentPendingImageData, userConfig.imgbbApiKey);
+            if (cloudUrl) finalImgSrc = cloudUrl;
+          } catch(e) {}
         }
 
-        const finalImgSrc = cloudUrl || currentPendingImageData;
+        // 2. Try uploading via FormData to backend Database Server
+        if (currentSelectedMemoryFile) {
+          try {
+            const formData = new FormData();
+            formData.append('photo', currentSelectedMemoryFile);
+            formData.append('caption', caption);
+            formData.append('date', dateVal);
 
-        // 2. Try uploading to Database Server
-        const serverMem = await postMemoryToDatabase(finalImgSrc, caption, dateVal);
+            const res = await fetch('/api/memories', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.success && data.memory) {
+                serverMem = data.memory;
+              }
+            }
+          } catch(err) {
+            console.warn('FormData upload to /api/memories failed:', err);
+          }
+        }
+
+        // 3. Fallback to base64 JSON API upload if FormData didn't return
+        if (!serverMem && finalImgSrc) {
+          serverMem = await postMemoryToDatabase(finalImgSrc, caption, dateVal);
+        }
 
         const newMem = serverMem || {
           id: 'mem_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
@@ -2836,8 +3026,11 @@
           createdAt: Date.now()
         };
 
+        // 4. Save to IndexedDB (unlimited storage, permanent, survives reload & browser restarts)
+        await persistMemoryItemToIDB(newMem);
+
+        // 5. Update in-memory cachedMemories
         const memories = getSavedMemories();
-        // Remove if existing id already in array to avoid duplicates
         const existingIdx = memories.findIndex(m => m.id === newMem.id);
         if (existingIdx !== -1) {
           memories.splice(existingIdx, 1);
@@ -2847,6 +3040,7 @@
 
         // Reset preview
         currentPendingImageData = null;
+        currentSelectedMemoryFile = null;
         if (previewImg) previewImg.src = '';
         if (memoryCaptionInput) memoryCaptionInput.value = '';
         if (memoryFileInput) memoryFileInput.value = '';

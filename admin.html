@@ -1697,7 +1697,56 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         });
       }
 
-      // --- 6. LIVE MEMORIES MANAGER FROM DATABASE ---
+      // --- 6. LIVE MEMORIES MANAGER FROM DATABASE & INDEXEDDB ---
+      async function getMemoriesFromIDB() {
+        return new Promise((resolve) => {
+          if (!window.indexedDB) return resolve([]);
+          try {
+            const req = indexedDB.open('LoveGiftMemoriesDB', 1);
+            req.onsuccess = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('memories_store')) return resolve([]);
+              const tx = db.transaction('memories_store', 'readonly');
+              const store = tx.objectStore('memories_store');
+              const getReq = store.getAll();
+              getReq.onsuccess = () => resolve(getReq.result || []);
+              getReq.onerror = () => resolve([]);
+            };
+            req.onerror = () => resolve([]);
+          } catch(e) {
+            resolve([]);
+          }
+        });
+      }
+
+      async function deleteMemoryFromAdminIDB(id) {
+        if (!id || !window.indexedDB) return;
+        try {
+          const req = indexedDB.open('LoveGiftMemoriesDB', 1);
+          req.onsuccess = (e) => {
+            const db = e.target.result;
+            if (db.objectStoreNames.contains('memories_store')) {
+              const tx = db.transaction('memories_store', 'readwrite');
+              tx.objectStore('memories_store').delete(id);
+            }
+          };
+        } catch(e) {}
+      }
+
+      async function persistMemoryToAdminIDB(item) {
+        if (!item || !item.id || !window.indexedDB) return;
+        try {
+          const req = indexedDB.open('LoveGiftMemoriesDB', 1);
+          req.onsuccess = (e) => {
+            const db = e.target.result;
+            if (db.objectStoreNames.contains('memories_store')) {
+              const tx = db.transaction('memories_store', 'readwrite');
+              tx.objectStore('memories_store').put(item);
+            }
+          };
+        } catch(e) {}
+      }
+
       async function loadAdminMemories() {
         const gridEl = document.getElementById('admin-memories-grid');
         const badgeEl = document.getElementById('admin-memories-count-badge');
@@ -1705,7 +1754,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         let memories = [];
         try {
-          const res = await fetch('/api/memories');
+          const res = await fetch('/api/memories?v=' + Date.now());
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.memories) && data.memories.length > 0) {
@@ -1724,6 +1773,18 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         if (memories.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.memories)) {
           memories = window.SEED_DATA.memories;
         }
+
+        // Merge with IndexedDB memories
+        try {
+          const idbMemories = await getMemoriesFromIDB();
+          if (Array.isArray(idbMemories) && idbMemories.length > 0) {
+            idbMemories.forEach(im => {
+              if (im && im.id && !memories.some(m => m.id === im.id)) {
+                memories.unshift(im);
+              }
+            });
+          }
+        } catch(e) {}
 
         if (badgeEl) badgeEl.textContent = `${memories.length} bức ảnh`;
         gridEl.innerHTML = '';
@@ -1751,6 +1812,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               try {
                 await fetch(`/api/memories/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
               } catch(e) {}
+              await deleteMemoryFromAdminIDB(m.id);
               loadAdminMemories();
               broadcastToGirl('DATA_UPDATED', { module: 'memories' });
               showToast('Đã xóa ảnh khỏi album', '🗑️');
@@ -1804,6 +1866,10 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             });
 
             if (res.ok) {
+              const data = await res.json();
+              if (data && data.success && data.memory) {
+                await persistMemoryToAdminIDB(data.memory);
+              }
               showToast('Đã tải ảnh lên Database thành công! 📸✨', '✅');
               fileInputAdmin.value = '';
               if (captionInputAdmin) captionInputAdmin.value = '';

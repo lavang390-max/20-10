@@ -335,8 +335,8 @@ app.post('/api/memories', upload.single('photo'), (req, res) => {
     photoSrc = '/uploads/' + req.file.filename;
   }
   // 2. Nếu upload qua base64 string hoặc URL đám mây trực tiếp
-  else if (req.body && (req.body.imageBase64 || req.body.photoSrc || req.body.src || req.body.url)) {
-    const rawImage = (req.body.imageBase64 || req.body.photoSrc || req.body.src || req.body.url).trim();
+  else if (req.body && (req.body.imageBase64 || req.body.photoSrc || req.body.src || req.body.url || req.body.image_url)) {
+    const rawImage = (req.body.imageBase64 || req.body.photoSrc || req.body.src || req.body.url || req.body.image_url).trim();
     if (rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
       // URL đám mây trực tiếp (ImgBB, Cloudflare CDN) - giữ nguyên để truy cập vĩnh viễn
       photoSrc = rawImage;
