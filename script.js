@@ -27,7 +27,9 @@
     startDate: '2024-02-07T00:00:00',
     wheelPrizes: DEFAULT_WHEEL_PRIZES,
     letterBody: `Hellu bé - cô gái tuyệt vời nhất trên đời của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!`,
-    imgbbApiKey: ''
+    imgbbApiKey: '',
+    girlfriendRealName: 'bé mèo',
+    boyfriendRealName: 'khúc gỗ'
   };
 
   // ImgBB Cloud Uploader Helper
@@ -96,6 +98,8 @@
     const saved = localStorage.getItem('romantic_gift_config_2010');
     if (saved) {
       const parsed = JSON.parse(saved);
+      if (parsed.girlfriendRealName === 'N.T.B.N') parsed.girlfriendRealName = 'bé mèo';
+      if (parsed.boyfriendRealName === 'Huỳnh Ngọc Thắng') parsed.boyfriendRealName = 'khúc gỗ';
       if (parsed.wheelPrizes && parsed.wheelPrizes.length === 6 && !parsed.wheelPrizes[0].title.includes('Trà Sữa')) {
         userConfig = Object.assign({}, userConfig, parsed);
       } else {
@@ -3330,13 +3334,13 @@
 
     const certRecipient = document.getElementById('cert-recipient-name');
     if (certRecipient) {
-      const gfCertName = userConfig.girlfriendRealName || (userConfig.girlfriendName && userConfig.girlfriendName !== 'Huỳnh Ngọc Thắng' && userConfig.girlfriendName !== 'khúc gỗ' ? userConfig.girlfriendName : 'N.T.B.N');
+      const gfCertName = (userConfig.girlfriendRealName && userConfig.girlfriendRealName !== 'N.T.B.N') ? userConfig.girlfriendRealName : (userConfig.girlfriendName || 'bé mèo');
       certRecipient.textContent = `${gfCertName} !`;
     }
 
     const certIssuer = document.getElementById('cert-issuer-name');
     if (certIssuer) {
-      const bfCertName = userConfig.boyfriendRealName || (userConfig.boyfriendName && userConfig.boyfriendName !== 'N.T.B.N' && userConfig.boyfriendName !== 'bé mèo' ? userConfig.boyfriendName : 'Huỳnh Ngọc Thắng');
+      const bfCertName = (userConfig.boyfriendRealName && userConfig.boyfriendRealName !== 'Huỳnh Ngọc Thắng') ? userConfig.boyfriendRealName : (userConfig.boyfriendName || 'khúc gỗ');
       certIssuer.textContent = bfCertName;
     }
 

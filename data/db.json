@@ -1,6 +1,15 @@
 {
   "notes": [
     {
+      "id": "note_1792153151840_989",
+      "mood": "🥰",
+      "moodLabel": "Hạnh phúc",
+      "text": "nho anh",
+      "date": "19:19 • 16/10/2026",
+      "createdAt": 1792153151840,
+      "isRead": false
+    },
+    {
       "id": "note_1792145263366_515",
       "mood": "🥰",
       "moodLabel": "Hạnh phúc",
@@ -29,6 +38,34 @@
     }
   ],
   "memories": [
+    {
+      "id": "mem_1792153183141_758",
+      "src": "/uploads/memory_1792153183140_422080.jpg",
+      "caption": "anh,bé và hoa",
+      "date": "16/10/2026",
+      "createdAt": 1792153183142
+    },
+    {
+      "id": "mem_1792153182951_132",
+      "src": "/uploads/memory_1792153182950_294502.jpg",
+      "caption": "anh,bé và hoa",
+      "date": "16/10/2026",
+      "createdAt": 1792153182951
+    },
+    {
+      "id": "mem_1792153182573_515",
+      "src": "/uploads/memory_1792153182571_342802.jpg",
+      "caption": "anh,bé và hoa",
+      "date": "16/10/2026",
+      "createdAt": 1792153182573
+    },
+    {
+      "id": "mem_1792153182480_938",
+      "src": "/uploads/memory_1792153182479_179381.jpg",
+      "caption": "anh,bé và hoa",
+      "date": "16/10/2026",
+      "createdAt": 1792153182480
+    },
     {
       "id": "mem-1",
       "src": "images/photo1.jpg",
@@ -143,8 +180,8 @@
     ],
     "letterBody": "Hellu bé - bé iu của anh\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh, mang theo cả bầu trời bình yên và nụ cười rạng rỡ nhất.\n\nTừ ngày có bé, từng phút giây trôi qua đối với anh đều trở nên đặc biệt ý nghĩa. Chúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui.\n\nAnh hứa sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày. Mãi bên nhau bé nhé!",
     "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
-    "girlfriendRealName": "N.T.B.N",
-    "boyfriendRealName": "Huỳnh Ngọc Thắng"
+    "girlfriendRealName": "bé mèo",
+    "boyfriendRealName": "khúc gỗ"
   },
   "bucketList": [],
   "locket": [

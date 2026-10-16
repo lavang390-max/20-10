@@ -1370,6 +1370,8 @@
         currentConfig.adminPin = (inputAdminPin.value || '0702').trim();
         currentConfig.girlfriendName = (inputGfName.value || 'bé mèo').trim();
         currentConfig.boyfriendName = (inputBfName.value || 'khúc gỗ').trim();
+        currentConfig.girlfriendRealName = currentConfig.girlfriendName;
+        currentConfig.boyfriendRealName = currentConfig.boyfriendName;
         currentConfig.letterBody = (inputLetterBody.value || DEFAULT_CONFIG.letterBody).trim();
         currentConfig.imgbbApiKey = (inputImgbbKey && inputImgbbKey.value.trim()) || '';
 
