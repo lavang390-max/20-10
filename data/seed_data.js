@@ -93,13 +93,6 @@ var SEED_DATA = {
   ],
   "memories": [
     {
-      "id": "mem_1792166475102_344",
-      "src": "/uploads/memory_1792166475100_136874.jpg",
-      "caption": "hoaa",
-      "date": "16/10/2026",
-      "createdAt": 1792166475102
-    },
-    {
       "id": "mem_1792166326205_318",
       "src": "/uploads/memory_1792166326197_620623.jpg",
       "caption": "anh bé và hoa",

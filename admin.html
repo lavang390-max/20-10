@@ -1330,8 +1330,8 @@
   </div>
 
   <!-- LOAD CONFIG FILE AND SEED DATA IF EXISTS -->
-  <script src="data/seed_data.js?v=20261017_sync_v12"></script>
-  <script src="config.js?v=20261017_sync_v12"></script>
+  <script src="data/seed_data.js?v=20261017_sync_v14"></script>
+  <script src="config.js?v=20261017_sync_v14"></script>
   <script src="qrcode.min.js"></script>
 
   <!-- ADMIN SCRIPT LOGIC -->
@@ -2096,18 +2096,6 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         if (memories.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.memories)) {
           memories = window.SEED_DATA.memories;
         }
-
-        // Merge with IndexedDB memories
-        try {
-          const idbMemories = await getMemoriesFromIDB();
-          if (Array.isArray(idbMemories) && idbMemories.length > 0) {
-            idbMemories.forEach(im => {
-              if (im && im.id && !memories.some(m => m.id === im.id)) {
-                memories.unshift(im);
-              }
-            });
-          }
-        } catch(e) {}
 
         if (badgeEl) badgeEl.textContent = `${memories.length} bức ảnh`;
         gridEl.innerHTML = '';

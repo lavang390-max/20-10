@@ -126,6 +126,29 @@
   let userConfig = Object.assign({}, DEFAULT_CONFIG);
 
   // 1. Base cache from localStorage (nếu có)
+  // --- VERSIONED CACHE RESET TO ENSURE 100% UNIFIED DATA ACROSS ALL DEVICES ---
+  const CURRENT_SYNC_VERSION = '20261017_sync_v14';
+  try {
+    if (localStorage.getItem('romantic_gift_sync_ver') !== CURRENT_SYNC_VERSION) {
+      localStorage.removeItem('romantic_gift_user_memories');
+      localStorage.removeItem('romantic_gift_locket_feed');
+      localStorage.removeItem('romantic_gift_user_notes');
+      localStorage.setItem('romantic_gift_sync_ver', CURRENT_SYNC_VERSION);
+      if (window.indexedDB) {
+        try {
+          const req = indexedDB.open('LoveGiftMemoriesDB', 1);
+          req.onsuccess = (e) => {
+            const db = e.target.result;
+            if (db && db.objectStoreNames.contains('memories_store')) {
+              const tx = db.transaction('memories_store', 'readwrite');
+              tx.objectStore('memories_store').clear();
+            }
+          };
+        } catch(err) {}
+      }
+    }
+  } catch(e) {}
+
   try {
     const saved = localStorage.getItem('romantic_gift_config_2010');
     if (saved) {
@@ -950,7 +973,9 @@
     if (stagePlaceholderHint) stagePlaceholderHint.style.opacity = '0';
 
     const stageRect = polaroidStage.getBoundingClientRect();
-    const data = POLAROID_DATA[polaroidCounter % POLAROID_DATA.length];
+    const activeMemories = typeof getSavedMemories === 'function' ? getSavedMemories() : POLAROID_DATA;
+    const pool = (Array.isArray(activeMemories) && activeMemories.length > 0) ? activeMemories : POLAROID_DATA;
+    const data = pool[polaroidCounter % pool.length];
     polaroidCounter++;
     highestZ++;
 
@@ -2248,23 +2273,18 @@
       }
     } catch(e) {}
 
-    // 4. Fallback to data/db.json on GitHub Pages static mode (luôn cập nhật kể cả khi cache đã có ảnh)
+    // 4. Fallback to data/db.json on GitHub Pages static mode (luôn đồng bộ chuẩn xác với cơ sở dữ liệu)
     try {
       const res = await fetch('data/db.json?v=' + Date.now());
       if (res.ok) {
         const dbData = await res.json();
         if (dbData && Array.isArray(dbData.locket) && dbData.locket.length > 0) {
-          const itemMap = new Map();
-          dbData.locket.forEach(it => { if (it && it.id) itemMap.set(it.id, it); });
-          cachedLocketItems.forEach(it => {
-            if (it && it.id && !itemMap.has(it.id)) itemMap.set(it.id, it);
-          });
-          const merged = Array.from(itemMap.values()).slice(0, 30);
+          const authoritative = dbData.locket;
           const prevStr = JSON.stringify(cachedLocketItems);
-          const newStr = JSON.stringify(merged);
+          const newStr = JSON.stringify(authoritative);
           if (prevStr !== newStr) {
-            cachedLocketItems = merged;
-            localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(merged));
+            cachedLocketItems = authoritative;
+            localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(authoritative));
             renderLocketFeed(cachedLocketItems);
           }
         }
@@ -2768,64 +2788,27 @@
       }
     } catch(e) {}
 
-    // 6. Intelligent Merge preserving all user uploaded memories & default memories
+    // 6. Intelligent Merge: Nguồn dữ liệu từ máy chủ/db.json là nguồn chuẩn duy nhất
     const memoryMap = new Map();
 
-    // First: load user-uploaded memories from localStorage and IndexedDB (prefer IndexedDB for full image src)
-    [...localStoredMemories, ...idbMemories].forEach(m => {
-      if (m && m.id) {
-        // Nếu ảnh từng ở trên server (/uploads/) nhưng remoteMemories không còn -> đã bị xóa -> xóa khỏi thiết bị này
-        if (remoteMemories.length > 0 && m.src && (m.src.startsWith('/uploads/') || m.src.startsWith('uploads/'))) {
-          if (!remoteMemories.some(rm => rm.id === m.id)) {
-            deleteMemoryFromIDB(m.id);
-            return;
-          }
-        }
-
-        // Tự động đẩy ảnh chụp/tải lên cục bộ lên máy chủ để các thiết bị khác xem được ngay
-        if (m.src && m.src.startsWith('data:image/') && !m.id.startsWith('mem-')) {
-          postMemoryToDatabase(m.src, m.caption || 'Kỷ niệm', m.date).then(savedMem => {
-            if (savedMem && savedMem.src) {
-              m.src = savedMem.src;
-              persistMemoryItemToIDB(m);
-            }
-          }).catch(() => {});
-        }
-
-        const existing = memoryMap.get(m.id);
-        if (!existing) {
-          memoryMap.set(m.id, m);
-        } else {
-          // If existing had empty or short src, prefer m.src
-          if ((!existing.src || existing.src.length < 50) && m.src) {
-            existing.src = m.src;
-          }
-          if (m.caption) existing.caption = m.caption;
-          if (m.date) existing.date = m.date;
-          memoryMap.set(m.id, existing);
-        }
-      }
-    });
-
-    // Second: merge remote memories
+    // Bước 1: Nạp toàn bộ ảnh từ cơ sở dữ liệu chung (remoteMemories)
     remoteMemories.forEach(m => {
-      if (m && m.id) {
-        if (!memoryMap.has(m.id)) {
+      if (m && m.id) memoryMap.set(m.id, m);
+    });
+
+    // Bước 2: Chỉ giữ lại ảnh vừa tải lên tại máy này trong phiên hiện tại (< 3 phút) nếu chưa kịp sync lên git
+    const now = Date.now();
+    [...localStoredMemories, ...idbMemories].forEach(m => {
+      if (m && m.id && !memoryMap.has(m.id)) {
+        if (m.createdAt && (now - m.createdAt < 180000)) {
           memoryMap.set(m.id, m);
         } else {
-          // If server memory has an uploaded file path, prefer it
-          const existing = memoryMap.get(m.id);
-          if (m.src && (m.src.startsWith('/uploads/') || m.src.startsWith('uploads/'))) {
-            existing.src = m.src;
-          }
-          if (m.caption) existing.caption = m.caption;
-          if (m.date) existing.date = m.date;
-          memoryMap.set(m.id, existing);
+          deleteMemoryFromIDB(m.id);
         }
       }
     });
 
-    // Third: make sure all 12 initial default memories are present
+    // Bước 3: Đảm bảo 12 ảnh kỷ niệm mặc định luôn có mặt đầy đủ
     DEFAULT_MEMORIES.forEach(dm => {
       if (!memoryMap.has(dm.id)) memoryMap.set(dm.id, dm);
     });
