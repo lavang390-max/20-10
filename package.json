@@ -2,9 +2,12 @@
   "name": "20.10.2026",
   "version": "1.0.0",
   "description": "Một trang web kỷ niệm ngày Phụ Nữ Việt Nam 20/10 với giao diện chuẩn **Luxury Romantic Glassmorphism**, âm nhạc lãng mạn, hiệu ứng tương tác mượt mà và đầy ắp bất ngờ ngọt ngào.",
-  "main": "config.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",

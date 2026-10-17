@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: qua-tang-20-10
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
