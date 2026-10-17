@@ -40,15 +40,12 @@
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
     const clean = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
 
-    // When accessed directly via local server, LAN IP, or Cloudflare Tunnel
-    if (window.location.hostname === 'localhost' || 
-        window.location.hostname === '127.0.0.1' || 
-        window.location.hostname.endsWith('trycloudflare.com') ||
-        window.location.port === '3000') {
+    // When running on full Node.js server (Render, Railway, localhost, Cloudflare tunnel, etc.)
+    if (!window.location.hostname.includes('github.io') && window.location.protocol !== 'file:') {
       return clean;
     }
 
-    // When accessed via GitHub Pages or static host, route to remote backend
+    // When accessed via GitHub Pages or local file://, route to remote backend
     const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
                    localStorage.getItem('romantic_gift_server_url') || 
                    DEFAULT_REMOTE_BACKEND;
@@ -62,10 +59,7 @@
     }
     if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
       const clean = src.startsWith('/') ? src : '/' + src;
-      if (window.location.hostname === 'localhost' || 
-          window.location.hostname === '127.0.0.1' || 
-          window.location.hostname.endsWith('trycloudflare.com') ||
-          window.location.port === '3000') {
+      if (!window.location.hostname.includes('github.io') && window.location.protocol !== 'file:') {
         return clean;
       }
       const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
