@@ -1,11 +1,4 @@
-/**
- * ==========================================================
- * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
- * Tự động cập nhật: 2026-10-16T17:05:52.852Z
- * ==========================================================
- */
-
-const SEED_DATA = {
+var SEED_DATA = {
   "config": {
     "passcode": "0702",
     "passcodeHint": "Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè!  ✨",
@@ -49,7 +42,7 @@ const SEED_DATA = {
     "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
     "girlfriendRealName": "bé mèo",
     "boyfriendRealName": "khúc gỗ",
-    "serverUrl": "https://memphis-likes-timely-privileges.trycloudflare.com"
+    "serverUrl": ""
   },
   "notes": [
     {
@@ -297,3 +290,6 @@ const SEED_DATA = {
     }
   ]
 };
+
+if (typeof window !== 'undefined') { window.SEED_DATA = SEED_DATA; }
+if (typeof module !== 'undefined' && module.exports) { module.exports = SEED_DATA; }

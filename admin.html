@@ -847,7 +847,7 @@
           Gửi đường link này cho Bé để <b>mở trên điện thoại bất kỳ (4G / Wi-Fi)</b>. Mọi ảnh bé chụp từ Máy Ảnh, ảnh trong Kho Kỷ Niệm và thư nhắn sẽ <b>lập tức đồng bộ sang máy tính của anh</b>!
         </p>
         <div class="share-link-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <input type="text" class="share-link-input" id="global-sync-girl-input" readonly value="https://memphis-likes-timely-privileges.trycloudflare.com/" style="flex: 1; min-width: 250px; font-weight: 600; color: #55efc4; background: rgba(0,0,0,0.4); border: 1px solid #55efc4;">
+          <input type="text" class="share-link-input" id="global-sync-girl-input" readonly value="https://lavang390-max.github.io/20-10/" style="flex: 1; min-width: 250px; font-weight: 600; color: #55efc4; background: rgba(0,0,0,0.4); border: 1px solid #55efc4;">
           <button type="button" class="btn-admin btn-admin-pink" id="btn-copy-global-girl" style="padding: 8px 18px; font-size: 0.88rem; font-weight: 700; white-space: nowrap; background: linear-gradient(135deg, #00b894, #00cec9); border: none;">
             📋 Sao Chép Link Gửi Bé
           </button>
@@ -856,7 +856,7 @@
           </button>
         </div>
         <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.82rem; color: rgba(255,255,255,0.7); flex-wrap: wrap;">
-          <span>📱 Link Bé: <b id="lbl-girl-link" style="color: #55efc4;">https://memphis-likes-timely-privileges.trycloudflare.com/</b></span>
+          <span>📱 Link Bé (Online 24/7): <b id="lbl-girl-link" style="color: #55efc4;">https://lavang390-max.github.io/20-10/</b></span>
           <span>🏠 Wi-Fi nội bộ: <b id="lbl-lan-link" style="color: #f6c85f;">http://192.168.30.54:3000/</b></span>
         </div>
       </div>
@@ -891,21 +891,55 @@
         <!-- Cột 2: Tùy chọn đường link & Nút tải ảnh -->
         <div>
           <label style="font-size: 0.88rem; font-weight: 700; color: #f1f2f6; margin-bottom: 8px; display: block;">
-            🔗 Chọn đường link mã QR dẫn tới:
+            🔗 Chọn đường link mã QR dẫn tới (Trang của Bé):
           </label>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
-            <label class="qr-url-radio-label active" id="lbl-qr-opt-global">
-              <input type="radio" name="qr-target-type" id="qr-radio-global" value="global" checked style="accent-color: #55efc4; width: 16px; height: 16px;">
+            <!-- Option 1: GitHub Pages (Chính thức) -->
+            <label class="qr-url-radio-label active" id="lbl-qr-opt-github">
+              <input type="radio" name="qr-target-type" id="qr-radio-github" value="github" checked style="accent-color: #55efc4; width: 16px; height: 16px;">
               <div style="flex: 1;">
-                <div style="font-weight: 700; color: #55efc4;">🌐 Đường Link Toàn Cầu (Khuyên dùng)</div>
-                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.65); word-break: break-all;" id="txt-qr-url-global">https://memphis-likes-timely-privileges.trycloudflare.com/</div>
+                <div style="font-weight: 700; color: #74b9ff; display: flex; align-items: center; gap: 6px;">
+                  <span>🚀 Đường Link GitHub Pages</span>
+                  <span style="font-size: 0.72rem; background: rgba(116, 185, 255, 0.2); color: #74b9ff; padding: 1px 6px; border-radius: 6px; font-weight: 600;">Chính thức</span>
+                </div>
+                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.7); word-break: break-all;">https://lavang390-max.github.io/20-10/</div>
               </div>
             </label>
-            <label class="qr-url-radio-label" id="lbl-qr-opt-github">
-              <input type="radio" name="qr-target-type" id="qr-radio-github" value="github" style="accent-color: #55efc4; width: 16px; height: 16px;">
+
+            <!-- Option 2: Render Cloud -->
+            <label class="qr-url-radio-label" id="lbl-qr-opt-render">
+              <input type="radio" name="qr-target-type" id="qr-radio-render" value="render" style="accent-color: #55efc4; width: 16px; height: 16px;">
               <div style="flex: 1;">
-                <div style="font-weight: 700; color: #74b9ff;">🚀 Đường Link GitHub Pages</div>
-                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.65); word-break: break-all;">https://lavang390-max.github.io/20-10/</div>
+                <div style="font-weight: 700; color: #a29bfe; display: flex; align-items: center; gap: 6px;">
+                  <span>☁️ Máy Chủ Render Cloud (24/7)</span>
+                  <span style="font-size: 0.72rem; background: rgba(162, 155, 254, 0.2); color: #a29bfe; padding: 1px 6px; border-radius: 6px; font-weight: 600;">Online</span>
+                </div>
+                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.7); word-break: break-all;">https://qua-tang-20-10.onrender.com/</div>
+              </div>
+            </label>
+
+            <!-- Option 3: Cloudflare Sync -->
+            <label class="qr-url-radio-label" id="lbl-qr-opt-global">
+              <input type="radio" name="qr-target-type" id="qr-radio-global" value="global" style="accent-color: #55efc4; width: 16px; height: 16px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: #55efc4;">🌐 Cloudflare Tunnel Đồng Bộ Toàn Cầu</div>
+                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.7); word-break: break-all;" id="txt-qr-url-global">(Chưa kết nối Cloudflare Tunnel)</div>
+              </div>
+            </label>
+
+            <!-- Option 4: Tự nhập link mới / tùy chỉnh -->
+            <label class="qr-url-radio-label" id="lbl-qr-opt-custom" style="flex-direction: column; align-items: stretch; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="radio" name="qr-target-type" id="qr-radio-custom" value="custom" style="accent-color: #55efc4; width: 16px; height: 16px;">
+                <div style="flex: 1; font-weight: 700; color: #f6c85f; display: flex; align-items: center; gap: 6px;">
+                  <span>✏️ Tự Nhập Link Mới Của Bé (Tùy chỉnh)</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px; width: 100%; margin-top: 2px;">
+                <input type="text" id="qr-custom-url-input" class="admin-input" placeholder="Dán link mới của bé vào đây (vd: https://...)" value="https://lavang390-max.github.io/20-10/" style="flex: 1; font-size: 0.78rem; padding: 7px 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);">
+                <button type="button" class="btn-admin btn-admin-secondary" id="btn-paste-custom-qr-url" style="padding: 6px 12px; font-size: 0.78rem; white-space: nowrap;">
+                  📋 Dán
+                </button>
               </div>
             </label>
           </div>
@@ -918,8 +952,8 @@
             <label class="qr-url-radio-label active" id="lbl-qr-style-heart" style="flex: 1; min-width: 140px;">
               <input type="radio" name="qr-style-type" id="qr-style-heart" value="heart" checked style="accent-color: #ff758c; width: 16px; height: 16px;">
               <div>
-                <div style="font-weight: 700; color: #ff758c;">💖 Trái Tim Pastel (Khuyên dùng)</div>
-                <div style="font-size: 0.74rem; color: rgba(255,255,255,0.65);">Mã đen nền hồng pastel cực xinh</div>
+                <div style="font-weight: 700; color: #ff758c;">💖 QR Trái Tim Lãng Mạn (Khuyên dùng)</div>
+                <div style="font-size: 0.74rem; color: rgba(255,255,255,0.65);">Thu nhỏ trọn trong đĩa trái tim sứ, góc mềm mại 100%</div>
               </div>
             </label>
             <label class="qr-url-radio-label" id="lbl-qr-style-classic" style="flex: 1; min-width: 140px;">
@@ -1296,8 +1330,8 @@
   </div>
 
   <!-- LOAD CONFIG FILE AND SEED DATA IF EXISTS -->
-  <script src="data/seed_data.js?v=20261015_data_v9"></script>
-  <script src="config.js?v=20261015_data_v9"></script>
+  <script src="data/seed_data.js?v=20261017_sync_v12"></script>
+  <script src="config.js?v=20261017_sync_v12"></script>
   <script src="qrcode.min.js"></script>
 
   <!-- ADMIN SCRIPT LOGIC -->
@@ -1367,20 +1401,26 @@
       } catch(e) {}
 
       // Multi-device Cloud Sync Engine
-      const DEFAULT_REMOTE_BACKEND = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+      const DEFAULT_REMOTE_BACKEND = '';
 
       function getApiUrl(endpoint) {
         if (!endpoint) return '';
         if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
         const clean = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
 
-        if (!window.location.hostname.includes('github.io') && window.location.protocol !== 'file:') {
+        // Khi mở trực tiếp từ file:/// trên máy tính, kết nối thẳng vào Node Server localhost:3000
+        if (window.location.protocol === 'file:') {
+          return 'http://localhost:3000' + clean;
+        }
+
+        // Khi chạy trên localhost / IP LAN
+        if (!window.location.hostname.includes('github.io')) {
           return clean;
         }
 
+        // Khi chạy trên GitHub Pages tĩnh
         const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
-                       localStorage.getItem('romantic_gift_server_url') || 
-                       DEFAULT_REMOTE_BACKEND;
+                       localStorage.getItem('romantic_gift_server_url') || '';
         return remote ? remote.replace(/\/+$/, '') + clean : clean;
       }
 
@@ -1390,18 +1430,19 @@
           return src;
         }
         if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
-          const clean = src.startsWith('/') ? src : '/' + src;
-          if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') {
-            const remote = (window.COUPLE_CONFIG && window.COUPLE_CONFIG.serverUrl) || 
-                           localStorage.getItem('romantic_gift_server_url') || 
-                           DEFAULT_REMOTE_BACKEND;
-            return remote ? remote.replace(/\/+$/, '') + clean : clean;
+          const clean = src.replace(/^\/+/, '');
+          if (window.location.protocol === 'file:') {
+            return clean;
           }
+          if (window.location.hostname.includes('github.io')) {
+            return clean;
+          }
+          return '/' + clean;
         }
         return src;
       }
 
-      let currentGlobalTunnelUrl = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+      let currentGlobalTunnelUrl = '';
 
       async function loadSyncInfo() {
         try {
@@ -1735,16 +1776,14 @@
         const configData = collectFormData();
         const base64Data = encodeConfig(configData);
 
-        // 1. Ưu tiên cao nhất: Đường truyền toàn cầu (Cloudflare Tunnel) để bé mở được trên mọi điện thoại qua 4G/Wi-Fi
-        if (currentGlobalTunnelUrl && currentGlobalTunnelUrl.startsWith('http')) {
+        // 1. Nếu có Cloudflare Tunnel đang hoạt động thật sự (không phải domain chết)
+        if (currentGlobalTunnelUrl && currentGlobalTunnelUrl.startsWith('http') && !currentGlobalTunnelUrl.includes('memphis-likes-timely-privileges')) {
           const cleanTunnel = currentGlobalTunnelUrl.replace(/\/+$/, '');
           return `${cleanTunnel}/#data=${base64Data}`;
         }
 
-        // 2. Chế độ GitHub Pages hoặc chạy offline từ file
-        if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io')) {
-          return `https://lavang390-max.github.io/20-10/#data=${base64Data}`;
-        }
+        // 2. Chế độ chính thức toàn cầu: GitHub Pages (luôn mở được trên mọi điện thoại 4G/Wi-Fi)
+        return `https://lavang390-max.github.io/20-10/#data=${base64Data}`;
 
         // 3. Chế độ máy chủ cục bộ
         let base = window.location.href.split('admin.html')[0];
@@ -1898,7 +1937,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         let notes = [];
         try {
-          const res = await fetch(getApiUrl('/api/notes'));
+          const res = await fetch(getApiUrl('/api/notes?v=' + Date.now()));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.notes) && data.notes.length > 0) {
@@ -1906,6 +1945,16 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             }
           }
         } catch(e) {}
+
+        if (notes.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.notes) && db.notes.length > 0) notes = db.notes;
+            }
+          } catch(e) {}
+        }
 
         if (notes.length === 0) {
           try {
@@ -2024,6 +2073,18 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             }
           }
         } catch(e) {}
+
+        if (memories.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.memories) && db.memories.length > 0) {
+                memories = db.memories;
+              }
+            }
+          } catch(e) {}
+        }
 
         if (memories.length === 0) {
           try {
@@ -2162,7 +2223,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         let percent = 0;
 
         try {
-          const res = await fetch(getApiUrl('/api/bucket'));
+          const res = await fetch(getApiUrl('/api/bucket?v=' + Date.now()));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.items) && data.items.length > 0) {
@@ -2173,6 +2234,18 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             }
           }
         } catch(e) {}
+
+        if (items.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.bucketList) && db.bucketList.length > 0) {
+                items = db.bucketList;
+              }
+            }
+          } catch(e) {}
+        }
 
         if (items.length === 0) {
           try {
@@ -2298,7 +2371,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         let items = [];
         try {
-          const res = await fetch(getApiUrl('/api/locket'));
+          const res = await fetch(getApiUrl('/api/locket?v=' + Date.now()));
           if (res.ok) {
             const data = await res.json();
             if (data.success && Array.isArray(data.items) && data.items.length > 0) {
@@ -2306,6 +2379,18 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             }
           }
         } catch(e) {}
+
+        if (items.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.locket) && db.locket.length > 0) {
+                items = db.locket;
+              }
+            }
+          } catch(e) {}
+        }
 
         if (items.length === 0) {
           try {
@@ -2577,14 +2662,25 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       // ==============================================
       function getQrTargetUrl() {
         const selectedRadio = document.querySelector('input[name="qr-target-type"]:checked');
-        const type = selectedRadio ? selectedRadio.value : 'global';
+        const type = selectedRadio ? selectedRadio.value : 'github';
+        if (type === 'custom') {
+          const customInput = document.getElementById('qr-custom-url-input');
+          const val = customInput ? customInput.value.trim() : '';
+          if (val) return val.startsWith('http') ? val : 'https://' + val;
+        }
         if (type === 'github') {
           return 'https://lavang390-max.github.io/20-10/';
         }
-        if (currentGlobalTunnelUrl && currentGlobalTunnelUrl.startsWith('http')) {
-          return currentGlobalTunnelUrl.replace(/\/+$/, '') + '/';
+        if (type === 'render') {
+          return 'https://qua-tang-20-10.onrender.com/';
         }
-        return 'https://memphis-likes-timely-privileges.trycloudflare.com/';
+        if (type === 'global') {
+          if (currentGlobalTunnelUrl && currentGlobalTunnelUrl.startsWith('http') && !currentGlobalTunnelUrl.includes('memphis-likes-timely-privileges')) {
+            return currentGlobalTunnelUrl.replace(/\/+$/, '') + '/';
+          }
+          return 'https://lavang390-max.github.io/20-10/';
+        }
+        return 'https://lavang390-max.github.io/20-10/';
       }
 
       function getQrTargetStyle() {
@@ -2611,21 +2707,24 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         ctx.closePath();
       }
 
-      function drawHeartPath(ctx, x, y, width, height) {
+      function drawRomanticHeartPath(ctx, x, y, width, height) {
         ctx.beginPath();
-        const topCurveHeight = height * 0.32;
         const cx = x + width / 2;
-        const cy = y + topCurveHeight;
-        ctx.moveTo(cx, cy);
-        // Top left curve
-        ctx.bezierCurveTo(cx, y, x, y, x, cy);
-        // Left side down to bottom point
-        ctx.bezierCurveTo(x, y + height * 0.65, cx - width * 0.15, y + height * 0.85, cx, y + height);
-        // Right side up from bottom point
-        ctx.bezierCurveTo(cx + width * 0.15, y + height * 0.85, x + width, y + height * 0.65, x + width, cy);
-        // Top right curve
-        ctx.bezierCurveTo(x + width, y, cx, y, cx, cy);
+        const topDip = y + height * 0.22;
+        ctx.moveTo(cx, topDip);
+        // Left lobe
+        ctx.bezierCurveTo(cx - width * 0.25, y - height * 0.05, x - width * 0.02, y + height * 0.2, x, y + height * 0.42);
+        // Left side down towards bottom
+        ctx.bezierCurveTo(x, y + height * 0.68, cx - width * 0.22, y + height * 0.88, cx, y + height);
+        // Right side up
+        ctx.bezierCurveTo(cx + width * 0.22, y + height * 0.88, x + width, y + height * 0.68, x + width, y + height * 0.42);
+        // Right lobe
+        ctx.bezierCurveTo(x + width * 1.02, y + height * 0.2, cx + width * 0.25, y - height * 0.05, cx, topDip);
         ctx.closePath();
+      }
+
+      function drawHeartPath(ctx, x, y, width, height) {
+        drawRomanticHeartPath(ctx, x, y, width, height);
       }
 
       function drawRomanticLoveCard(canvas, targetUrl) {
@@ -2697,23 +2796,23 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         tempHolder.innerHTML = '';
 
         if (qrStyle === 'heart') {
-          // --- CHẾ ĐỘ 1: MÃ QR TRÁI TIM NỀN HỒNG PASTEL, MÃ ĐEN ---
-          const heartW = 360;
-          const heartH = 340;
+          // --- CHẾ ĐỘ 1: MÃ QR TRÁI TIM LÃNG MẠN (THU NHỎ VÀ NẰM TRỌN TRONG TRÁI TIM) ---
+          const heartW = 390;
+          const heartH = 370;
           const heartX = (w - heartW) / 2;
           const heartY = 175;
 
-          // Vẽ Trái Tim Nền Màu Hồng Pastel Lãng Mạn
+          // 1. Vẽ Trái Tim Nền Màu Hồng Pastel Lãng Mạn (Khung trái tim bên ngoài)
           ctx.save();
-          ctx.shadowColor = 'rgba(255, 117, 140, 0.4)';
-          ctx.shadowBlur = 24;
+          ctx.shadowColor = 'rgba(255, 117, 140, 0.45)';
+          ctx.shadowBlur = 26;
           ctx.shadowOffsetY = 8;
-          drawHeartPath(ctx, heartX, heartY, heartW, heartH);
+          drawRomanticHeartPath(ctx, heartX, heartY, heartW, heartH);
 
           const heartGrad = ctx.createLinearGradient(heartX, heartY, heartX + heartW, heartY + heartH);
-          heartGrad.addColorStop(0, '#ffe5ec'); // Soft pastel pink highlight
+          heartGrad.addColorStop(0, '#ffeef2'); // Soft pastel blush
           heartGrad.addColorStop(0.5, '#ffccd5'); // Rose pastel pink
-          heartGrad.addColorStop(1, '#ffb3c1'); // Warm rose blush
+          heartGrad.addColorStop(1, '#ffb3c1'); // Warm rose blossom
           ctx.fillStyle = heartGrad;
           ctx.fill();
 
@@ -2727,10 +2826,25 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           ctx.stroke();
           ctx.restore();
 
-          // Tạo QR Code đen trên nền hồng pastel (#ffccd5)
-          const qrSize = 240;
+          // 2. ĐĨA TRÁI TIM SỨ TRẮNG TINH KHÔI NẰM BÊN TRONG (Chứa mã QR, tuyệt đối không dùng hình vuông)
+          const innerW = 340;
+          const innerH = 320;
+          const innerX = (w - innerW) / 2;
+          const innerY = 195;
+
+          ctx.save();
+          drawRomanticHeartPath(ctx, innerX, innerY, innerW, innerH);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.strokeStyle = '#ffccd5';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+
+          // 3. TẠO MÃ QR THU NHỎ NẰM TRỌN TRONG ĐĨA TRÁI TIM SỨ (Không lồi góc, chuẩn quét 100%)
+          const qrSize = 195;
           const qrX = (w - qrSize) / 2;
-          const qrY = 215;
+          const qrY = 250;
 
           if (window.QRCode) {
             try {
@@ -2739,39 +2853,33 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
                 width: qrSize,
                 height: qrSize,
                 colorDark: '#111118',
-                colorLight: '#ffccd5',
+                colorLight: '#ffffff',
                 correctLevel: window.QRCode.CorrectLevel.H
               });
 
               const rawCanvas = tempHolder.querySelector('canvas');
               if (rawCanvas) {
-                // Bo góc nhẹ cho QR để hài hòa với trái tim
-                ctx.save();
-                ctx.fillStyle = '#ffccd5';
-                roundRectPath(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 16);
-                ctx.fill();
-
+                // Vẽ trực tiếp QR lên đĩa trái tim sứ trắng (tuyệt đối KHÔNG vẽ ô vuông roundRect)
                 ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
-                ctx.restore();
 
-                // Icon trái tim ngọt ngào ngay chính giữa mã QR
-                const badgeSize = 44;
+                // 4. Huy hiệu trái tim ngọt ngào ngay chính giữa tâm mã QR
+                const badgeSize = 38;
                 const badgeX = (w - badgeSize) / 2;
                 const badgeY = qrY + (qrSize - badgeSize) / 2;
 
                 ctx.save();
                 ctx.fillStyle = '#ff758c';
                 ctx.shadowColor = 'rgba(0,0,0,0.18)';
-                ctx.shadowBlur = 10;
-                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(badgeX + badgeSize / 2, badgeY + badgeSize / 2, badgeSize / 2, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 3;
-                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+                ctx.lineWidth = 2.5;
                 ctx.stroke();
 
-                ctx.font = '22px sans-serif';
+                ctx.font = '20px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
@@ -2922,7 +3030,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         const qrStyle = getQrTargetStyle();
 
         if (qrStyle === 'heart') {
-          // Xuất file ảnh hình Trái Tim Hồng Pastel độc đáo
+          // Xuất file ảnh hình Trái Tim Hồng Pastel độc đáo, thu nhỏ QR nằm trọn trong đĩa trái tim sứ
           const size = 540;
           const qrCanvas = document.createElement('canvas');
           qrCanvas.width = size;
@@ -2932,20 +3040,20 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           // Nền trong suốt
           ctx.clearRect(0, 0, size, size);
 
-          // Vẽ Trái Tim Nền Hồng Pastel
-          const heartW = 490;
-          const heartH = 465;
-          const heartX = (size - heartW) / 2;
-          const heartY = (size - heartH) / 2 - 10;
+          // 1. Trái Tim Nền Hồng Pastel (Khung ngoài)
+          const phW = 490;
+          const phH = 465;
+          const phX = (size - phW) / 2;
+          const phY = (size - phH) / 2 - 10;
 
           ctx.save();
-          ctx.shadowColor = 'rgba(255, 117, 140, 0.4)';
+          ctx.shadowColor = 'rgba(255, 117, 140, 0.45)';
           ctx.shadowBlur = 30;
-          ctx.shadowOffsetY = 12;
-          drawHeartPath(ctx, heartX, heartY, heartW, heartH);
+          ctx.shadowOffsetY = 10;
+          drawRomanticHeartPath(ctx, phX, phY, phW, phH);
 
-          const heartGrad = ctx.createLinearGradient(heartX, heartY, heartX + heartW, heartY + heartH);
-          heartGrad.addColorStop(0, '#ffe5ec');
+          const heartGrad = ctx.createLinearGradient(phX, phY, phX + phW, phY + phH);
+          heartGrad.addColorStop(0, '#ffeef2');
           heartGrad.addColorStop(0.5, '#ffccd5');
           heartGrad.addColorStop(1, '#ffb3c1');
           ctx.fillStyle = heartGrad;
@@ -2960,54 +3068,63 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           ctx.stroke();
           ctx.restore();
 
-          // QR Code đen trên nền hồng pastel
-          const qrSize = 310;
-          const qrX = (size - qrSize) / 2;
-          const qrY = heartY + 70;
+          // 2. Đĩa Trái Tim Sứ Trắng Bên Trong (Chứa mã QR, không dùng ô vuông)
+          const piW = 425;
+          const piH = 405;
+          const piX = (size - piW) / 2;
+          const piY = phY + 25;
+
+          ctx.save();
+          drawRomanticHeartPath(ctx, piX, piY, piW, piH);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.strokeStyle = '#ffccd5';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+          ctx.restore();
+
+          // 3. QR Code thu nhỏ đặt trọn vẹn trong đĩa trái tim sứ
+          const pQrSize = 240;
+          const pQrX = (size - pQrSize) / 2;
+          const pQrY = piY + 70;
 
           const tempDiv = document.createElement('div');
           if (window.QRCode) {
             new window.QRCode(tempDiv, {
               text: targetUrl,
-              width: qrSize,
-              height: qrSize,
+              width: pQrSize,
+              height: pQrSize,
               colorDark: '#111118',
-              colorLight: '#ffccd5',
+              colorLight: '#ffffff',
               correctLevel: window.QRCode.CorrectLevel.H
             });
 
             setTimeout(() => {
               const rawCanvas = tempDiv.querySelector('canvas');
               if (rawCanvas) {
-                ctx.save();
-                ctx.fillStyle = '#ffccd5';
-                roundRectPath(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 16);
-                ctx.fill();
+                ctx.drawImage(rawCanvas, pQrX, pQrY, pQrSize, pQrSize);
 
-                ctx.drawImage(rawCanvas, qrX, qrY, qrSize, qrSize);
-                ctx.restore();
-
-                // Icon trái tim tâm
-                const badgeSize = 52;
-                const badgeX = (size - badgeSize) / 2;
-                const badgeY = qrY + (qrSize - badgeSize) / 2;
+                // 4. Huy hiệu trái tim ngọt ngào ở tâm QR
+                const pBadgeSize = 46;
+                const pBadgeX = (size - pBadgeSize) / 2;
+                const pBadgeY = pQrY + (pQrSize - pBadgeSize) / 2;
 
                 ctx.save();
                 ctx.fillStyle = '#ff758c';
                 ctx.shadowColor = 'rgba(0,0,0,0.18)';
                 ctx.shadowBlur = 10;
-                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 14);
+                ctx.beginPath();
+                ctx.arc(pBadgeX + pBadgeSize / 2, pBadgeY + pBadgeSize / 2, pBadgeSize / 2, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 3.5;
-                roundRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 14);
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
-                ctx.font = '26px sans-serif';
+                ctx.font = '24px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('💖', badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+                ctx.fillText('💖', pBadgeX + pBadgeSize / 2, pBadgeY + pBadgeSize / 2);
                 ctx.restore();
 
                 downloadCanvasAsImage(qrCanvas, filename || 'QR_Trai_Tim_20_10.png');
@@ -3133,24 +3250,74 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       }
 
       // Radio target switch listeners
-      const radioGlobal = document.getElementById('qr-radio-global');
       const radioGithub = document.getElementById('qr-radio-github');
-      const lblGlobal = document.getElementById('lbl-qr-opt-global');
+      const radioRender = document.getElementById('qr-radio-render');
+      const radioGlobal = document.getElementById('qr-radio-global');
+      const radioCustom = document.getElementById('qr-radio-custom');
       const lblGithub = document.getElementById('lbl-qr-opt-github');
+      const lblRender = document.getElementById('lbl-qr-opt-render');
+      const lblGlobal = document.getElementById('lbl-qr-opt-global');
+      const lblCustom = document.getElementById('lbl-qr-opt-custom');
+      const inputCustomUrl = document.getElementById('qr-custom-url-input');
+      const btnPasteCustomUrl = document.getElementById('btn-paste-custom-qr-url');
 
       function handleQrRadioChange() {
-        if (radioGlobal && radioGlobal.checked) {
-          if (lblGlobal) lblGlobal.classList.add('active');
-          if (lblGithub) lblGithub.classList.remove('active');
-        } else if (radioGithub && radioGithub.checked) {
+        const allLabels = [lblGithub, lblRender, lblGlobal, lblCustom];
+        allLabels.forEach(l => l && l.classList.remove('active'));
+
+        if (radioGithub && radioGithub.checked) {
           if (lblGithub) lblGithub.classList.add('active');
-          if (lblGlobal) lblGlobal.classList.remove('active');
+        } else if (radioRender && radioRender.checked) {
+          if (lblRender) lblRender.classList.add('active');
+        } else if (radioGlobal && radioGlobal.checked) {
+          if (lblGlobal) lblGlobal.classList.add('active');
+        } else if (radioCustom && radioCustom.checked) {
+          if (lblCustom) lblCustom.classList.add('active');
+          if (inputCustomUrl) inputCustomUrl.focus();
         }
         refreshQrCards();
       }
 
-      if (radioGlobal) radioGlobal.addEventListener('change', handleQrRadioChange);
-      if (radioGithub) radioGithub.addEventListener('change', handleQrRadioChange);
+      [radioGithub, radioRender, radioGlobal, radioCustom].forEach(r => {
+        if (r) r.addEventListener('change', handleQrRadioChange);
+      });
+
+      if (inputCustomUrl) {
+        inputCustomUrl.addEventListener('input', () => {
+          if (radioCustom && !radioCustom.checked) {
+            radioCustom.checked = true;
+            handleQrRadioChange();
+          } else {
+            clearTimeout(window.__qrCustomDebounce);
+            window.__qrCustomDebounce = setTimeout(refreshQrCards, 200);
+          }
+        });
+        inputCustomUrl.addEventListener('focus', () => {
+          if (radioCustom && !radioCustom.checked) {
+            radioCustom.checked = true;
+            handleQrRadioChange();
+          }
+        });
+      }
+
+      if (btnPasteCustomUrl) {
+        btnPasteCustomUrl.addEventListener('click', async () => {
+          try {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+              const text = await navigator.clipboard.readText();
+              if (text && text.trim()) {
+                inputCustomUrl.value = text.trim();
+                if (radioCustom) radioCustom.checked = true;
+                handleQrRadioChange();
+                showToast('Đã dán link mới vào mã QR! 💖', '📋');
+                return;
+              }
+            }
+          } catch(e) {}
+          inputCustomUrl.focus();
+          inputCustomUrl.select();
+        });
+      }
 
       // Radio style switch listeners
       const radioStyleHeart = document.getElementById('qr-style-heart');

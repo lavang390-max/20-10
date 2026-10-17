@@ -1,11 +1,4 @@
-/**
- * ==========================================================
- * CẤU HÌNH QUÀ TẶNG 20/10 - THÔNG TIN DÀNH CHO CẶP ĐÔI
- * ==========================================================
- * Tự động đồng bộ từ Database Server
- */
-
-window.COUPLE_CONFIG = {
+var COUPLE_CONFIG = {
   "passcode": "0702",
   "passcodeHint": "Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè!  ✨",
   "adminPin": "0702",
@@ -48,5 +41,8 @@ window.COUPLE_CONFIG = {
   "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
   "girlfriendRealName": "bé mèo",
   "boyfriendRealName": "khúc gỗ",
-  "serverUrl": "https://memphis-likes-timely-privileges.trycloudflare.com"
+  "serverUrl": ""
 };
+
+if (typeof window !== 'undefined') { window.COUPLE_CONFIG = COUPLE_CONFIG; }
+if (typeof module !== 'undefined' && module.exports) { module.exports = COUPLE_CONFIG; }

@@ -35,12 +35,11 @@ echo.
 echo ==========================================================
 echo ✅ HE THONG DONG BO TOAN CAU HOAT DONG 100%!
 echo.
-echo 📱 LINK GUI CHO BE (Mo duoc tren moi dien thoai 4G/Wi-Fi):
-echo    https://memphis-likes-timely-privileges.trycloudflare.com/
+echo 📱 LINK CHINH THUC CHO BE (Mo duoc tren moi dien thoai 4G/Wi-Fi):
+echo    https://lavang390-max.github.io/20-10/
 echo.
 echo 💻 LINK QUAN TRI CUA ANH:
 echo    http://localhost:3000/admin.html?pin=0702
-echo    https://memphis-likes-timely-privileges.trycloudflare.com/admin.html?pin=0702
 echo.
 echo 🔑 Ma PIN bao mat: 0702
 echo ==========================================================

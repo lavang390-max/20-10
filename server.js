@@ -162,13 +162,20 @@ function writeDatabase(data) {
  * ==========================================================
  */
 
-const SEED_DATA = ${JSON.stringify({
+var SEED_DATA = ${JSON.stringify({
         config: data.config || null,
         notes: data.notes || [],
         memories: data.memories || [],
         bucketList: data.bucketList || [],
         locket: data.locket || []
       }, null, 2)};
+
+if (typeof window !== 'undefined') {
+  window.SEED_DATA = SEED_DATA;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SEED_DATA;
+}
 `;
       fs.writeFileSync(path.join(DATA_DIR, 'seed_data.js'), seedContent, 'utf8');
 
@@ -180,7 +187,14 @@ const SEED_DATA = ${JSON.stringify({
  * Tự động đồng bộ từ Database Server
  */
 
-window.COUPLE_CONFIG = ${JSON.stringify(data.config, null, 2)};
+var COUPLE_CONFIG = ${JSON.stringify(data.config, null, 2)};
+
+if (typeof window !== 'undefined') {
+  window.COUPLE_CONFIG = COUPLE_CONFIG;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = COUPLE_CONFIG;
+}
 `;
         fs.writeFileSync(path.join(__dirname, 'config.js'), configJsContent, 'utf8');
       }
@@ -475,12 +489,20 @@ window.COUPLE_CONFIG = ${JSON.stringify(db.config, null, 2)};
  * ==========================================================
  */
 
-const SEED_DATA = ${JSON.stringify({
+var SEED_DATA = ${JSON.stringify({
+    config: db.config || null,
     notes: db.notes || [],
     memories: db.memories || [],
     bucketList: db.bucketList || [],
     locket: db.locket || []
   }, null, 2)};
+
+if (typeof window !== 'undefined') {
+  window.SEED_DATA = SEED_DATA;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SEED_DATA;
+}
 `;
   fs.writeFileSync(path.join(DATA_DIR, 'seed_data.js'), seedContent, 'utf8');
 
@@ -712,11 +734,11 @@ app.delete('/api/locket/:id', (req, res) => {
 // 6. API: THÔNG TIN ĐỒNG BỘ ĐA THIẾT BỊ (MULTI-DEVICE SYNC INFO)
 // ==========================================================
 
-let cloudflareTunnelUrl = 'https://memphis-likes-timely-privileges.trycloudflare.com';
+let cloudflareTunnelUrl = '';
 
 app.get('/api/sync-info', (req, res) => {
   const db = readDatabase();
-  const currentTunnel = cloudflareTunnelUrl || (db.config && db.config.serverUrl) || 'https://memphis-likes-timely-privileges.trycloudflare.com';
+  const currentTunnel = (db.config && db.config.serverUrl) || cloudflareTunnelUrl || '';
   const os = require('os');
   const nets = os.networkInterfaces();
   let lanIp = '127.0.0.1';
@@ -729,13 +751,14 @@ app.get('/api/sync-info', (req, res) => {
     }
   }
   const adminPin = (db.config && db.config.adminPin) || '0702';
+  const defaultGlobalLink = 'https://lavang390-max.github.io/20-10/';
   res.json({
     success: true,
     tunnelUrl: currentTunnel,
     lanIp: lanIp,
     port: PORT,
-    girlGlobalLink: currentTunnel ? currentTunnel + '/' : '',
-    adminGlobalLink: currentTunnel ? `${currentTunnel}/admin.html?pin=${adminPin}` : '',
+    girlGlobalLink: (currentTunnel && !currentTunnel.includes('memphis-likes-timely-privileges')) ? (currentTunnel.replace(/\/+$/, '') + '/') : defaultGlobalLink,
+    adminGlobalLink: (currentTunnel && !currentTunnel.includes('memphis-likes-timely-privileges')) ? `${currentTunnel.replace(/\/+$/, '')}/admin.html?pin=${adminPin}` : `http://${lanIp}:${PORT}/admin.html?pin=${adminPin}`,
     girlLanLink: `http://${lanIp}:${PORT}/`,
     adminLanLink: `http://${lanIp}:${PORT}/admin.html?pin=${adminPin}`
   });
@@ -748,8 +771,9 @@ app.get('/api/qrcode', async (req, res) => {
   try {
     const QRCode = require('qrcode');
     const db = readDatabase();
-    const currentTunnel = cloudflareTunnelUrl || (db.config && db.config.serverUrl) || 'https://memphis-likes-timely-privileges.trycloudflare.com';
-    const targetUrl = (req.query.url || (currentTunnel ? currentTunnel + '/' : 'http://localhost:3000/')).trim();
+    const currentTunnel = (db.config && db.config.serverUrl) || cloudflareTunnelUrl || '';
+    const defaultUrl = 'https://lavang390-max.github.io/20-10/';
+    const targetUrl = (req.query.url || (currentTunnel ? currentTunnel + '/' : defaultUrl)).trim();
 
     const darkColor = req.query.dark || '#111118';
     const lightColor = req.query.light || (req.query.theme === 'classic' ? '#ffffff' : '#ffccd5');
@@ -799,20 +823,20 @@ app.listen(PORT, () => {
   }
 
   const db = readDatabase();
-  if (db.config && db.config.serverUrl) {
+  if (db.config && db.config.serverUrl && !db.config.serverUrl.includes('memphis-likes-timely-privileges')) {
     cloudflareTunnelUrl = db.config.serverUrl;
-  } else {
-    if (!db.config) db.config = {};
-    db.config.serverUrl = cloudflareTunnelUrl;
-    writeDatabase(db);
   }
+
+  const adminPin = (db.config && db.config.adminPin) || '0702';
 
   console.log('==========================================================');
   console.log(`💖 Web Quà Tặng 20/10 Database Server đang chạy:`);
-  console.log(`👉 Link Toàn Cầu Cho Bé:  ${cloudflareTunnelUrl}/`);
-  console.log(`👉 Link Toàn Cầu Cho Anh: ${cloudflareTunnelUrl}/admin.html?pin=0702`);
+  console.log(`👉 Link Toàn Cầu Cho Bé (GitHub Pages): https://lavang390-max.github.io/20-10/`);
+  if (cloudflareTunnelUrl) {
+    console.log(`👉 Link Tunnel Toàn Cầu:   ${cloudflareTunnelUrl}/`);
+  }
   console.log(`👉 Link Wi-Fi Nội Bộ:     http://${lanIp}:${PORT}/`);
-  console.log(`👉 Link Localhost:        http://localhost:${PORT}/`);
+  console.log(`👉 Link Admin Localhost:   http://localhost:${PORT}/admin.html?pin=${adminPin}`);
   console.log(`📁 Dữ liệu lưu tại:       ${DB_FILE}`);
   console.log(`🖼️ Thư mục ảnh upload:    ${UPLOADS_DIR}`);
   console.log('==========================================================');
