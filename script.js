@@ -506,7 +506,7 @@
 
   // 1. Base cache from localStorage (nếu có)
   // --- VERSIONED CACHE RESET TO ENSURE 100% UNIFIED DATA ACROSS ALL DEVICES ---
-  const CURRENT_SYNC_VERSION = '20261018_master_sync_v20';
+  const CURRENT_SYNC_VERSION = '20261019_master_sync_v30';
   try {
     if (localStorage.getItem('romantic_gift_sync_ver') !== CURRENT_SYNC_VERSION) {
       localStorage.removeItem('romantic_gift_user_memories');
