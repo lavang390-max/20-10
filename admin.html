@@ -1538,6 +1538,104 @@
         return clean || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
       }
 
+      // --- REALTIME FIREBASE 24/7 AUTO-SYNC FOR ADMIN ---
+      var AdminFirebaseSync = (function() {
+        let db = null;
+        let initialized = false;
+
+        function init() {
+          const url = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+          if (!url) return;
+
+          if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+            try {
+              if (!firebase.apps.length) {
+                firebase.initializeApp({ databaseURL: url });
+              }
+              db = firebase.database();
+              if (!initialized) {
+                initialized = true;
+                setupListeners();
+                console.log('🔥 [Admin Firebase Realtime] Đã kích hoạt lắng nghe 24/7 tức thì:', url);
+              }
+            } catch(e) {
+              console.warn('Firebase SDK init notice in Admin:', e);
+            }
+          }
+        }
+
+        function setupListeners() {
+          if (!db) return;
+
+          // 1. Realtime Notes (Nhật ký bé gửi)
+          db.ref('notes').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = (Array.isArray(val) ? val : Object.values(val)).filter(n => n && (n.text || n.mood));
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+              }
+              if (typeof renderAdminNotesList === 'function') renderAdminNotesList(list);
+            } catch(err) {
+              console.warn('Firebase notes listener error in Admin:', err);
+            }
+          });
+
+          // 2. Realtime Memories (Kho ảnh kỷ niệm)
+          db.ref('memories').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = (Array.isArray(val) ? val : Object.values(val)).filter(m => m && (m.src || m.caption));
+                list.sort((a, b) => {
+                  const isDefA = a.id && a.id.startsWith('mem-') && !a.id.includes('_');
+                  const isDefB = b.id && b.id.startsWith('mem-') && !b.id.includes('_');
+                  if (isDefA && !isDefB) return 1;
+                  if (!isDefA && isDefB) return -1;
+                  return (b.createdAt || 0) - (a.createdAt || 0);
+                });
+              }
+              if (typeof renderAdminMemoriesList === 'function') renderAdminMemoriesList(list);
+            } catch(err) {
+              console.warn('Firebase memories listener error in Admin:', err);
+            }
+          });
+
+          // 3. Realtime Bucket List (100 điều cùng làm)
+          db.ref('bucket').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = Array.isArray(val) ? val : Object.values(val);
+              }
+              if (typeof renderAdminBucketListItems === 'function') renderAdminBucketListItems(list);
+            } catch(err) {
+              console.warn('Firebase bucket listener error in Admin:', err);
+            }
+          });
+
+          // 4. Realtime Locket Moments (Máy ảnh Locket)
+          db.ref('locket').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = Array.isArray(val) ? val : Object.values(val);
+                list.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+              }
+              if (typeof renderAdminLocketList === 'function') renderAdminLocketList(list);
+            } catch(err) {
+              console.warn('Firebase locket listener error in Admin:', err);
+            }
+          });
+        }
+
+        return { init };
+      })();
+
       let currentGlobalTunnelUrl = '';
 
       async function loadSyncInfo() {
@@ -1670,6 +1768,7 @@
           adminMainWrap.style.display = 'block';
           mobileStickyBar.style.display = 'flex';
           initAdminForm();
+          if (typeof refreshQrCards === 'function') refreshQrCards();
           showToast('Chào mừng bạn đến trang Quản Trị Quà Tặng! 💖', '🔓');
         } else {
           authErrorText.textContent = 'Mã PIN không đúng! Vui lòng thử lại (hoặc nhập 0702 / 2010)';
@@ -1831,7 +1930,7 @@
 
       // Eagerly sync server config right away on page load
       syncServerConfigToAdmin(false);
-      if (typeof AdminFirebaseSync !== 'undefined') AdminFirebaseSync.init();
+      AdminFirebaseSync.init();
 
       function initAdminForm() {
         populateAdminFormFields(false);
@@ -1841,7 +1940,8 @@
         loadAdminMemories();
         loadAdminBucket();
         loadAdminLocket();
-        if (typeof AdminFirebaseSync !== 'undefined') AdminFirebaseSync.init();
+        AdminFirebaseSync.init();
+        if (typeof refreshQrCards === 'function') refreshQrCards();
       }
 
       // Update days preview
@@ -2878,105 +2978,6 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         });
       }
 
-      // --- REALTIME FIREBASE 24/7 AUTO-SYNC FOR ADMIN ---
-      const AdminFirebaseSync = (function() {
-        let db = null;
-        let initialized = false;
-
-        function init() {
-          const url = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
-          if (!url) return;
-
-          if (typeof firebase !== 'undefined' && firebase.initializeApp) {
-            try {
-              if (!firebase.apps.length) {
-                firebase.initializeApp({ databaseURL: url });
-              }
-              db = firebase.database();
-              if (!initialized) {
-                initialized = true;
-                setupListeners();
-                console.log('🔥 [Admin Firebase Realtime] Đã kích hoạt lắng nghe 24/7 tức thì:', url);
-              }
-              return;
-            } catch(e) {
-              console.warn('Firebase SDK init notice in Admin:', e);
-            }
-          }
-        }
-
-        function setupListeners() {
-          if (!db) return;
-
-          // 1. Realtime Notes (Nhật ký bé gửi)
-          db.ref('notes').on('value', snapshot => {
-            try {
-              const val = snapshot.val();
-              let list = [];
-              if (val) {
-                list = (Array.isArray(val) ? val : Object.values(val)).filter(n => n && (n.text || n.mood));
-                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-              }
-              renderAdminNotesList(list);
-            } catch(err) {
-              console.warn('Firebase notes listener error in Admin:', err);
-            }
-          });
-
-          // 2. Realtime Memories (Kho ảnh kỷ niệm)
-          db.ref('memories').on('value', snapshot => {
-            try {
-              const val = snapshot.val();
-              let list = [];
-              if (val) {
-                list = (Array.isArray(val) ? val : Object.values(val)).filter(m => m && (m.src || m.caption));
-                list.sort((a, b) => {
-                  const isDefA = a.id && a.id.startsWith('mem-') && !a.id.includes('_');
-                  const isDefB = b.id && b.id.startsWith('mem-') && !b.id.includes('_');
-                  if (isDefA && !isDefB) return 1;
-                  if (!isDefA && isDefB) return -1;
-                  return (b.createdAt || 0) - (a.createdAt || 0);
-                });
-              }
-              renderAdminMemoriesList(list);
-            } catch(err) {
-              console.warn('Firebase memories listener error in Admin:', err);
-            }
-          });
-
-          // 3. Realtime Bucket List (100 điều muốn làm)
-          db.ref('bucket').on('value', snapshot => {
-            try {
-              const val = snapshot.val();
-              let list = [];
-              if (val) {
-                list = Array.isArray(val) ? val : Object.values(val);
-              }
-              renderAdminBucketListItems(list);
-            } catch(err) {
-              console.warn('Firebase bucket listener error in Admin:', err);
-            }
-          });
-
-          // 4. Realtime Locket Moments (Máy ảnh Locket)
-          db.ref('locket').on('value', snapshot => {
-            try {
-              const val = snapshot.val();
-              let list = [];
-              if (val) {
-                list = Array.isArray(val) ? val : Object.values(val);
-                list.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
-              }
-              renderAdminLocketList(list);
-            } catch(err) {
-              console.warn('Firebase locket listener error in Admin:', err);
-            }
-          });
-        }
-
-        return { init };
-      })();
-
       const btnRefreshNotes = document.getElementById('btn-refresh-notes');
       const btnRefreshMemories = document.getElementById('btn-refresh-memories');
       const btnRefreshBucket = document.getElementById('btn-refresh-bucket');
@@ -2992,7 +2993,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         loadAdminMemories();
         loadAdminBucket();
         loadAdminLocket();
-        if (typeof AdminFirebaseSync !== 'undefined') AdminFirebaseSync.init();
+        AdminFirebaseSync.init();
       }
 
       setInterval(refreshAllAdminData, 2500);
@@ -3610,6 +3611,10 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
         const txtGlobal = document.getElementById('txt-qr-url-global');
         if (txtGlobal) txtGlobal.textContent = currentGlobalTunnelUrl || url;
+
+        if (!window.QRCode) {
+          setTimeout(refreshQrCards, 200);
+        }
       }
 
       function downloadCanvasAsImage(canvas, filename) {

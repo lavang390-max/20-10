@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
- * Tự động cập nhật: 2026-10-18T18:07:51.004Z
+ * Tự động cập nhật: 2026-10-18T18:15:57.683Z
  * ==========================================================
  */
 
@@ -100,6 +100,13 @@ var SEED_DATA = {
     }
   ],
   "memories": [
+    {
+      "caption": "dỗi anh luon",
+      "createdAt": 1792347341896,
+      "date": "18/10/2026",
+      "id": "mem_1792347341896_805",
+      "src": "https://i.ibb.co/mFB34hzp/2cbe8c716d2a.jpg"
+    },
     {
       "caption": "đi metro nhó",
       "createdAt": 1792344857229,
@@ -201,8 +208,8 @@ var SEED_DATA = {
       "title": "Đi dạo ban đêm",
       "category": "sweet",
       "categoryLabel": "Lãng mạn",
-      "completed": false,
-      "completedDate": null,
+      "completed": true,
+      "completedDate": "19/10/2026",
       "note": "",
       "createdAt": 1792169980814
     },
@@ -212,20 +219,21 @@ var SEED_DATA = {
       "title": "Đi xem phimm",
       "category": "sweet",
       "categoryLabel": "Lãng mạn",
-      "completed": false,
-      "completedDate": null,
+      "completed": true,
+      "completedDate": "19/10/2026",
       "note": "",
       "createdAt": 1792169991626
     },
     {
       "category": "sweet",
       "categoryLabel": "Lãng mạn",
-      "completed": false,
+      "completed": true,
       "createdAt": 1792299065181,
       "icon": "🌸",
       "id": "b_1792299065181",
       "note": "",
-      "title": "Đi biển"
+      "title": "Đi biển",
+      "completedDate": "19/10/2026"
     }
   ],
   "locket": [
