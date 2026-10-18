@@ -609,6 +609,25 @@
       });
     }
 
+    playFlowerBloomSound() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51];
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+        gain.gain.setValueAtTime(0.001, now + idx * 0.12);
+        gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.12 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.8);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.12);
+        osc.stop(now + idx * 0.12 + 0.8);
+      });
+    }
+
     playCameraShutter() {
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -843,13 +862,12 @@
 
       setTimeout(() => {
         lockScreen.classList.add('unlocked');
-        appContainer.classList.remove('app-hidden');
         
         // Start background music
         playBackgroundAudio();
         
-        // Launch welcoming confetti
-        launchWelcomeConfetti();
+        // Open Fullscreen Cinematic Flower Gift presentation
+        playFlowerGiftCinematic();
       }, 700);
 
     } else {
@@ -905,6 +923,227 @@
       }
     }
   });
+
+  // ==========================================================
+  // 💐 FULLSCREEN CINEMATIC 20/10 FLOWER GIFT ENGINE
+  // ==========================================================
+  const flowerGiftScreen = document.getElementById('flower-gift-screen');
+  const flowerSkipBtn = document.getElementById('flower-skip-btn');
+  const btnReplayFlower = document.getElementById('btn-replay-flower');
+  let flowerParticlesRunning = false;
+  let flowerAnimFrameId = null;
+  let flowerAnimTimeout = null;
+
+  function playFlowerGiftCinematic() {
+    if (!flowerGiftScreen) {
+      appContainer.classList.remove('app-hidden');
+      launchWelcomeConfetti();
+      return;
+    }
+
+    // Populate customized recipient name & boyfriend name
+    const gfNameEl = document.getElementById('flower-gf-name');
+    const bfNameEl = document.getElementById('flower-bf-name');
+    if (gfNameEl) gfNameEl.textContent = (userConfig && userConfig.girlfriendName) || 'Bé Mèo';
+    if (bfNameEl) bfNameEl.textContent = (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ';
+
+    flowerGiftScreen.classList.remove('dissolve-out', 'ready-to-tap');
+    flowerGiftScreen.classList.add('active');
+    flowerGiftScreen.setAttribute('aria-hidden', 'false');
+
+    // Play magical harp bloom sound
+    try {
+      sound.init();
+      sound.playFlowerBloomSound();
+    } catch(e) {}
+
+    // Trigger stage bloom transition
+    requestAnimationFrame(() => {
+      flowerGiftScreen.classList.add('playing');
+    });
+
+    // Start 60fps canvas particles (falling rose petals & glowing golden stardust)
+    startFlowerParticles();
+
+    // After animation sequence finishes (~3.0s), stop in breathing state and display tap hint
+    clearTimeout(flowerAnimTimeout);
+    flowerAnimTimeout = setTimeout(() => {
+      flowerGiftScreen.classList.add('ready-to-tap');
+    }, 3000);
+  }
+
+  function dismissFlowerGift() {
+    if (!flowerGiftScreen || !flowerGiftScreen.classList.contains('active')) return;
+
+    // Smooth cinematic dissolve transition
+    flowerGiftScreen.classList.remove('ready-to-tap');
+    flowerGiftScreen.classList.add('dissolve-out');
+
+    // Reveal main app container
+    appContainer.classList.remove('app-hidden');
+
+    // Launch welcome confetti celebration!
+    launchWelcomeConfetti();
+
+    setTimeout(() => {
+      flowerGiftScreen.classList.remove('active', 'playing', 'dissolve-out');
+      flowerGiftScreen.setAttribute('aria-hidden', 'true');
+      stopFlowerParticles();
+    }, 750);
+  }
+
+  // Tap ANYWHERE on the screen to proceed
+  if (flowerGiftScreen) {
+    flowerGiftScreen.addEventListener('click', (e) => {
+      dismissFlowerGift();
+    });
+  }
+
+  // Skip button
+  if (flowerSkipBtn) {
+    flowerSkipBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismissFlowerGift();
+    });
+  }
+
+  // Replay button in top nav
+  if (btnReplayFlower) {
+    btnReplayFlower.addEventListener('click', () => {
+      playFlowerGiftCinematic();
+    });
+  }
+
+  // Direct shortcut preview via URL hash: index.html#flower
+  if (window.location.hash && window.location.hash.toLowerCase().includes('flower')) {
+    setTimeout(() => {
+      if (lockScreen) lockScreen.classList.add('unlocked');
+      playBackgroundAudio();
+      playFlowerGiftCinematic();
+    }, 400);
+  }
+
+  // Physics-based Rose Petals & Golden Fairy Dust Canvas System
+  function startFlowerParticles() {
+    const canvas = document.getElementById('flower-particles-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+
+    flowerParticlesRunning = true;
+
+    // 40 delicate rose petals
+    const petals = [];
+    for (let i = 0; i < 40; i++) {
+      petals.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height * 0.8,
+        size: 11 + Math.random() * 14,
+        speedX: -1 + Math.random() * 2,
+        speedY: 1.5 + Math.random() * 2.5,
+        angle: Math.random() * Math.PI * 2,
+        angularSpeed: (Math.random() - 0.5) * 0.035,
+        flip: Math.random(),
+        flipSpeed: 0.02 + Math.random() * 0.03,
+        color: Math.random() > 0.4 ? '#ff758c' : (Math.random() > 0.5 ? '#ff85a2' : '#e84393'),
+        opacity: 0.6 + Math.random() * 0.35
+      });
+    }
+
+    // 30 glistening golden fairy sparks
+    const sparkles = [];
+    for (let i = 0; i < 30; i++) {
+      sparkles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 2 + Math.random() * 3.5,
+        speedY: -0.5 - Math.random() * 1.2,
+        speedX: (Math.random() - 0.5) * 0.6,
+        alpha: Math.random(),
+        pulseSpeed: 0.025 + Math.random() * 0.03,
+        color: Math.random() > 0.35 ? '#ffd700' : '#ffffff'
+      });
+    }
+
+    function render() {
+      if (!flowerParticlesRunning) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Render fairy sparks
+      sparkles.forEach(s => {
+        s.y += s.speedY;
+        s.x += s.speedX;
+        s.alpha += s.pulseSpeed;
+        if (s.alpha > 1 || s.alpha < 0.2) s.pulseSpeed = -s.pulseSpeed;
+        if (s.y < -10) {
+          s.y = canvas.height + 10;
+          s.x = Math.random() * canvas.width;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, s.alpha));
+        ctx.fillStyle = s.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = s.color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Render rose petals
+      petals.forEach(p => {
+        p.y += p.speedY;
+        p.x += Math.sin(p.angle) * 1.6 + p.speedX;
+        p.angle += p.angularSpeed;
+        p.flip += p.flipSpeed;
+
+        if (p.y > canvas.height + 25) {
+          p.y = -25;
+          p.x = Math.random() * canvas.width;
+        }
+        if (p.x < -25) p.x = canvas.width + 25;
+        if (p.x > canvas.width + 25) p.x = -25;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.scale(Math.cos(p.flip), 1);
+        ctx.globalAlpha = p.opacity;
+
+        // Realistic curved petal bezier geometry
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-p.size / 2, -p.size, -p.size, -p.size / 2, 0, -p.size * 1.35);
+        ctx.bezierCurveTo(p.size, -p.size / 2, p.size / 2, -p.size, 0, 0);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      flowerAnimFrameId = requestAnimationFrame(render);
+    }
+
+    render();
+  }
+
+  function stopFlowerParticles() {
+    flowerParticlesRunning = false;
+    if (flowerAnimFrameId) cancelAnimationFrame(flowerAnimFrameId);
+    const canvas = document.getElementById('flower-particles-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
 
   // --- 2. FLOATING VINYL PLAYER & BACKGROUND AUDIO ---
   const vinylPlayer = document.getElementById('vinyl-player');

@@ -114,19 +114,89 @@
   </section>
 
   <!-- ==============================================
+       FULLSCREEN CINEMATIC 20/10 FLOWER GIFT SCREEN
+       Màn hình hoạt cảnh tặng bó hoa toàn màn hình sau khi mở khóa
+       ============================================== -->
+  <section class="flower-gift-screen" id="flower-gift-screen" aria-hidden="true">
+    <!-- Particle Canvas: Hiệu ứng cánh hoa hồng & bụi sao vàng bay lơ lửng -->
+    <canvas id="flower-particles-canvas" class="flower-particles-canvas"></canvas>
+
+    <!-- Ánh sáng hào quang mềm mại -->
+    <div class="flower-ambient-glow"></div>
+
+    <!-- Nút bỏ qua / tiếp tục ở góc trên -->
+    <button type="button" class="flower-skip-btn" id="flower-skip-btn" title="Chuyển đến trang tiếp theo">
+      <span>Mở quà</span>
+      <span class="skip-arrow">➔</span>
+    </button>
+
+    <!-- Khung chính chứa Bó Hoa & Lời chúc 20/10 -->
+    <div class="flower-stage-container">
+      
+      <!-- Bó hoa tươi 20/10 với hiệu ứng hào quang lấp lánh -->
+      <div class="flower-bouquet-frame">
+        <img src="images/bouquet_gift.jpg" alt="Bó hoa tặng bé 20/10" class="flower-bouquet-img" id="flower-bouquet-img">
+        <div class="flower-ribbon-tag">
+          <span>💖 Dành riêng cho bé</span>
+        </div>
+      </div>
+
+      <!-- Thẻ lời chúc lãng mạn 20/10 -->
+      <div class="flower-content-box">
+        <div class="flower-pill-badge">
+          <span class="badge-icon">💐</span>
+          <span>CHÚC MỪNG PHỤ NỮ VIỆT NAM 20/10</span>
+          <span class="badge-icon">💐</span>
+        </div>
+
+        <h1 class="flower-headline">
+          Gửi Tặng <span class="flower-gf-name" id="flower-gf-name">Bé Mèo</span> Của Anh
+        </h1>
+
+        <p class="flower-subtext">
+          Ngàn đóa hoa rực rỡ ngoài kia cũng chẳng thể sánh bằng nụ cười rạng rỡ của em. 
+          Chúc bé của anh một ngày 20/10 luôn ngập tràn niềm vui, xinh đẹp và hạnh phúc trọn vẹn nhất! ❤️
+        </p>
+
+        <div class="flower-signature-tag">
+          <span>Tình yêu to bự từ:</span>
+          <strong id="flower-bf-name">Khúc Gỗ</strong>
+          <span class="sig-heart">💕</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Nhắc nhở chạm màn hình khi video kết thúc (Pulse Pill) -->
+    <div class="flower-tap-hint" id="flower-tap-hint">
+      <div class="tap-hint-pill">
+        <span class="tap-hint-hand">👆</span>
+        <span class="tap-hint-text">Chạm vào màn hình để mở món quà tiếp theo</span>
+        <span class="tap-hint-sparkle">✨</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================================
        MAIN APP CONTAINER (Revealed after unlock)
        ============================================== -->
   <main id="app-container" class="app-container app-hidden">
     
     <!-- Top Floating Header Bar -->
     <header class="top-bar">
-      <button class="settings-trigger-btn" id="btn-open-settings" title="Tùy chỉnh thông tin cặp đôi">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-        <span>Tùy chỉnh</span>
-      </button>
+      <div class="header-left-actions">
+        <button class="settings-trigger-btn" id="btn-open-settings" title="Tùy chỉnh thông tin cặp đôi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Tùy chỉnh</span>
+        </button>
+
+        <button class="settings-trigger-btn flower-nav-btn" id="btn-replay-flower" title="Xem lại bó hoa 20/10">
+          <span>💐 Bó Hoa</span>
+        </button>
+      </div>
 
       <!-- FLOATING MINI VINYL PLAYER (Top Right) -->
       <div class="vinyl-player" id="vinyl-player" title="Bấm để Bật/Tắt nhạc tình yêu">
