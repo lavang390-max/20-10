@@ -767,6 +767,43 @@
       osc.start(now);
       osc.stop(now + 0.2);
     }
+
+    playPhotoAssembleSound() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      // Celestial ascending harp arpeggio
+      const notes = [329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+        gain.gain.setValueAtTime(0.07, now + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.55);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.12);
+        osc.stop(now + idx * 0.12 + 0.55);
+      });
+    }
+
+    playAssemblySnapSound() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      // Crystalline glass sparkle & lock chime
+      [523.25, 659.25, 783.99, 1046.50, 1567.98, 2093.00].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+        gain.gain.setValueAtTime(0.12, now + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.85);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.04);
+        osc.stop(now + idx * 0.04 + 0.85);
+      });
+    }
   }
 
   const sound = new SoundEngine();
@@ -925,14 +962,56 @@
   });
 
   // ==========================================================
-  // 💐 FULLSCREEN CINEMATIC 20/10 FLOWER GIFT ENGINE
+  // 💐 FULLSCREEN CINEMATIC 20/10 PHOTO SHARD ASSEMBLY & GIFT ENGINE
   // ==========================================================
   const flowerGiftScreen = document.getElementById('flower-gift-screen');
+  const giftInitialOverlay = document.getElementById('gift-initial-overlay');
+  const avatarCompleteFrame = document.getElementById('avatar-complete-frame');
   const flowerSkipBtn = document.getElementById('flower-skip-btn');
   const btnReplayFlower = document.getElementById('btn-replay-flower');
-  let flowerParticlesRunning = false;
+  const flowerCanvas = document.getElementById('flower-particles-canvas');
+
+  // Preload avatar image
+  const avatarImg = new Image();
+  avatarImg.src = 'images/avatar.jpg';
+
+  let flowerStage = 'idle'; // 'idle' | 'initial_tap' | 'assembling' | 'assembled' | 'dismissed'
   let flowerAnimFrameId = null;
-  let flowerAnimTimeout = null;
+  let shardList = [];
+  let petalList = [];
+  let sparkleList = [];
+  let assemblyStartTime = 0;
+  let assemblyDuration = 2200; // 2.2 seconds assembly
+  let isAssemblyComplete = false;
+  let flowerTapTimeout = null;
+
+  // Build kinetic typography with dancing wavy characters
+  function initKineticTypography(recipientName) {
+    const headline = document.getElementById('kinetic-flower-headline');
+    if (!headline) return;
+    headline.innerHTML = '';
+    const name = recipientName || (userConfig && userConfig.girlfriendName) || 'Bé Mèo';
+    const words = ['Chúc', 'Mừng', name, 'Ngày', '20/10', '💖'];
+    let globalCharIdx = 0;
+
+    words.forEach(word => {
+      const wordSpan = document.createElement('span');
+      wordSpan.className = 'kinetic-word';
+      wordSpan.style.display = 'inline-block';
+      wordSpan.style.whiteSpace = 'nowrap';
+      wordSpan.style.margin = '0 0.16em';
+
+      Array.from(word).forEach(char => {
+        const charSpan = document.createElement('span');
+        charSpan.className = 'wave-char';
+        charSpan.style.setProperty('--char-i', globalCharIdx++);
+        charSpan.textContent = char;
+        wordSpan.appendChild(charSpan);
+      });
+
+      headline.appendChild(wordSpan);
+    });
+  }
 
   function playFlowerGiftCinematic() {
     if (!flowerGiftScreen) {
@@ -942,38 +1021,310 @@
     }
 
     // Populate customized recipient name & boyfriend name
-    const gfNameEl = document.getElementById('flower-gf-name');
+    const gfName = (userConfig && userConfig.girlfriendName) || 'Bé Mèo';
+    const bfName = (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ';
     const bfNameEl = document.getElementById('flower-bf-name');
-    if (gfNameEl) gfNameEl.textContent = (userConfig && userConfig.girlfriendName) || 'Bé Mèo';
-    if (bfNameEl) bfNameEl.textContent = (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ';
+    if (bfNameEl) bfNameEl.textContent = bfName;
 
-    flowerGiftScreen.classList.remove('dissolve-out', 'ready-to-tap');
-    flowerGiftScreen.classList.add('active');
+    initKineticTypography(gfName);
+
+    // Reset visual states to Phase 1: Pure black screen with "Chạm vào màn hình để mở quà"
+    flowerStage = 'initial_tap';
+    isAssemblyComplete = false;
+    clearTimeout(flowerTapTimeout);
+
+    flowerGiftScreen.classList.remove('dissolve-out', 'assembling', 'assembled', 'ready-to-tap');
+    flowerGiftScreen.classList.add('active', 'state-initial-tap');
     flowerGiftScreen.setAttribute('aria-hidden', 'false');
 
-    // Play magical harp bloom sound
+    if (giftInitialOverlay) {
+      giftInitialOverlay.classList.remove('hidden');
+    }
+
+    // Clear canvas
+    if (flowerCanvas) {
+      const ctx = flowerCanvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
+    }
+  }
+
+  // Handle tap on the initial black screen -> Start photo shards assembly!
+  function startPhotoShardAssembly() {
+    if (flowerStage !== 'initial_tap') return;
+    flowerStage = 'assembling';
+
+    // Hide initial overlay
+    if (giftInitialOverlay) {
+      giftInitialOverlay.classList.add('hidden');
+    }
+    flowerGiftScreen.classList.remove('state-initial-tap');
+    flowerGiftScreen.classList.add('assembling');
+
+    // Play ascending harp arpeggio
     try {
       sound.init();
-      sound.playFlowerBloomSound();
+      sound.playPhotoAssembleSound();
     } catch(e) {}
 
-    // Trigger stage bloom transition
-    requestAnimationFrame(() => {
-      flowerGiftScreen.classList.add('playing');
+    // Initialize Canvas & Shards
+    initShardEngine();
+  }
+
+  function initShardEngine() {
+    if (!flowerCanvas) return;
+    const ctx = flowerCanvas.getContext('2d');
+    if (!ctx) return;
+
+    function resize() {
+      flowerCanvas.width = window.innerWidth;
+      flowerCanvas.height = window.innerHeight;
+    }
+    resize();
+
+    // Determine target 4:3 box position matching .avatar-frame
+    const frameRect = avatarCompleteFrame ? avatarCompleteFrame.getBoundingClientRect() : null;
+    let targetW, targetH, targetX, targetY;
+
+    if (frameRect && frameRect.width > 0 && frameRect.height > 0) {
+      targetW = frameRect.width;
+      targetH = frameRect.height;
+      targetX = frameRect.left;
+      targetY = frameRect.top;
+    } else {
+      targetW = Math.min(window.innerWidth * 0.82, 320);
+      targetH = targetW * (3 / 4);
+      targetX = (flowerCanvas.width - targetW) / 2;
+      targetY = Math.max(24, (flowerCanvas.height - targetH) * 0.28);
+    }
+
+    // Grid slicing: 10 columns x 8 rows = 80 puzzle shards
+    const cols = 10;
+    const rows = 8;
+    shardList = [];
+
+    const naturalW = avatarImg.naturalWidth || 2560;
+    const naturalH = avatarImg.naturalHeight || 1920;
+    const shardSrcW = naturalW / cols;
+    const shardSrcH = naturalH / rows;
+    const shardDestW = targetW / cols;
+    const shardDestH = targetH / rows;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const destX = targetX + c * shardDestW;
+        const destY = targetY + r * shardDestH;
+
+        // Disperse shard from outside screen or dynamic 3D angle
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 250 + Math.random() * (Math.max(flowerCanvas.width, flowerCanvas.height) * 0.85);
+        const startX = destX + Math.cos(angle) * distance;
+        const startY = destY + Math.sin(angle) * distance;
+        const startRot = (Math.random() - 0.5) * Math.PI * 4; // up to 360 deg spin
+        const startScale = 0.2 + Math.random() * 0.6;
+        const delay = Math.random() * 550; // staggered delay up to 550ms
+        const flightTime = 1300 + Math.random() * 350; // duration for this shard
+
+        shardList.push({
+          sx: c * shardSrcW,
+          sy: r * shardSrcH,
+          sw: shardSrcW,
+          sh: shardSrcH,
+          dx: destX,
+          dy: destY,
+          dw: shardDestW,
+          dh: shardDestH,
+          startX: startX,
+          startY: startY,
+          startRot: startRot,
+          startScale: startScale,
+          delay: delay,
+          flightTime: flightTime,
+          isLocked: false
+        });
+      }
+    }
+
+    // Initialize 25 delicate rose petals
+    petalList = [];
+    for (let i = 0; i < 25; i++) {
+      petalList.push({
+        x: Math.random() * flowerCanvas.width,
+        y: Math.random() * flowerCanvas.height - flowerCanvas.height * 0.6,
+        size: 10 + Math.random() * 12,
+        speedX: -0.8 + Math.random() * 1.6,
+        speedY: 1.4 + Math.random() * 2.0,
+        angle: Math.random() * Math.PI * 2,
+        angularSpeed: (Math.random() - 0.5) * 0.03,
+        flip: Math.random(),
+        flipSpeed: 0.02 + Math.random() * 0.03,
+        color: Math.random() > 0.4 ? '#ff758c' : '#ff85a2',
+        opacity: 0.55 + Math.random() * 0.35
+      });
+    }
+
+    // Initialize 24 glittering fairy sparkles
+    sparkleList = [];
+    for (let i = 0; i < 24; i++) {
+      sparkleList.push({
+        x: Math.random() * flowerCanvas.width,
+        y: Math.random() * flowerCanvas.height,
+        size: 2 + Math.random() * 3.5,
+        speedY: -0.4 - Math.random() * 1.0,
+        speedX: (Math.random() - 0.5) * 0.5,
+        alpha: Math.random(),
+        pulseSpeed: 0.025 + Math.random() * 0.03,
+        color: Math.random() > 0.3 ? '#ffd700' : '#ffffff'
+      });
+    }
+
+    assemblyStartTime = performance.now();
+    if (flowerAnimFrameId) cancelAnimationFrame(flowerAnimFrameId);
+    flowerAnimFrameId = requestAnimationFrame(renderShardAssembly);
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function easeOutBack(t) {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+
+  function renderShardAssembly(timestamp) {
+    if (flowerStage === 'idle' || flowerStage === 'dismissed') return;
+    const ctx = flowerCanvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
+    const elapsed = timestamp - assemblyStartTime;
+
+    // 1. Render ambient fairy sparkles
+    sparkleList.forEach(s => {
+      s.y += s.speedY;
+      s.x += s.speedX;
+      s.alpha += s.pulseSpeed;
+      if (s.alpha > 1 || s.alpha < 0.2) s.pulseSpeed = -s.pulseSpeed;
+      if (s.y < -10) {
+        s.y = flowerCanvas.height + 10;
+        s.x = Math.random() * flowerCanvas.width;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.1, Math.min(1, s.alpha));
+      ctx.fillStyle = s.color;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     });
 
-    // Start 60fps canvas particles (falling rose petals & glowing golden stardust)
-    startFlowerParticles();
+    // 2. Render falling rose petals
+    petalList.forEach(p => {
+      p.y += p.speedY;
+      p.x += Math.sin(p.angle) * 1.5 + p.speedX;
+      p.angle += p.angularSpeed;
+      p.flip += p.flipSpeed;
 
-    // After animation sequence finishes (~3.0s), stop in breathing state and display tap hint
-    clearTimeout(flowerAnimTimeout);
-    flowerAnimTimeout = setTimeout(() => {
-      flowerGiftScreen.classList.add('ready-to-tap');
-    }, 3000);
+      if (p.y > flowerCanvas.height + 25) {
+        p.y = -25;
+        p.x = Math.random() * flowerCanvas.width;
+      }
+      if (p.x < -25) p.x = flowerCanvas.width + 25;
+      if (p.x > flowerCanvas.width + 25) p.x = -25;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.scale(Math.cos(p.flip), 1);
+      ctx.globalAlpha = p.opacity;
+
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = p.color;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(-p.size / 2, -p.size, -p.size, -p.size / 2, 0, -p.size * 1.35);
+      ctx.bezierCurveTo(p.size, -p.size / 2, p.size / 2, -p.size, 0, 0);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // 3. Render Shard Assembly
+    let allShardsArrived = true;
+
+    if (avatarImg.complete && avatarImg.naturalWidth > 0) {
+      shardList.forEach(shard => {
+        const shardElapsed = elapsed - shard.delay;
+
+        if (shardElapsed <= 0) {
+          allShardsArrived = false;
+          return;
+        }
+
+        const rawT = Math.min(1, shardElapsed / shard.flightTime);
+        if (rawT < 1) allShardsArrived = false;
+
+        const easedT = easeOutCubic(rawT);
+        const curX = shard.startX + (shard.dx - shard.startX) * easedT;
+        const curY = shard.startY + (shard.dy - shard.startY) * easedT;
+        const curRot = shard.startRot * (1 - easedT);
+        const curScale = shard.startScale + (1 - shard.startScale) * easedT;
+        const curAlpha = Math.min(1, rawT * 1.4);
+
+        ctx.save();
+        ctx.translate(curX + shard.dw / 2, curY + shard.dh / 2);
+        ctx.rotate(curRot);
+        ctx.scale(curScale, curScale);
+        ctx.globalAlpha = curAlpha;
+
+        // Draw image piece with slight subpixel overlap to eliminate seam gaps
+        ctx.drawImage(
+          avatarImg,
+          shard.sx, shard.sy, shard.sw, shard.sh,
+          -shard.dw / 2, -shard.dh / 2, shard.dw + 0.5, shard.dh + 0.5
+        );
+
+        // Glowing golden edge on flying shards
+        if (rawT < 0.96) {
+          ctx.strokeStyle = `rgba(255, 215, 0, ${(1 - rawT) * 0.75})`;
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(-shard.dw / 2, -shard.dh / 2, shard.dw, shard.dh);
+        }
+
+        ctx.restore();
+      });
+    }
+
+    // Check if assembly has completed
+    if (allShardsArrived && !isAssemblyComplete) {
+      isAssemblyComplete = true;
+      flowerStage = 'assembled';
+
+      flowerGiftScreen.classList.remove('assembling');
+      flowerGiftScreen.classList.add('assembled');
+
+      // Play triumphant crystalline snap chime!
+      try {
+        sound.playAssemblySnapSound();
+      } catch(e) {}
+
+      // Reveal tap hint after 2.8s
+      clearTimeout(flowerTapTimeout);
+      flowerTapTimeout = setTimeout(() => {
+        flowerGiftScreen.classList.add('ready-to-tap');
+      }, 2800);
+    }
+
+    flowerAnimFrameId = requestAnimationFrame(renderShardAssembly);
   }
 
   function dismissFlowerGift() {
     if (!flowerGiftScreen || !flowerGiftScreen.classList.contains('active')) return;
+    flowerStage = 'dismissed';
 
     // Smooth cinematic dissolve transition
     flowerGiftScreen.classList.remove('ready-to-tap');
@@ -986,16 +1337,41 @@
     launchWelcomeConfetti();
 
     setTimeout(() => {
-      flowerGiftScreen.classList.remove('active', 'playing', 'dissolve-out');
+      flowerGiftScreen.classList.remove('active', 'state-initial-tap', 'assembling', 'assembled', 'dissolve-out');
       flowerGiftScreen.setAttribute('aria-hidden', 'true');
-      stopFlowerParticles();
+      flowerStage = 'idle';
+      if (flowerAnimFrameId) cancelAnimationFrame(flowerAnimFrameId);
+      if (flowerCanvas) {
+        const ctx = flowerCanvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
+      }
     }, 750);
   }
 
-  // Tap ANYWHERE on the screen to proceed
+  // Click & Tap Router
   if (flowerGiftScreen) {
     flowerGiftScreen.addEventListener('click', (e) => {
-      dismissFlowerGift();
+      // 1. Initial screen: Tap anywhere to open gift & start shards assembly
+      if (flowerStage === 'initial_tap') {
+        startPhotoShardAssembly();
+        return;
+      }
+      // 2. During assembly: ignore accidental clicks so animation can play smoothly
+      if (flowerStage === 'assembling') {
+        return;
+      }
+      // 3. Once assembled: Tap anywhere to dismiss and enter the main app!
+      if (flowerStage === 'assembled') {
+        dismissFlowerGift();
+      }
+    });
+  }
+
+  // Also bind directly on gift-initial-overlay for immediate response
+  if (giftInitialOverlay) {
+    giftInitialOverlay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startPhotoShardAssembly();
     });
   }
 
@@ -1021,128 +1397,6 @@
       playBackgroundAudio();
       playFlowerGiftCinematic();
     }, 400);
-  }
-
-  // Physics-based Rose Petals & Golden Fairy Dust Canvas System
-  function startFlowerParticles() {
-    const canvas = document.getElementById('flower-particles-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resize();
-
-    flowerParticlesRunning = true;
-
-    // 40 delicate rose petals
-    const petals = [];
-    for (let i = 0; i < 40; i++) {
-      petals.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height - canvas.height * 0.8,
-        size: 11 + Math.random() * 14,
-        speedX: -1 + Math.random() * 2,
-        speedY: 1.5 + Math.random() * 2.5,
-        angle: Math.random() * Math.PI * 2,
-        angularSpeed: (Math.random() - 0.5) * 0.035,
-        flip: Math.random(),
-        flipSpeed: 0.02 + Math.random() * 0.03,
-        color: Math.random() > 0.4 ? '#ff758c' : (Math.random() > 0.5 ? '#ff85a2' : '#e84393'),
-        opacity: 0.6 + Math.random() * 0.35
-      });
-    }
-
-    // 30 glistening golden fairy sparks
-    const sparkles = [];
-    for (let i = 0; i < 30; i++) {
-      sparkles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: 2 + Math.random() * 3.5,
-        speedY: -0.5 - Math.random() * 1.2,
-        speedX: (Math.random() - 0.5) * 0.6,
-        alpha: Math.random(),
-        pulseSpeed: 0.025 + Math.random() * 0.03,
-        color: Math.random() > 0.35 ? '#ffd700' : '#ffffff'
-      });
-    }
-
-    function render() {
-      if (!flowerParticlesRunning) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Render fairy sparks
-      sparkles.forEach(s => {
-        s.y += s.speedY;
-        s.x += s.speedX;
-        s.alpha += s.pulseSpeed;
-        if (s.alpha > 1 || s.alpha < 0.2) s.pulseSpeed = -s.pulseSpeed;
-        if (s.y < -10) {
-          s.y = canvas.height + 10;
-          s.x = Math.random() * canvas.width;
-        }
-
-        ctx.save();
-        ctx.globalAlpha = Math.max(0.1, Math.min(1, s.alpha));
-        ctx.fillStyle = s.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = s.color;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-
-      // Render rose petals
-      petals.forEach(p => {
-        p.y += p.speedY;
-        p.x += Math.sin(p.angle) * 1.6 + p.speedX;
-        p.angle += p.angularSpeed;
-        p.flip += p.flipSpeed;
-
-        if (p.y > canvas.height + 25) {
-          p.y = -25;
-          p.x = Math.random() * canvas.width;
-        }
-        if (p.x < -25) p.x = canvas.width + 25;
-        if (p.x > canvas.width + 25) p.x = -25;
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
-        ctx.scale(Math.cos(p.flip), 1);
-        ctx.globalAlpha = p.opacity;
-
-        // Realistic curved petal bezier geometry
-        ctx.fillStyle = p.color;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = p.color;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-p.size / 2, -p.size, -p.size, -p.size / 2, 0, -p.size * 1.35);
-        ctx.bezierCurveTo(p.size, -p.size / 2, p.size / 2, -p.size, 0, 0);
-        ctx.fill();
-        ctx.restore();
-      });
-
-      flowerAnimFrameId = requestAnimationFrame(render);
-    }
-
-    render();
-  }
-
-  function stopFlowerParticles() {
-    flowerParticlesRunning = false;
-    if (flowerAnimFrameId) cancelAnimationFrame(flowerAnimFrameId);
-    const canvas = document.getElementById('flower-particles-canvas');
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
   }
 
   // --- 2. FLOATING VINYL PLAYER & BACKGROUND AUDIO ---

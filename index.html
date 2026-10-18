@@ -114,11 +114,14 @@
   </section>
 
   <!-- ==============================================
-       FULLSCREEN CINEMATIC 20/10 FLOWER GIFT SCREEN
-       Màn hình hoạt cảnh tặng bó hoa toàn màn hình sau khi mở khóa
+       FULLSCREEN CINEMATIC 20/10 GIFT SCREEN
+       1. Màn hình đen: "Chạm vào màn hình để mở quà"
+       2. Mảnh vỡ từ avatar.jpg bay vào ghép thành bức ảnh hoàn chỉnh
+       3. Chạy dòng chữ chúc mừng 20/10 với hoạt họa chuyển động liên tục
+       4. Chạm vào màn hình để chuyển qua các trang tiếp theo
        ============================================== -->
-  <section class="flower-gift-screen" id="flower-gift-screen" aria-hidden="true">
-    <!-- Particle Canvas: Hiệu ứng cánh hoa hồng & bụi sao vàng bay lơ lửng -->
+  <section class="flower-gift-screen state-initial-tap" id="flower-gift-screen" aria-hidden="true">
+    <!-- Particle & Shards Canvas -->
     <canvas id="flower-particles-canvas" class="flower-particles-canvas"></canvas>
 
     <!-- Ánh sáng hào quang mềm mại -->
@@ -126,36 +129,48 @@
 
     <!-- Nút bỏ qua / tiếp tục ở góc trên -->
     <button type="button" class="flower-skip-btn" id="flower-skip-btn" title="Chuyển đến trang tiếp theo">
-      <span>Mở quà</span>
+      <span>Bỏ qua</span>
       <span class="skip-arrow">➔</span>
     </button>
 
-    <!-- Khung chính chứa Bó Hoa & Lời chúc 20/10 -->
-    <div class="flower-stage-container">
+    <!-- 1. GIAI ĐOẠN 1: MÀN HÌNH ĐEN CHẠM ĐỂ MỞ QUÀ -->
+    <div class="gift-initial-overlay" id="gift-initial-overlay">
+      <div class="gift-initial-box">
+        <div class="gift-box-icon-glow">🎁</div>
+        <h2 class="gift-initial-text">Chạm vào màn hình để mở quà</h2>
+        <p class="gift-initial-subtext">Một bất ngờ đặc biệt dành riêng cho bé ✨</p>
+        <div class="gift-hand-pointer">👆</div>
+        <div class="gift-pulse-ring"></div>
+      </div>
+    </div>
+
+    <!-- 2 & 3. GIAI ĐOẠN 2 & 3: BỨC ẢNH HOÀN CHỈNH & DÒNG CHỮ CHÚC MỪNG HOẠT HỌA -->
+    <div class="flower-stage-container" id="flower-stage-container">
       
-      <!-- Bó hoa tươi 20/10 với hiệu ứng hào quang lấp lánh -->
-      <div class="flower-bouquet-frame">
-        <img src="images/bouquet_gift.jpg" alt="Bó hoa tặng bé 20/10" class="flower-bouquet-img" id="flower-bouquet-img">
+      <!-- Khung ảnh hoàn chỉnh (hiện lên sau khi mảnh vỡ ghép xong) -->
+      <div class="flower-bouquet-frame avatar-frame" id="avatar-complete-frame">
+        <img src="images/avatar.jpg" alt="Khoảnh khắc tình yêu 20/10" class="flower-bouquet-img avatar-img" id="avatar-complete-img">
+        <div class="flower-photo-shine-sweep" id="photo-shine-sweep"></div>
         <div class="flower-ribbon-tag">
-          <span>💖 Dành riêng cho bé</span>
+          <span>💖 Yêu bé nhất trên đời</span>
         </div>
       </div>
 
-      <!-- Thẻ lời chúc lãng mạn 20/10 -->
-      <div class="flower-content-box">
-        <div class="flower-pill-badge">
+      <!-- Thẻ lời chúc 20/10 với chữ chuyển động hoạt họa liên tục -->
+      <div class="flower-content-box" id="flower-content-box">
+        <div class="flower-pill-badge continuous-glow-badge">
           <span class="badge-icon">💐</span>
           <span>CHÚC MỪNG PHỤ NỮ VIỆT NAM 20/10</span>
           <span class="badge-icon">💐</span>
         </div>
 
-        <h1 class="flower-headline">
-          Gửi Tặng <span class="flower-gf-name" id="flower-gf-name">Bé Mèo</span> Của Anh
+        <h1 class="flower-headline kinetic-headline" id="kinetic-flower-headline">
+          <!-- Populated dynamically with wavy jumping characters in JavaScript -->
         </h1>
 
-        <p class="flower-subtext">
-          Ngàn đóa hoa rực rỡ ngoài kia cũng chẳng thể sánh bằng nụ cười rạng rỡ của em. 
-          Chúc bé của anh một ngày 20/10 luôn ngập tràn niềm vui, xinh đẹp và hạnh phúc trọn vẹn nhất! ❤️
+        <p class="flower-subtext continuous-subtext">
+          Ngàn lời chúc tốt đẹp nhất trên đời cũng không bằng nụ cười hạnh phúc của em. 
+          Chúc bé của anh một ngày 20/10 luôn ngập tràn niềm vui, xinh đẹp và được yêu thương nhiều nhất! ❤️
         </p>
 
         <div class="flower-signature-tag">
@@ -167,12 +182,12 @@
 
     </div>
 
-    <!-- Nhắc nhở chạm màn hình khi video kết thúc (Pulse Pill) -->
+    <!-- 4. GIAI ĐOẠN 4: NHẮC NHỞ CHẠM VÀO ĐỂ TIẾP TỤC -->
     <div class="flower-tap-hint" id="flower-tap-hint">
       <div class="tap-hint-pill">
         <span class="tap-hint-hand">👆</span>
-        <span class="tap-hint-text">Chạm vào màn hình để mở món quà tiếp theo</span>
-        <span class="tap-hint-sparkle">✨</span>
+        <span class="tap-hint-text">Chạm vào màn hình để tiếp tục</span>
+        <span class="tap-hint-sparkle">💖</span>
       </div>
     </div>
   </section>
