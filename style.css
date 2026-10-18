@@ -2882,19 +2882,25 @@ button {
    LOVE BUCKET LIST - LUXURY APP STYLES
    ========================================================== */
 .bucket-slide-content {
-  max-width: 900px;
+  width: 100%;
+  max-width: 680px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .bucket-hero-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 20px 18px;
   box-shadow: var(--glass-shadow);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  overflow: hidden;
 }
 
 .bucket-progress-header {
@@ -3124,7 +3130,7 @@ button {
 @media (max-width: 768px) {
   .slides-container {
     padding-top: max(72px, calc(56px + env(safe-area-inset-top, 0px)));
-    padding-bottom: max(145px, calc(125px + env(safe-area-inset-bottom, 0px)));
+    padding-bottom: max(160px, calc(140px + env(safe-area-inset-bottom, 0px)));
   }
 
   /* Hide top-bar and bottom dock when full-screen camera is active */
@@ -3328,23 +3334,62 @@ button {
   }
 
   /* Slide 6 Bucket List Responsive */
+  .bucket-slide-content {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .bucket-hero-card {
-    padding: 16px 14px;
+    padding: 14px 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border-radius: var(--radius-md);
+  }
+
+  .bucket-progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .bucket-badge-rank {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+  }
+
+  .bucket-stats-text {
+    font-size: 0.8rem;
   }
 
   .bucket-controls-bar {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .bucket-filter-pills {
+    display: flex;
     overflow-x: auto;
     flex-wrap: nowrap;
-    padding-bottom: 6px;
+    gap: 6px;
+    padding-bottom: 4px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .bucket-filter-pills::-webkit-scrollbar {
@@ -3353,25 +3398,57 @@ button {
 
   .bucket-filter-pill {
     flex-shrink: 0;
-    padding: 6px 12px;
-    font-size: 0.78rem;
+    padding: 5px 10px;
+    font-size: 0.74rem;
     white-space: nowrap;
   }
 
   .btn-open-add-bucket {
     width: 100%;
     justify-content: center;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    box-sizing: border-box;
+  }
+
+  .bucket-add-row,
+  .bucket-add-box > div > div {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .bucket-add-box select,
+  .bucket-add-box input,
+  .bucket-add-box button {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100% !important;
+    box-sizing: border-box !important;
   }
 
   .bucket-list-grid {
     grid-template-columns: 1fr !important;
     gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .bucket-item-card {
     width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
-    padding: 14px 12px;
+    box-sizing: border-box !important;
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .bucket-item-title {
+    font-size: 0.92rem;
+  }
+
+  .bucket-item-note {
+    font-size: 0.78rem;
   }
 
   /* Slide 7 Letter Envelope & Modal Responsive */
@@ -3459,6 +3536,24 @@ button {
     padding-top: 8px;
     flex-direction: row;
     gap: 8px;
+  }
+
+  /* Slide Action Navigation Buttons on Mobile */
+  .slide-nav-action {
+    margin-top: 18px !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    gap: 8px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  .slide-nav-action .luxury-btn {
+    flex: 1 1 calc(50% - 6px) !important;
+    font-size: 0.8rem !important;
+    padding: 10px 8px !important;
+    justify-content: center !important;
   }
 
   /* Bottom Dock on Mobile */
