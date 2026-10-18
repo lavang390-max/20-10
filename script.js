@@ -964,44 +964,28 @@
     }
   }
 
-  // Keypad button listeners with instant touch & click responsiveness
+  // Keypad button listeners (100% reliable native click on all mobile & desktop browsers)
   const keyButtons = document.querySelectorAll('.key-btn[data-key]');
   keyButtons.forEach(btn => {
-    let lastTime = 0;
-    const onKeyTrigger = (e) => {
-      const now = Date.now();
-      if (now - lastTime < 180) return;
-      lastTime = now;
-      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const key = btn.getAttribute('data-key');
       if (key) handleKeypadPress(key);
-    };
-    btn.addEventListener('click', onKeyTrigger);
-    btn.addEventListener('touchend', onKeyTrigger, { passive: false });
+    });
   });
 
   const btnDelete = document.getElementById('btn-delete');
   if (btnDelete) {
-    let lastDelTime = 0;
-    const onDelTrigger = (e) => {
-      const now = Date.now();
-      if (now - lastDelTime < 180) return;
-      lastDelTime = now;
-      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+    btnDelete.addEventListener('click', (e) => {
+      e.stopPropagation();
       handleDeletePasscode();
-    };
-    btnDelete.addEventListener('click', onDelTrigger);
-    btnDelete.addEventListener('touchend', onDelTrigger, { passive: false });
+    });
   }
 
   const btnHint = document.getElementById('btn-hint');
   if (btnHint) {
-    let lastHintTime = 0;
-    const onHintTrigger = (e) => {
-      const now = Date.now();
-      if (now - lastHintTime < 250) return;
-      lastHintTime = now;
-      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+    btnHint.addEventListener('click', (e) => {
+      e.stopPropagation();
       try {
         sound.init();
         sound.playKeyClick();
@@ -1010,9 +994,7 @@
       setTimeout(() => {
         hintBubble.classList.remove('show');
       }, 4000);
-    };
-    btnHint.addEventListener('click', onHintTrigger);
-    btnHint.addEventListener('touchend', onHintTrigger, { passive: false });
+    });
   }
 
   // Keyboard support for passcode
@@ -1613,7 +1595,7 @@
     }
   }
 
-  // Direct click handler on buttons
+  // Direct click handler on dock buttons
   dockButtons.forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1623,41 +1605,6 @@
       }
     });
   });
-
-  // Touch and tap delegator for immediate response on mobile
-  if (bottomDock) {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-
-    bottomDock.addEventListener('touchstart', (e) => {
-      if (!e.touches || !e.touches[0]) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartTime = Date.now();
-    }, { passive: true });
-
-    bottomDock.addEventListener('touchend', (e) => {
-      if (!e.changedTouches || !e.changedTouches[0]) return;
-      const touch = e.changedTouches[0];
-      const dx = Math.abs(touch.clientX - touchStartX);
-      const dy = Math.abs(touch.clientY - touchStartY);
-      const dt = Date.now() - touchStartTime;
-
-      // Clean tap detection (under 14px movement and within 400ms)
-      if (dx < 14 && dy < 14 && dt < 400) {
-        const el = document.elementFromPoint(touch.clientX, touch.clientY);
-        const btn = el ? el.closest('.dock-btn') : null;
-        if (btn) {
-          const targetIndex = parseInt(btn.getAttribute('data-slide'), 10);
-          if (!isNaN(targetIndex)) {
-            e.preventDefault();
-            goToSlide(targetIndex);
-          }
-        }
-      }
-    }, { passive: false });
-  }
 
   const nextSlideButtons = document.querySelectorAll('.btn-next-slide');
   nextSlideButtons.forEach(btn => {
