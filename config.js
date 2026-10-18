@@ -5,13 +5,13 @@
  * Tự động đồng bộ từ Database Server
  */
 
-var COUPLE_CONFIG = {
+window.COUPLE_CONFIG = {
   "passcode": "0702",
   "passcodeHint": "Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè!  ✨",
   "adminPin": "0702",
   "girlfriendName": "bé mèo",
   "boyfriendName": "khúc gỗ",
-  "startDate": "2024-02-06T17:00:00.000Z",
+  "startDate": "2026-02-07T13:00:00.000Z",
   "wheelPrizes": [
     {
       "title": "1 Cái Ôm Thật Chặt",
@@ -52,10 +52,3 @@ var COUPLE_CONFIG = {
   "serverUrl": "",
   "firebaseConfig": null
 };
-
-if (typeof window !== 'undefined') {
-  window.COUPLE_CONFIG = COUPLE_CONFIG;
-}
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = COUPLE_CONFIG;
-}
