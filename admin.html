@@ -1044,12 +1044,28 @@
         </div>
 
         <div class="admin-field" style="margin-bottom: 0;">
-          <label for="admin-start-date">Ngày Bắt Đầu Yêu Nhau<span>*</span></label>
-          <input type="datetime-local" id="admin-start-date" class="admin-input" style="max-width: 320px;">
-          <div class="live-counter-preview-pill" id="live-calc-days-pill">
+          <label for="admin-start-date-only">Ngày & Giờ Bắt Đầu Yêu Nhau<span>*</span></label>
+          <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 170px;">
+              <span style="font-size: 0.78rem; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">📅 Chọn ngày (Ngày / Tháng / Năm):</span>
+              <input type="date" id="admin-start-date-only" class="admin-input">
+            </div>
+            <div style="width: 130px;">
+              <span style="font-size: 0.78rem; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">⏰ Giờ bắt đầu:</span>
+              <input type="time" id="admin-start-date-time-only" class="admin-input" value="00:00">
+            </div>
+            <input type="datetime-local" id="admin-start-date" class="admin-input" style="display: none;">
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <button type="button" class="btn-template-pill" id="btn-preset-date-2024">💖 07/02/2024 (~2 năm)</button>
+            <button type="button" class="btn-template-pill" id="btn-preset-date-2025">🌸 07/02/2025 (~1 năm)</button>
+            <button type="button" class="btn-template-pill" id="btn-preset-date-2026">✨ 07/02/2026</button>
+            <button type="button" class="btn-template-pill" id="btn-preset-date-today">📍 Hôm Nay</button>
+          </div>
+          <div class="live-counter-preview-pill" id="live-calc-days-pill" style="margin-top: 12px;">
             ⏳ Đã bên nhau: <b>Đang tính toán...</b>
           </div>
-          <p class="field-hint">Đồng hồ Live Time Counter sẽ nhảy từng giây kể từ mốc thời gian này.</p>
+          <p class="field-hint">Đồng hồ Live Time Counter trên trang bé sẽ nhảy từng giây kể từ mốc thời gian này.</p>
         </div>
       </div>
 
@@ -1382,8 +1398,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- LOAD CONFIG FILE AND SEED DATA IF EXISTS -->
-  <script src="data/seed_data.js?v=20261018_master_sync_v15"></script>
-  <script src="config.js?v=20261018_master_sync_v15"></script>
+  <script src="data/seed_data.js?v=20261018_master_sync_v20"></script>
+  <script src="config.js?v=20261018_master_sync_v20"></script>
   <script src="qrcode.min.js"></script>
 
   <!-- ADMIN SCRIPT LOGIC -->
@@ -1495,6 +1511,30 @@
         return src;
       }
 
+      // Chuẩn hóa link Firebase Realtime Database
+      function getCleanFirebaseUrl(url) {
+        let clean = url || (currentConfig && currentConfig.firebaseUrl) || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+        if (typeof clean !== 'string') return 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+        clean = clean.trim().replace(/\/+$/, '');
+        if (clean.includes('console.firebase.google.com')) {
+          const m = clean.match(/\/database\/([a-zA-Z0-9_\-]+)/);
+          if (m) clean = 'https://' + m[1] + '.firebaseio.com';
+        } else if (clean.includes('databaseURL')) {
+          const m = clean.match(/databaseURL\s*[:=]\s*["']([^"']+)["']/);
+          if (m) clean = m[1];
+        } else if (clean.startsWith('{')) {
+          try {
+            const p = JSON.parse(clean);
+            if (p.databaseURL) clean = p.databaseURL;
+          } catch(e) {}
+        }
+        clean = clean.trim().replace(/\/+$/, '');
+        if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+          clean = 'https://' + clean;
+        }
+        return clean || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+      }
+
       let currentGlobalTunnelUrl = '';
 
       async function loadSyncInfo() {
@@ -1536,6 +1576,12 @@
       const inputGfName = document.getElementById('admin-gf-name');
       const inputBfName = document.getElementById('admin-bf-name');
       const inputStartDate = document.getElementById('admin-start-date');
+      const inputStartDateOnly = document.getElementById('admin-start-date-only');
+      const inputStartDateTimeOnly = document.getElementById('admin-start-date-time-only');
+      const btnPresetDate2024 = document.getElementById('btn-preset-date-2024');
+      const btnPresetDate2025 = document.getElementById('btn-preset-date-2025');
+      const btnPresetDate2026 = document.getElementById('btn-preset-date-2026');
+      const btnPresetDateToday = document.getElementById('btn-preset-date-today');
       const liveCalcDaysPill = document.getElementById('live-calc-days-pill');
       const inputLetterBody = document.getElementById('admin-letter-body');
       const wheelPrizesList = document.getElementById('admin-wheel-prizes-list');
@@ -1718,11 +1764,14 @@
           firebaseStatusBadge.style.borderColor = '#55efc4';
         }
 
-        if (inputStartDate && currentConfig.startDate) {
+        if (currentConfig.startDate) {
           try {
             const formatted = formatLocalDateTime(currentConfig.startDate);
             if (formatted) {
-              inputStartDate.value = formatted;
+              if (inputStartDate) inputStartDate.value = formatted;
+              const parts = formatted.split('T');
+              if (inputStartDateOnly && parts[0]) inputStartDateOnly.value = parts[0];
+              if (inputStartDateTimeOnly && parts[1]) inputStartDateTimeOnly.value = parts[1];
               updateDaysPreview(new Date(currentConfig.startDate));
             }
           } catch(e) {}
@@ -1846,9 +1895,11 @@
         currentConfig.imgbbApiKey = (inputImgbbKey && inputImgbbKey.value.trim()) || '';
         currentConfig.firebaseUrl = (inputFirebaseUrl && inputFirebaseUrl.value.trim()) || '';
 
-        if (inputStartDate && inputStartDate.value) {
+        const dVal = (inputStartDateOnly && inputStartDateOnly.value) || (inputStartDate && inputStartDate.value ? inputStartDate.value.split('T')[0] : '');
+        const tVal = (inputStartDateTimeOnly && inputStartDateTimeOnly.value) || (inputStartDate && inputStartDate.value && inputStartDate.value.includes('T') ? inputStartDate.value.split('T')[1] : '00:00');
+        if (dVal) {
           try {
-            const d = new Date(inputStartDate.value);
+            const d = new Date(`${dVal}T${tVal}`);
             if (!isNaN(d.getTime())) {
               currentConfig.startDate = d.toISOString();
             }
@@ -1900,10 +1951,11 @@
 
       // Save to localStorage, Database, and Broadcast instantly to Bé
       async function saveToLocalStorage(isAutoSave = false) {
+        const isAuto = (typeof isAutoSave === 'boolean') ? isAutoSave : false;
         const data = collectFormData();
         try {
           localStorage.setItem('romantic_gift_config_2010', JSON.stringify(data));
-          if (!isAutoSave) {
+          if (!isAuto) {
             showToast('Đã lưu cấu hình và đồng bộ tức thì sang Bé! 💾', '✅');
           }
         } catch(e) {}
@@ -1920,16 +1972,15 @@
           });
         } catch(err) {}
 
-        // Also sync directly to Firebase Cloud 24/7
+        // Also sync directly to Firebase Cloud 24/7 (chuẩn hóa link mọi lúc)
         try {
-          const fbUrl = data.firebaseUrl || (currentConfig && currentConfig.firebaseUrl) || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
-          if (fbUrl) {
-            const cleanFb = fbUrl.trim().replace(/\/+$/, '');
-            fetch(cleanFb + '/config.json', {
+          const cleanFb = getCleanFirebaseUrl(data.firebaseUrl || (currentConfig && currentConfig.firebaseUrl));
+          if (cleanFb) {
+            await fetch(cleanFb + '/config.json', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data)
-            }).catch(() => {});
+            });
           }
         } catch(fbErr) {}
       }
@@ -1956,6 +2007,56 @@
           inp.addEventListener('change', triggerAutoSave);
         }
       });
+
+      function syncFromDateComponents() {
+        const dVal = (inputStartDateOnly && inputStartDateOnly.value) || '';
+        const tVal = (inputStartDateTimeOnly && inputStartDateTimeOnly.value) || '00:00';
+        if (dVal) {
+          const combined = `${dVal}T${tVal}`;
+          if (inputStartDate) inputStartDate.value = combined;
+          const d = new Date(combined);
+          if (!isNaN(d.getTime())) {
+            currentConfig.startDate = d.toISOString();
+            updateDaysPreview(d);
+          }
+        }
+        triggerAutoSave();
+      }
+
+      if (inputStartDateOnly) {
+        inputStartDateOnly.addEventListener('input', syncFromDateComponents);
+        inputStartDateOnly.addEventListener('change', syncFromDateComponents);
+      }
+      if (inputStartDateTimeOnly) {
+        inputStartDateTimeOnly.addEventListener('input', syncFromDateComponents);
+        inputStartDateTimeOnly.addEventListener('change', syncFromDateComponents);
+      }
+
+      function setDatePreset(year, month, day, hours = '00:00') {
+        const pad = n => String(n).padStart(2, '0');
+        const dStr = `${year}-${pad(month)}-${pad(day)}`;
+        if (inputStartDateOnly) inputStartDateOnly.value = dStr;
+        if (inputStartDateTimeOnly) inputStartDateTimeOnly.value = hours;
+        syncFromDateComponents();
+        saveToLocalStorage(false);
+      }
+
+      if (btnPresetDate2024) {
+        btnPresetDate2024.addEventListener('click', () => setDatePreset(2024, 2, 7, '00:00'));
+      }
+      if (btnPresetDate2025) {
+        btnPresetDate2025.addEventListener('click', () => setDatePreset(2025, 2, 7, '00:00'));
+      }
+      if (btnPresetDate2026) {
+        btnPresetDate2026.addEventListener('click', () => setDatePreset(2026, 2, 7, '00:00'));
+      }
+      if (btnPresetDateToday) {
+        btnPresetDateToday.addEventListener('click', () => {
+          const now = new Date();
+          const pad = n => String(n).padStart(2, '0');
+          setDatePreset(now.getFullYear(), now.getMonth() + 1, now.getDate(), `${pad(now.getHours())}:${pad(now.getMinutes())}`);
+        });
+      }
 
       if (inputStartDate) {
         const onDateChange = () => {
@@ -2245,13 +2346,39 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
           const delBtn = card.querySelector('.btn-delete-item');
           delBtn.addEventListener('click', async () => {
             if (confirm('Xóa bức ảnh này khỏi album kỷ niệm? Cả hai bạn sẽ không còn thấy ảnh này.')) {
+              delBtn.disabled = true;
+              delBtn.textContent = '⏳ Đang xóa...';
+
+              // 1. Cập nhật mảng memories trong bộ nhớ cục bộ
+              const remainingMemories = memories.filter(item => item.id !== m.id);
+              try {
+                localStorage.setItem('romantic_gift_user_memories', JSON.stringify(remainingMemories));
+              } catch(e) {}
+
+              // 2. Gửi lệnh xóa lên Server
               try {
                 await fetch(getApiUrl(`/api/memories/${encodeURIComponent(m.id)}`), { method: 'DELETE' });
               } catch(e) {}
+
+              // 3. Xóa khỏi IndexedDB
               await deleteMemoryFromAdminIDB(m.id);
-              loadAdminMemories();
-              broadcastToGirl('DATA_UPDATED', { module: 'memories' });
-              showToast('Đã xóa ảnh khỏi album', '🗑️');
+
+              // 4. Đồng bộ ngay lập tức lên Firebase Cloud 24/7 (xóa vĩnh viễn trên mọi thiết bị và GitHub Pages)
+              try {
+                const fbUrl = getCleanFirebaseUrl(currentConfig.firebaseUrl);
+                if (fbUrl) {
+                  await fetch(fbUrl + '/memories.json', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(remainingMemories)
+                  });
+                }
+              } catch(fbErr) {}
+
+              // 5. Nạp lại giao diện Admin & thông báo sang trang của bé tức thì
+              await loadAdminMemories();
+              broadcastToGirl('DATA_UPDATED', { module: 'memories', deletedId: m.id });
+              showToast('Đã xóa ảnh khỏi album và đồng bộ tức thì sang Bé!', '🗑️');
             }
           });
 
@@ -2680,8 +2807,8 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       if (btnStickyCopy) btnStickyCopy.addEventListener('click', copyGirlLink);
       if (btnQuickCopy) btnQuickCopy.addEventListener('click', copyGirlLink);
 
-      if (btnSaveAll) btnSaveAll.addEventListener('click', saveToLocalStorage);
-      if (btnStickySave) btnStickySave.addEventListener('click', saveToLocalStorage);
+      if (btnSaveAll) btnSaveAll.addEventListener('click', () => saveToLocalStorage(false));
+      if (btnStickySave) btnStickySave.addEventListener('click', () => saveToLocalStorage(false));
       if (btnExport) btnExport.addEventListener('click', exportConfigFile);
       if (btnPublishGitHub) btnPublishGitHub.addEventListener('click', publishToGitHub);
       if (btnStickyPublish) btnStickyPublish.addEventListener('click', publishToGitHub);

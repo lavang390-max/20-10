@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
- * Tự động cập nhật: 2026-10-18T06:24:54.930Z
+ * Tự động cập nhật: 2026-10-18T08:01:40.443Z
  * ==========================================================
  */
 
@@ -12,7 +12,7 @@ var SEED_DATA = {
     "adminPin": "0702",
     "girlfriendName": "bé mèo",
     "boyfriendName": "khúc gỗ",
-    "startDate": "2026-02-06T22:00:00.000Z",
+    "startDate": "2024-02-06T17:00:00.000Z",
     "wheelPrizes": [
       {
         "title": "1 Cái Ôm Thật Chặt",

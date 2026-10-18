@@ -117,7 +117,9 @@
       if (firebaseUrl) return firebaseUrl;
       const url = (userConfig && userConfig.firebaseUrl) ||
                   (window.COUPLE_CONFIG && window.COUPLE_CONFIG.firebaseUrl) ||
-                  localStorage.getItem('romantic_gift_firebase_url') || '';
+                  (window.SEED_DATA && window.SEED_DATA.config && window.SEED_DATA.config.firebaseUrl) ||
+                  localStorage.getItem('romantic_gift_firebase_url') ||
+                  'https://qua-tang-2010-default-rtdb.firebaseio.com';
       if (!url) return '';
       let clean = url.trim().replace(/\/+$/, '');
       if (clean.includes('console.firebase.google.com')) {
@@ -184,19 +186,20 @@
         }
       });
 
-      // 2. Realtime Memories (Kho Kỷ Niệm)
+      // 2. Realtime Memories (Kho Kỷ Niệm - Cập nhật tức thì cả khi Thêm hoặc Xóa ảnh)
       db.ref('memories').on('value', snapshot => {
         try {
           const val = snapshot.val();
+          let list = [];
           if (val) {
-            const list = Array.isArray(val) ? val : Object.values(val);
+            list = (Array.isArray(val) ? val : Object.values(val)).filter(m => m && (m.src || m.caption));
             list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-            cachedMemories = list;
-            try {
-              localStorage.setItem('romantic_gift_user_memories', JSON.stringify(list));
-            } catch(e) {}
-            if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
           }
+          cachedMemories = list;
+          try {
+            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(list));
+          } catch(e) {}
+          if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
         } catch(err) {
           console.warn('Firebase memories listener error:', err);
         }
@@ -206,15 +209,16 @@
       db.ref('notes').on('value', snapshot => {
         try {
           const val = snapshot.val();
+          let list = [];
           if (val) {
-            const list = Array.isArray(val) ? val : Object.values(val);
+            list = (Array.isArray(val) ? val : Object.values(val)).filter(n => n && (n.text || n.mood));
             list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-            cachedNotes = list;
-            try {
-              localStorage.setItem('romantic_gift_user_notes', JSON.stringify(list));
-            } catch(e) {}
-            if (typeof renderDiaryNotes === 'function') renderDiaryNotes();
           }
+          cachedNotes = list;
+          try {
+            localStorage.setItem('romantic_gift_user_notes', JSON.stringify(list));
+          } catch(e) {}
+          if (typeof renderDiaryNotes === 'function') renderDiaryNotes();
         } catch(err) {
           console.warn('Firebase notes listener error:', err);
         }
@@ -237,7 +241,7 @@
         }
       });
 
-      // 5. Realtime Couple Config (Ngày kỷ niệm yêu nhau, tên, v.v.)
+      // 5. Realtime Couple Config (Ngày kỷ niệm yêu nhau, tên, v.v. - nhảy số Live Counter ngay)
       db.ref('config').on('value', snapshot => {
         try {
           const val = snapshot.val();
@@ -246,8 +250,9 @@
             try {
               localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
             } catch(e) {}
-            if (typeof updateLiveCounter === 'function') updateLiveCounter();
             if (typeof applyConfigToUI === 'function') applyConfigToUI();
+            if (typeof updateLiveCounter === 'function') updateLiveCounter();
+            if (typeof drawLuckyWheel === 'function') drawLuckyWheel();
           }
         } catch(err) {
           console.warn('Firebase config listener error:', err);
@@ -403,11 +408,26 @@
       }
     }
 
+    async function fetchCloudConfig() {
+      const url = getCleanUrl();
+      if (!url) return null;
+      try {
+        const res = await fetch(url + '/config.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object' && (data.startDate || data.passcode)) {
+            return data;
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
     function setupRestPolling() {
       setInterval(async () => {
         try {
           const cloudLocket = await fetchCloudLocket();
-          if (cloudLocket && Array.isArray(cloudLocket) && cloudLocket.length > 0) {
+          if (cloudLocket && Array.isArray(cloudLocket)) {
             cloudLocket.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
             if (JSON.stringify(cloudLocket) !== JSON.stringify(cachedLocketItems)) {
               cachedLocketItems = cloudLocket;
@@ -415,14 +435,30 @@
             }
           }
           const cloudMem = await fetchCloudMemories();
-          if (cloudMem && Array.isArray(cloudMem) && cloudMem.length > 0) {
-            if (JSON.stringify(cloudMem) !== JSON.stringify(cachedMemories)) {
-              cachedMemories = cloudMem;
+          if (cloudMem && Array.isArray(cloudMem)) {
+            const filteredMem = cloudMem.filter(m => m && (m.src || m.caption));
+            filteredMem.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            if (JSON.stringify(filteredMem) !== JSON.stringify(cachedMemories)) {
+              cachedMemories = filteredMem;
+              try {
+                localStorage.setItem('romantic_gift_user_memories', JSON.stringify(filteredMem));
+              } catch(e) {}
               renderMemoriesGrid();
             }
           }
+          const cloudCfg = await fetchCloudConfig();
+          if (cloudCfg && cloudCfg.startDate) {
+            if (cloudCfg.startDate !== userConfig.startDate || cloudCfg.girlfriendName !== userConfig.girlfriendName) {
+              userConfig = Object.assign({}, userConfig, cloudCfg);
+              try {
+                localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
+              } catch(e) {}
+              applyConfigToUI();
+              updateLiveCounter();
+            }
+          }
         } catch(e) {}
-      }, 10000);
+      }, 5000);
     }
 
     return {
@@ -470,7 +506,7 @@
 
   // 1. Base cache from localStorage (nếu có)
   // --- VERSIONED CACHE RESET TO ENSURE 100% UNIFIED DATA ACROSS ALL DEVICES ---
-  const CURRENT_SYNC_VERSION = '20261018_master_sync_v15';
+  const CURRENT_SYNC_VERSION = '20261018_master_sync_v20';
   try {
     if (localStorage.getItem('romantic_gift_sync_ver') !== CURRENT_SYNC_VERSION) {
       localStorage.removeItem('romantic_gift_user_memories');
@@ -546,12 +582,22 @@
             localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
           } catch(e) {}
           if (typeof applyConfigToUI === 'function') applyConfigToUI();
+          if (typeof updateLiveCounter === 'function') updateLiveCounter();
           if (typeof drawLuckyWheel === 'function') drawLuckyWheel();
         } else if (typeof syncConfigToUI === 'function') {
           syncConfigToUI();
         }
       } else if (data.type === 'DATA_UPDATED') {
         const mod = data.payload && data.payload.module;
+        const deletedId = data.payload && data.payload.deletedId;
+        if (deletedId) {
+          cachedMemories = (cachedMemories || []).filter(m => m.id !== deletedId);
+          deleteMemoryFromIDB(deletedId);
+          try {
+            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(cachedMemories));
+          } catch(e) {}
+          if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
+        }
         if ((!mod || mod === 'notes') && typeof syncNotesToUI === 'function') syncNotesToUI();
         if ((!mod || mod === 'memories') && typeof syncMemoriesToUI === 'function') syncMemoriesToUI();
         if ((!mod || mod === 'bucket') && typeof fetchBucketList === 'function') fetchBucketList();
@@ -3852,11 +3898,7 @@
       }
     });
 
-    // Bước 3: Đảm bảo 12 ảnh kỷ niệm mặc định luôn có mặt đầy đủ
-    DEFAULT_MEMORIES.forEach(dm => {
-      if (!memoryMap.has(dm.id)) memoryMap.set(dm.id, dm);
-    });
-
+    // Bước 3: Sắp xếp danh sách ảnh hoàn chỉnh (ảnh mới tải lên đưa lên đầu)
     const merged = Array.from(memoryMap.values());
     // Sort: user-uploaded photos (newer createdAt/date) first, then default photos
     merged.sort((a, b) => {
@@ -4915,7 +4957,23 @@
       }
     } catch(e) {}
 
-    // 2. Fallback to data/db.json
+    // 2. Fallback to Firebase Cloud Realtime Database (24/7 serverless)
+    if (!newConfigData && typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+      try {
+        const fbUrl = FirebaseSync.getCleanUrl();
+        if (fbUrl) {
+          const res = await fetch(fbUrl + '/config.json?v=' + Date.now());
+          if (res.ok) {
+            const fbData = await res.json();
+            if (fbData && typeof fbData === 'object' && fbData.startDate) {
+              newConfigData = fbData;
+            }
+          }
+        }
+      } catch(e) {}
+    }
+
+    // 3. Fallback to data/db.json
     if (!newConfigData) {
       try {
         const res = await fetch('data/db.json?v=' + Date.now());
@@ -4928,7 +4986,7 @@
       } catch(e) {}
     }
 
-    // 3. Fallback to COUPLE_CONFIG or SEED_DATA.config
+    // 4. Fallback to COUPLE_CONFIG or SEED_DATA.config
     if (!newConfigData) {
       if (window.COUPLE_CONFIG && typeof window.COUPLE_CONFIG === 'object') {
         newConfigData = window.COUPLE_CONFIG;
@@ -4949,8 +5007,9 @@
       // Re-apply if ANY field changed
       if (prevConfigStr !== newConfigStr) {
         applyConfigToUI();
+        updateLiveCounter();
         if (typeof drawLuckyWheel === 'function') drawLuckyWheel();
-        console.log('🔄 Đã tự động cập nhật cấu hình mới từ Database!');
+        console.log('🔄 Đã tự động cập nhật cấu hình mới từ Database / Firebase Cloud!');
       }
     }
   }

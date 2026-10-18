@@ -209,6 +209,60 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 }
 
+// Chuẩn hóa link Firebase Realtime Database (hỗ trợ cả link Console và REST)
+function getCleanFirebaseUrl(customUrl = null) {
+  let url = customUrl;
+  if (!url) {
+    try {
+      const db = readDatabase();
+      url = (db.config && db.config.firebaseUrl) || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+    } catch(e) {
+      url = 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+    }
+  }
+  if (!url || typeof url !== 'string') return 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+  let clean = url.trim().replace(/\/+$/, '');
+  if (clean.includes('console.firebase.google.com')) {
+    const m = clean.match(/\/database\/([a-zA-Z0-9_\-]+)/);
+    if (m) clean = 'https://' + m[1] + '.firebaseio.com';
+  } else if (clean.includes('databaseURL')) {
+    const m = clean.match(/databaseURL\s*[:=]\s*["']([^"']+)["']/);
+    if (m) clean = m[1];
+  } else if (clean.startsWith('{')) {
+    try {
+      const p = JSON.parse(clean);
+      if (p.databaseURL) clean = p.databaseURL;
+    } catch(e) {}
+  }
+  clean = clean.trim().replace(/\/+$/, '');
+  if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+    clean = 'https://' + clean;
+  }
+  return clean || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+}
+
+// Đồng bộ trực tiếp dữ liệu chuẩn lên Firebase Cloud Realtime Database 24/7
+async function syncToFirebaseCloud(pathNode, data, customFbUrl = null) {
+  try {
+    const baseUrl = getCleanFirebaseUrl(customFbUrl);
+    if (!baseUrl) return false;
+    const cleanNode = pathNode.replace(/^\/+|\/+$/g, '');
+    const targetUrl = `${baseUrl}/${cleanNode}.json`;
+    const res = await fetch(targetUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      console.log(`[Firebase Cloud] ☁️ Đã đồng bộ thành công /${cleanNode} sang đám mây 24/7`);
+    }
+    return res.ok;
+  } catch (err) {
+    console.warn(`[Firebase Cloud] ⚠️ Lỗi khi đồng bộ sang /${pathNode}:`, err.message);
+    return false;
+  }
+}
+
 // Multer Storage Configuration for uploaded photos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -297,13 +351,14 @@ app.post('/api/notes', (req, res) => {
 
   db.notes.unshift(newNote);
   writeDatabase(db);
+  syncToFirebaseCloud('notes', db.notes);
 
   console.log(`[Database] 💌 Đã nhận lời nhắn mới từ bé: "${newNote.text.substring(0, 30)}..."`);
   res.status(201).json({ success: true, note: newNote });
 });
 
 // Đánh dấu đã đọc / Xóa lời nhắn
-app.delete('/api/notes/:id', (req, res) => {
+app.delete('/api/notes/:id', async (req, res) => {
   const noteId = req.params.id;
   const db = readDatabase();
   if (!db.notes) db.notes = [];
@@ -313,6 +368,7 @@ app.delete('/api/notes/:id', (req, res) => {
 
   if (db.notes.length !== initialLength) {
     writeDatabase(db);
+    await syncToFirebaseCloud('notes', db.notes);
     return res.json({ success: true, message: 'Đã xóa lời nhắn thành công' });
   } else {
     return res.status(404).json({ success: false, message: 'Không tìm thấy lời nhắn' });
@@ -387,18 +443,23 @@ app.post('/api/memories', upload.single('photo'), (req, res) => {
   db.memories.unshift(newMemory);
   writeDatabase(db);
 
+  // Tự động đồng bộ ngay lập tức sang Firebase Cloud 24/7
+  syncToFirebaseCloud('memories', db.memories);
+
   console.log(`[Database] 📸 Đã thêm ảnh kỷ niệm mới: "${newMemory.caption}" -> ${photoSrc}`);
   res.status(201).json({ success: true, memory: newMemory });
 });
 
 // Xóa ảnh kỷ niệm
-app.delete('/api/memories/:id', (req, res) => {
+app.delete('/api/memories/:id', async (req, res) => {
   const memId = req.params.id;
   const db = readDatabase();
   if (!db.memories) db.memories = [];
 
   const memIndex = db.memories.findIndex(m => m.id === memId);
   if (memIndex === -1) {
+    // Nếu trong DB không có nhưng vẫn gửi sync để dọn dẹp Firebase
+    await syncToFirebaseCloud('memories', db.memories);
     return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh kỷ niệm' });
   }
 
@@ -419,7 +480,11 @@ app.delete('/api/memories/:id', (req, res) => {
   db.memories.splice(memIndex, 1);
   writeDatabase(db);
 
-  res.json({ success: true, message: 'Đã xóa ảnh kỷ niệm thành công' });
+  // ĐỒNG BỘ TỨC THÌ LÊN FIREBASE CLOUD ĐỂ TRANG CHO BÉ CẬP NHẬT NGAY (XÓA VĨNH VIỄN)
+  await syncToFirebaseCloud('memories', db.memories);
+
+  console.log(`[Database] 🗑️ Đã xóa ảnh kỷ niệm "${memId}" và đồng bộ lên Firebase Cloud`);
+  res.json({ success: true, message: 'Đã xóa ảnh kỷ niệm thành công', remaining: db.memories.length });
 });
 
 // ==========================================================
@@ -434,7 +499,7 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-app.post('/api/config', (req, res) => {
+app.post('/api/config', async (req, res) => {
   const newConfig = req.body;
   if (!newConfig || typeof newConfig !== 'object') {
     return res.status(400).json({ success: false, message: 'Dữ liệu cấu hình không hợp lệ' });
@@ -453,27 +518,25 @@ app.post('/api/config', (req, res) => {
  * Tự động đồng bộ từ Database Server
  */
 
-window.COUPLE_CONFIG = ${JSON.stringify(newConfig, null, 2)};
+var COUPLE_CONFIG = ${JSON.stringify(newConfig, null, 2)};
+
+if (typeof window !== 'undefined') {
+  window.COUPLE_CONFIG = COUPLE_CONFIG;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = COUPLE_CONFIG;
+}
 `;
     fs.writeFileSync(path.join(__dirname, 'config.js'), configJsContent, 'utf8');
   } catch (err) {
     console.warn('Lỗi ghi file config.js:', err);
   }
 
-  // Sync to Firebase Cloud 24/7 if configured
-  if (newConfig.firebaseUrl) {
-    try {
-      const fbUrl = newConfig.firebaseUrl.trim().replace(/\/+$/, '');
-      fetch(fbUrl + '/config.json', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newConfig)
-      }).catch(() => {});
-    } catch(e) {}
-  }
+  // Sync to Firebase Cloud 24/7 with URL sanitization
+  await syncToFirebaseCloud('config', newConfig, newConfig.firebaseUrl);
 
   console.log('[Database] 💾 Đã lưu và đồng bộ cấu hình cặp đôi thành công!');
-  res.json({ success: true, message: 'Đã lưu cấu hình vào Database thành công', config: newConfig });
+  res.json({ success: true, message: 'Đã lưu cấu hình vào Database và Firebase Cloud thành công', config: newConfig });
 });
 
 // Xuất bản toàn bộ cấu hình, dữ liệu và ảnh lên GitHub Pages vĩnh viễn

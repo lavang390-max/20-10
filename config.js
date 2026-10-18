@@ -11,7 +11,7 @@ var COUPLE_CONFIG = {
   "adminPin": "0702",
   "girlfriendName": "bé mèo",
   "boyfriendName": "khúc gỗ",
-  "startDate": "2026-02-06T22:00:00.000Z",
+  "startDate": "2024-02-06T17:00:00.000Z",
   "wheelPrizes": [
     {
       "title": "1 Cái Ôm Thật Chặt",
