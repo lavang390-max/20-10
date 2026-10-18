@@ -1018,10 +1018,14 @@
   const btnReplayFlower = document.getElementById('btn-replay-flower');
   const flowerCanvas = document.getElementById('flower-particles-canvas');
 
-  // Preload avatar image
+  // Preload both avatar and hoaem bouquet images
   const avatarImg = new Image();
   avatarImg.src = 'images/avatar.jpg';
+  const hoaemImg = new Image();
+  hoaemImg.src = 'images/hoaem.jpg';
 
+  let currentGiftView = 'avatar'; // 'avatar' | 'flower'
+  let autoSwitchTimeout = null;
   let flowerStage = 'idle'; // 'idle' | 'initial_tap' | 'assembling' | 'assembled' | 'dismissed'
   let flowerAnimFrameId = null;
   let shardList = [];
@@ -1033,11 +1037,11 @@
   let flowerTapTimeout = null;
 
   // Build kinetic typography with dancing wavy characters
-  function initKineticTypography() {
+  function initKineticTypography(customWords) {
     const headline = document.getElementById('kinetic-flower-headline');
     if (!headline) return;
     headline.innerHTML = '';
-    const words = ['Chúc', 'Mừng', 'Bé', 'Ngày', '20/10', '💖'];
+    const words = customWords || ['Chúc', 'Mừng', 'Bé', 'Ngày', '20/10', '💖'];
     let globalCharIdx = 0;
 
     words.forEach(word => {
@@ -1059,6 +1063,55 @@
     });
   }
 
+  function switchGiftView(viewType, playSound = true) {
+    currentGiftView = viewType;
+
+    const btnViewAvatar = document.getElementById('btn-view-avatar');
+    const btnViewFlower = document.getElementById('btn-view-flower');
+    const giftCardAvatar = document.getElementById('gift-card-avatar');
+    const giftCardFlower = document.getElementById('gift-card-flower');
+    const avatarCompleteFrame = document.getElementById('avatar-complete-frame');
+    const flowerBadgeText = document.getElementById('flower-badge-text');
+    const flowerDynamicSubtext = document.getElementById('flower-dynamic-subtext');
+
+    if (btnViewAvatar) btnViewAvatar.classList.toggle('active', viewType === 'avatar');
+    if (btnViewFlower) btnViewFlower.classList.toggle('active', viewType === 'flower');
+
+    if (giftCardAvatar) giftCardAvatar.classList.toggle('active', viewType === 'avatar');
+    if (giftCardFlower) giftCardFlower.classList.toggle('active', viewType === 'flower');
+
+    if (avatarCompleteFrame) {
+      avatarCompleteFrame.classList.toggle('view-avatar', viewType === 'avatar');
+      avatarCompleteFrame.classList.toggle('view-flower', viewType === 'flower');
+    }
+
+    if (viewType === 'flower') {
+      if (flowerBadgeText) flowerBadgeText.textContent = '💐 BÓ HOA ĐỘC BẢN 20/10 💐';
+      initKineticTypography(['Bó', 'Hoa', 'Nụ', 'Cười', 'Của', 'Bé', '🌸']);
+      if (flowerDynamicSubtext) {
+        flowerDynamicSubtext.textContent = 'Bó hoa đặc biệt nhất vũ trụ được kết từ vạn khoảnh khắc đáng yêu của bé! Yêu bé nhất trần đời 🥰';
+      }
+      if (playSound) {
+        try {
+          sound.init();
+          sound.playAssemblySnapSound();
+        } catch(e) {}
+      }
+    } else {
+      if (flowerBadgeText) flowerBadgeText.textContent = 'CHÚC MỪNG PHỤ NỮ VIỆT NAM 20/10';
+      initKineticTypography(['Chúc', 'Mừng', 'Bé', 'Ngày', '20/10', '💖']);
+      if (flowerDynamicSubtext) {
+        flowerDynamicSubtext.textContent = 'Chúc bé của anh một ngày 20/10 luôn ngập tràn niềm vui, xinh đẹp và được yêu thương nhiều nhất! ❤️';
+      }
+      if (playSound) {
+        try {
+          sound.init();
+          sound.playKeyClick();
+        } catch(e) {}
+      }
+    }
+  }
+
   function playFlowerGiftCinematic() {
     if (!flowerGiftScreen) {
       appContainer.classList.remove('app-hidden');
@@ -1071,7 +1124,9 @@
     const bfNameEl = document.getElementById('flower-bf-name');
     if (bfNameEl) bfNameEl.textContent = bfName;
 
-    initKineticTypography();
+    // Reset to avatar view initially
+    clearTimeout(autoSwitchTimeout);
+    switchGiftView('avatar', false);
 
     // Reset visual states to Phase 1: Pure black screen with "Chạm vào màn hình để mở quà"
     flowerStage = 'initial_tap';
@@ -1362,6 +1417,14 @@
       flowerTapTimeout = setTimeout(() => {
         flowerGiftScreen.classList.add('ready-to-tap');
       }, 2800);
+
+      // Surprise reveal: Auto switch to flower bouquet after 4.5s
+      clearTimeout(autoSwitchTimeout);
+      autoSwitchTimeout = setTimeout(() => {
+        if (flowerStage === 'assembled' && currentGiftView === 'avatar') {
+          switchGiftView('flower', true);
+        }
+      }, 4500);
     }
 
     flowerAnimFrameId = requestAnimationFrame(renderShardAssembly);
@@ -1370,6 +1433,7 @@
   function dismissFlowerGift() {
     if (!flowerGiftScreen || !flowerGiftScreen.classList.contains('active')) return;
     flowerStage = 'dismissed';
+    clearTimeout(autoSwitchTimeout);
 
     // Smooth cinematic dissolve transition
     flowerGiftScreen.classList.remove('ready-to-tap');
@@ -1393,6 +1457,45 @@
     }, 750);
   }
 
+  // Switcher pills & interactive photo frame
+  const btnViewAvatar = document.getElementById('btn-view-avatar');
+  if (btnViewAvatar) {
+    btnViewAvatar.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearTimeout(autoSwitchTimeout);
+      switchGiftView('avatar', true);
+    });
+  }
+
+  const btnViewFlower = document.getElementById('btn-view-flower');
+  if (btnViewFlower) {
+    btnViewFlower.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearTimeout(autoSwitchTimeout);
+      switchGiftView('flower', true);
+    });
+  }
+
+  if (avatarCompleteFrame) {
+    avatarCompleteFrame.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearTimeout(autoSwitchTimeout);
+      const nextView = currentGiftView === 'avatar' ? 'flower' : 'avatar';
+      switchGiftView(nextView, true);
+    });
+  }
+
+  // Tap hint at bottom explicitly dismisses to main app
+  const flowerTapHint = document.getElementById('flower-tap-hint');
+  if (flowerTapHint) {
+    flowerTapHint.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (flowerStage === 'assembled') {
+        dismissFlowerGift();
+      }
+    });
+  }
+
   // Click & Tap Router
   if (flowerGiftScreen) {
     flowerGiftScreen.addEventListener('click', (e) => {
@@ -1405,7 +1508,11 @@
       if (flowerStage === 'assembling') {
         return;
       }
-      // 3. Once assembled: Tap anywhere to dismiss and enter the main app!
+      // 3. Once assembled: If clicked inside the stage container (switcher, photos, text), do NOT dismiss
+      if (e.target.closest('#flower-stage-container')) {
+        return;
+      }
+      // Tap outside the stage container to dismiss and enter the main app!
       if (flowerStage === 'assembled') {
         dismissFlowerGift();
       }

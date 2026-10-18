@@ -4764,38 +4764,129 @@ button {
   pointer-events: none;
 }
 
-/* KHUNG ẢNH AVATAR.JPG (TỶ LỆ 4:3 CHUẨN) */
+/* THANH CHUYỂN ĐỔI 2 MÓN QUÀ (ẢNH ĐÔI TA & BÓ HOA EM) */
+.gift-view-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  padding: 4px;
+  pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+  z-index: 10;
+}
+
+.flower-gift-screen.assembled .gift-view-switcher {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gift-switch-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.gift-switch-pill.active {
+  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 117, 140, 0.5);
+  transform: scale(1.02);
+}
+
+.pill-sparkle-dot {
+  font-size: 0.75rem;
+  animation: sparkleBounce 1.5s infinite;
+}
+
+@keyframes sparkleBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3) rotate(15deg); }
+}
+
+/* KHUNG ẢNH 2 LỚP (TỰ ĐỘNG CO GIÃN THEO ẢNH) */
 .flower-bouquet-frame.avatar-frame {
   position: relative;
   width: min(320px, 82vw);
   aspect-ratio: 4 / 3;
-  max-height: 42vh;
+  max-height: 40vh;
   border-radius: 22px;
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 45px rgba(255, 117, 140, 0.45), 0 0 25px rgba(255, 215, 0, 0.35);
   border: 2px solid rgba(255, 215, 0, 0.55);
   opacity: 0;
   transform: scale(0.92);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 1s ease;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), aspect-ratio 0.5s ease, width 0.5s ease, border-color 0.5s ease, box-shadow 0.6s ease;
   background-color: #12030d;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.flower-bouquet-frame.avatar-frame.view-flower {
+  aspect-ratio: 4 / 5;
+  width: min(280px, 76vw);
+  max-height: 42vh;
+  border-color: rgba(255, 117, 140, 0.7);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 55px rgba(255, 117, 140, 0.65), 0 0 35px rgba(255, 182, 193, 0.45);
 }
 
 .flower-gift-screen.assembled .flower-bouquet-frame.avatar-frame {
   opacity: 1;
   transform: scale(1);
-  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.95), 0 0 60px rgba(255, 117, 140, 0.65), 0 0 35px rgba(255, 215, 0, 0.45);
 }
 
-.avatar-img {
+.gift-photo-card {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.55s;
+  transform: scale(0.96);
+}
+
+.gift-photo-card.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.flower-bouquet-img {
+  width: 100%;
+  height: 100%;
   display: block;
+}
+
+/* ẢNH AVATAR ĐÔI TA */
+.avatar-img {
+  object-fit: cover;
   transform: scale(1.22);
   will-change: transform;
 }
 
-.flower-gift-screen.assembled .avatar-img {
+.flower-gift-screen.assembled .gift-photo-card.view-avatar.active .avatar-img {
   animation: avatarPanHorizontal 12s ease-in-out infinite alternate;
 }
 
@@ -4811,8 +4902,58 @@ button {
   }
 }
 
+/* BÓ HOA EM (HOAEM.JPG) - CHUYỂN ĐỘNG NỞ RỘ & BỒNG BỀNH */
+.hoaem-img {
+  object-fit: cover;
+  object-position: center 25%;
+  transform: scale(1.02);
+  will-change: transform;
+}
+
+.flower-gift-screen.assembled .gift-photo-card.view-flower.active .hoaem-img {
+  animation: hoaemBouquetFloat 5s ease-in-out infinite alternate;
+}
+
+@keyframes hoaemBouquetFloat {
+  0% {
+    transform: scale(1.02) translateY(0);
+  }
+  50% {
+    transform: scale(1.05) translateY(-5px) rotate(0.6deg);
+  }
+  100% {
+    transform: scale(1.02) translateY(0);
+  }
+}
+
+/* GHIM CHẠM ĐỔI ẢNH TRÊN KHUNG HÌNH */
+.frame-interactive-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  color: #fff;
+  font-weight: 500;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 5;
+}
+
+.flower-bouquet-frame.avatar-frame:hover .frame-interactive-badge {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
 /* VỆT SÁNG QUÉT QUA TẤM ẢNH KHI GHÉP XONG */
-.flower-photo-shine-sweep {
+.flower-photo-shine-sweep,
+.flower-special-shine-sweep {
   position: absolute;
   top: -60%;
   left: -80%;
@@ -4822,10 +4963,33 @@ button {
   transform: rotate(28deg);
   pointer-events: none;
   opacity: 0;
+  z-index: 4;
 }
 
-.flower-gift-screen.assembled .flower-photo-shine-sweep {
+.flower-special-shine-sweep {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 20%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 117, 140, 0.85) 70%, transparent 100%);
+}
+
+.flower-gift-screen.assembled .gift-photo-card.active .flower-photo-shine-sweep,
+.flower-gift-screen.assembled .gift-photo-card.active .flower-special-shine-sweep {
   animation: photoShineSweep 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards;
+}
+
+@keyframes photoShineSweep {
+  0% {
+    left: -80%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    left: 140%;
+    opacity: 0;
+  }
 }
 
 @keyframes photoShineSweep {
@@ -5069,8 +5233,22 @@ button {
     max-height: 34vh;
     border-radius: 18px;
   }
+  .flower-bouquet-frame.avatar-frame.view-flower {
+    aspect-ratio: 4 / 5;
+    width: min(230px, 70vw);
+    max-height: 35vh;
+  }
+  .gift-view-switcher {
+    margin-bottom: 6px;
+    gap: 4px;
+    padding: 3px;
+  }
+  .gift-switch-pill {
+    padding: 4px 10px;
+    font-size: 0.74rem;
+  }
   .flower-content-box {
-    margin-top: 8px;
+    margin-top: 6px;
     gap: 3px;
   }
   .kinetic-headline {

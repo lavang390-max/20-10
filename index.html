@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261018_master_sync_v18">
+  <link rel="stylesheet" href="style.css?v=20261018_master_sync_v19">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -144,20 +144,47 @@
       </div>
     </div>
 
-    <!-- 2 & 3. GIAI ĐOẠN 2 & 3: BỨC ẢNH HOÀN CHỈNH & DÒNG CHỮ CHÚC MỪNG HOẠT HỌA -->
+    <!-- 2 & 3. GIAI ĐOẠN 2 & 3: BỨC ẢNH HOÀN CHỈNH & BÓ HOA CỦA BÉ CÙNG DÒNG CHỮ CHÚC MỪNG -->
     <div class="flower-stage-container" id="flower-stage-container">
       
-      <!-- Khung ảnh hoàn chỉnh (hiện lên sau khi mảnh vỡ ghép xong) -->
-      <div class="flower-bouquet-frame avatar-frame" id="avatar-complete-frame">
-        <img src="images/avatar.jpg" alt="Khoảnh khắc tình yêu 20/10" class="flower-bouquet-img avatar-img" id="avatar-complete-img">
-        <div class="flower-photo-shine-sweep" id="photo-shine-sweep"></div>
+      <!-- Thanh chuyển đổi nhanh 2 món quà đặc biệt -->
+      <div class="gift-view-switcher" id="gift-view-switcher">
+        <button type="button" class="gift-switch-pill active" id="btn-view-avatar" data-view="avatar">
+          <span class="pill-icon">📸</span>
+          <span>Ảnh Đôi Ta</span>
+        </button>
+        <button type="button" class="gift-switch-pill" id="btn-view-flower" data-view="flower">
+          <span class="pill-icon">💐</span>
+          <span>Bó Hoa Của Bé</span>
+          <span class="pill-sparkle-dot">✨</span>
+        </button>
+      </div>
+
+      <!-- Khung ảnh 2 lớp (hỗ trợ chuyển đổi giữa ảnh kỷ niệm và bó hoa em) -->
+      <div class="flower-bouquet-frame avatar-frame view-avatar" id="avatar-complete-frame" title="Bấm để đổi ảnh">
+        <!-- View 1: Ảnh kỷ niệm đôi ta avatar.jpg -->
+        <div class="gift-photo-card view-avatar active" id="gift-card-avatar">
+          <img src="images/avatar.jpg" alt="Khoảnh khắc tình yêu 20/10" class="flower-bouquet-img avatar-img" id="avatar-complete-img">
+          <div class="flower-photo-shine-sweep" id="photo-shine-sweep"></div>
+        </div>
+
+        <!-- View 2: Bó hoa tình yêu hoaem.jpg (kết từ những nụ cười của bé) -->
+        <div class="gift-photo-card view-flower" id="gift-card-flower">
+          <img src="images/hoaem.jpg" alt="Bó hoa 20/10 tặng bé" class="flower-bouquet-img hoaem-img" id="hoaem-img">
+          <div class="flower-special-shine-sweep"></div>
+        </div>
+
+        <!-- Nút ghim chạm đổi ảnh nhanh trên khung ảnh -->
+        <div class="frame-interactive-badge" id="frame-interactive-badge">
+          <span>Chạm đổi ảnh 🔄</span>
+        </div>
       </div>
 
       <!-- Thẻ lời chúc 20/10 với chữ chuyển động hoạt họa liên tục -->
       <div class="flower-content-box" id="flower-content-box">
-        <div class="flower-pill-badge continuous-glow-badge">
+        <div class="flower-pill-badge continuous-glow-badge" id="flower-pill-badge">
           <span class="badge-icon">💐</span>
-          <span>CHÚC MỪNG PHỤ NỮ VIỆT NAM 20/10</span>
+          <span id="flower-badge-text">CHÚC MỪNG PHỤ NỮ VIỆT NAM 20/10</span>
           <span class="badge-icon">💐</span>
         </div>
 
@@ -165,7 +192,7 @@
           <!-- Populated dynamically with wavy jumping characters in JavaScript -->
         </h1>
 
-        <p class="flower-subtext continuous-subtext">
+        <p class="flower-subtext continuous-subtext" id="flower-dynamic-subtext">
           Chúc bé của anh một ngày 20/10 luôn ngập tràn niềm vui, xinh đẹp và được yêu thương nhiều nhất! ❤️
         </p>
 
@@ -1182,10 +1209,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- System Seed Data (Offline & Static fallback for notes, memories, etc.) -->
-  <script src="data/seed_data.js?v=20261018_master_sync_v18"></script>
+  <script src="data/seed_data.js?v=20261018_master_sync_v19"></script>
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261018_master_sync_v18"></script>
+  <script src="config.js?v=20261018_master_sync_v19"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261018_master_sync_v18"></script>
+  <script src="script.js?v=20261018_master_sync_v19"></script>
 </body>
 </html>

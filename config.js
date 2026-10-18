@@ -5,7 +5,7 @@
  * Tự động đồng bộ từ Database Server
  */
 
-window.COUPLE_CONFIG = {
+var COUPLE_CONFIG = {
   "passcode": "0702",
   "passcodeHint": "Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè!  ✨",
   "adminPin": "0702",
@@ -52,3 +52,10 @@ window.COUPLE_CONFIG = {
   "serverUrl": "",
   "firebaseConfig": null
 };
+
+if (typeof window !== 'undefined') {
+  window.COUPLE_CONFIG = COUPLE_CONFIG;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = COUPLE_CONFIG;
+}
