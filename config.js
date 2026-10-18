@@ -1,10 +1,17 @@
-var COUPLE_CONFIG = {
+/**
+ * ==========================================================
+ * CẤU HÌNH QUÀ TẶNG 20/10 - THÔNG TIN DÀNH CHO CẶP ĐÔI
+ * ==========================================================
+ * Tự động đồng bộ từ Database Server
+ */
+
+window.COUPLE_CONFIG = {
   "passcode": "0702",
   "passcodeHint": "Gợi ý: Ngày kỷ niệm tình yêu của tụi mình nè!  ✨",
   "adminPin": "0702",
   "girlfriendName": "bé mèo",
   "boyfriendName": "khúc gỗ",
-  "startDate": "2026-02-07T05:00:00.000Z",
+  "startDate": "2026-02-06T22:00:00.000Z",
   "wheelPrizes": [
     {
       "title": "1 Cái Ôm Thật Chặt",
@@ -39,12 +46,9 @@ var COUPLE_CONFIG = {
   ],
   "letterBody": "Hellu bé - bé iu của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh và luôn đồng hành với anh.\n\nAnh cũng mong anh sẽ là chỗ dựa của bé như cách bé vẫn luôn bên cạnh anh. Để khi bé mệt mỏi hay bé buồn, bé biết rằng vẫn sẽ có một người sẵn sàng lắng nghe và sẻ chia, nắm tay bé đi tiếp trên những chặng đường sắp tới.\n\nChúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui. Và anh sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày.\n\nTuy món quà này hơi đơn sơ nhưng đây là công sức anh tranh thủ lúc rảnh làm trong mấy ngày vừa qua, mong là bé sẽ đón nhận món quá này từ anh nhá.",
   "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
+  "firebaseUrl": "https://qua-tang-2010-default-rtdb.firebaseio.com",
   "girlfriendRealName": "bé mèo",
   "boyfriendRealName": "khúc gỗ",
   "serverUrl": "",
-  "firebaseUrl": "",
   "firebaseConfig": null
 };
-
-if (typeof window !== 'undefined') { window.COUPLE_CONFIG = COUPLE_CONFIG; }
-if (typeof module !== 'undefined' && module.exports) { module.exports = COUPLE_CONFIG; }

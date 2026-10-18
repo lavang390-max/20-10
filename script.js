@@ -114,6 +114,10 @@
                   localStorage.getItem('romantic_gift_firebase_url') || '';
       if (!url) return '';
       let clean = url.trim().replace(/\/+$/, '');
+      if (clean.includes('console.firebase.google.com')) {
+        const m = clean.match(/\/database\/([a-zA-Z0-9_\-]+)/);
+        if (m) clean = 'https://' + m[1] + '.firebaseio.com';
+      }
       if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
         clean = 'https://' + clean;
       }
