@@ -1694,18 +1694,20 @@
     }
     currentSlide = index;
 
-    // Switch active slide - explicit display & pointer-events to prevent ANY ghost overlap or blocked clicks
+    // Switch active slide - strictly enforce display, visibility & pointer-events to prevent ANY ghost overlap or blocked clicks
     allSections.forEach((section, idx) => {
       if (idx === index) {
         section.classList.add('active');
-        section.style.display = 'flex';
-        section.style.opacity = '1';
-        section.style.pointerEvents = 'auto';
+        section.style.setProperty('display', 'flex', 'important');
+        section.style.setProperty('opacity', '1', 'important');
+        section.style.setProperty('visibility', 'visible', 'important');
+        section.style.setProperty('pointer-events', 'auto', 'important');
       } else {
         section.classList.remove('active');
-        section.style.display = 'none';
-        section.style.opacity = '0';
-        section.style.pointerEvents = 'none';
+        section.style.setProperty('display', 'none', 'important');
+        section.style.setProperty('opacity', '0', 'important');
+        section.style.setProperty('visibility', 'hidden', 'important');
+        section.style.setProperty('pointer-events', 'none', 'important');
       }
     });
 
@@ -1730,7 +1732,11 @@
     // Special trigger on enter slide (protected with try-catch so failure in one never blocks navigation)
     try {
       if (index === 1) {
-        setTimeout(initScratchCard, 50);
+        requestAnimationFrame(() => {
+          initScratchCard();
+        });
+        setTimeout(initScratchCard, 60);
+        setTimeout(initScratchCard, 180);
       } else if (index === 2) {
         if (typeof stagePlaceholderHint !== 'undefined' && stagePlaceholderHint) {
           if (!polaroidsShelf || polaroidsShelf.children.length === 0) {
@@ -1834,6 +1840,11 @@
     btn.addEventListener('touchend', handleNav, { passive: false });
   });
 
+  // Explicitly initialize slide 0 on load to ensure slides 1-7 are cleanly hidden with no ghost overlaps
+  try {
+    goToSlide(0);
+  } catch(e) {}
+
   // Compatibility stubs for wheel prizes
   function getWheelPrizes() {
     return (userConfig.wheelPrizes && userConfig.wheelPrizes.length === 6)
@@ -1857,8 +1868,12 @@
     if (!scratchCanvas || isRevealed) return;
     scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
     const wrapper = scratchCanvas.parentElement;
-    const width = wrapper.clientWidth;
-    const height = wrapper.clientHeight;
+    const rect = wrapper ? wrapper.getBoundingClientRect() : null;
+    const width = Math.max(280, Math.round(rect ? rect.width : 0) || (wrapper ? wrapper.clientWidth : 0) || 360);
+    const height = Math.max(300, Math.round(rect ? rect.height : 0) || (wrapper ? wrapper.clientHeight : 0) || 380);
+
+    // Only draw new foil if canvas is not already scratched
+    if (strokeCount > 0) return;
 
     scratchCanvas.width = width;
     scratchCanvas.height = height;
@@ -1973,7 +1988,54 @@
   }
 
   if (scratchCanvas) {
-    // Mouse events
+    // 1. POINTER EVENTS (Modern unified interaction for Touch, Pen & Mouse)
+    scratchCanvas.addEventListener('pointerdown', (e) => {
+      sound.init();
+      isScratching = true;
+      try { scratchCanvas.setPointerCapture(e.pointerId); } catch(err){}
+      const coords = getScratchCoords(e);
+      scratchAt(coords.x, coords.y);
+    });
+
+    scratchCanvas.addEventListener('pointermove', (e) => {
+      if (isScratching) {
+        const coords = getScratchCoords(e);
+        scratchAt(coords.x, coords.y);
+      }
+    });
+
+    const endPointerScratch = (e) => {
+      isScratching = false;
+      try { scratchCanvas.releasePointerCapture(e.pointerId); } catch(err){}
+    };
+    scratchCanvas.addEventListener('pointerup', endPointerScratch);
+    scratchCanvas.addEventListener('pointercancel', endPointerScratch);
+
+    // 2. FALLBACK TOUCH EVENTS (With strict preventDefault to stop native mobile scroll interference)
+    scratchCanvas.addEventListener('touchstart', (e) => {
+      if (e.cancelable) e.preventDefault();
+      sound.init();
+      isScratching = true;
+      const coords = getScratchCoords(e);
+      scratchAt(coords.x, coords.y);
+    }, { passive: false });
+
+    scratchCanvas.addEventListener('touchmove', (e) => {
+      if (e.cancelable) e.preventDefault();
+      if (isScratching) {
+        const coords = getScratchCoords(e);
+        scratchAt(coords.x, coords.y);
+      }
+    }, { passive: false });
+
+    scratchCanvas.addEventListener('touchend', () => {
+      isScratching = false;
+    });
+    scratchCanvas.addEventListener('touchcancel', () => {
+      isScratching = false;
+    });
+
+    // 3. FALLBACK MOUSE EVENTS
     scratchCanvas.addEventListener('mousedown', (e) => {
       sound.init();
       isScratching = true;
@@ -1989,29 +2051,6 @@
     });
 
     window.addEventListener('mouseup', () => {
-      isScratching = false;
-    });
-
-    // Touch events for mobile
-    scratchCanvas.addEventListener('touchstart', (e) => {
-      sound.init();
-      isScratching = true;
-      const coords = getScratchCoords(e);
-      scratchAt(coords.x, coords.y);
-    }, { passive: false });
-
-    scratchCanvas.addEventListener('touchmove', (e) => {
-      if (isScratching) {
-        e.preventDefault();
-        const coords = getScratchCoords(e);
-        scratchAt(coords.x, coords.y);
-      }
-    }, { passive: false });
-
-    scratchCanvas.addEventListener('touchend', () => {
-      isScratching = false;
-    });
-    scratchCanvas.addEventListener('touchcancel', () => {
       isScratching = false;
     });
   }
@@ -2127,36 +2166,34 @@
       <p class="polaroid-date">${safeDate}</p>
     `;
 
-    // Make polaroid draggable
-    makeDraggable(card);
-
-    // Click to bring to top
-    card.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      highestZ++;
-      card.style.zIndex = highestZ;
-    });
+    // Make polaroid draggable and clickable to view in lightbox
+    makeDraggable(card, data);
 
     polaroidsShelf.appendChild(card);
   }
 
-  function makeDraggable(element) {
+  function makeDraggable(element, data) {
     let isDragging = false;
-    let startX, startY, initLeft, initTop;
+    let startX = 0, startY = 0, initLeft = 0, initTop = 0;
+    let dragDist = 0;
 
     element.addEventListener('pointerdown', (e) => {
       isDragging = true;
+      dragDist = 0;
       startX = e.clientX;
       startY = e.clientY;
       initLeft = parseFloat(element.style.left) || 0;
       initTop = parseFloat(element.style.top) || 0;
-      element.setPointerCapture(e.pointerId);
+      highestZ++;
+      element.style.zIndex = highestZ;
+      try { element.setPointerCapture(e.pointerId); } catch(err){}
     });
 
     element.addEventListener('pointermove', (e) => {
       if (!isDragging) return;
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
+      dragDist = Math.hypot(dx, dy);
       element.style.left = (initLeft + dx) + 'px';
       element.style.top = (initTop + dy) + 'px';
     });
@@ -2168,6 +2205,21 @@
     };
     element.addEventListener('pointerup', endDrag);
     element.addEventListener('pointercancel', endDrag);
+
+    // Click to view full image in Lightbox (when not dragging)
+    element.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (dragDist > 6) return;
+      sound.init();
+      sound.playKeyClick();
+      if (typeof openLightbox === 'function' && data) {
+        openLightbox({
+          src: data.src,
+          caption: data.caption,
+          date: data.date
+        });
+      }
+    });
   }
 
   if (polaroidStage) {

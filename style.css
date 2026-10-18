@@ -596,24 +596,33 @@ button {
   padding-top: 80px;
   padding-bottom: max(115px, calc(95px + env(safe-area-inset-bottom, 0px)));
   display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
   min-height: 100vh;
 }
 
 .slide-section {
   width: 100%;
-  display: none;
-  opacity: 0;
-  transform: translateY(20px) scale(0.98);
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(16px) scale(0.98);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 16px;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .slide-section.active {
-  display: flex;
-  opacity: 1;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
   transform: translateY(0) scale(1);
+  z-index: 5;
 }
 
 .slide-content {
@@ -1487,13 +1496,17 @@ button {
   padding: 10px 10px 16px 10px;
   border-radius: 4px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.3);
-  cursor: grab;
+  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
   transform-origin: center center;
   transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
   animation: polaroidDrop 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.polaroid-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 117, 140, 0.4);
 }
 
 .polaroid-card:active {
