@@ -1165,6 +1165,19 @@
       return;
     }
 
+    flowerGiftScreen.style.removeProperty('display');
+    flowerGiftScreen.style.removeProperty('visibility');
+    flowerGiftScreen.style.removeProperty('pointer-events');
+    flowerGiftScreen.style.removeProperty('opacity');
+    flowerGiftScreen.style.removeProperty('z-index');
+
+    const allGiftCards = flowerGiftScreen.querySelectorAll('.gift-photo-card, .flower-bouquet-frame, .flower-stage-container, img');
+    allGiftCards.forEach(el => {
+      el.style.removeProperty('display');
+      el.style.removeProperty('visibility');
+      el.style.removeProperty('opacity');
+    });
+
     // Populate customized boyfriend name
     const bfName = (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ';
     const bfNameEl = document.getElementById('flower-bf-name');
@@ -1477,9 +1490,16 @@
   }
 
   function dismissFlowerGift() {
-    if (!flowerGiftScreen || !flowerGiftScreen.classList.contains('active')) return;
+    if (!flowerGiftScreen) return;
     flowerStage = 'dismissed';
     clearTimeout(autoSwitchTimeout);
+    clearTimeout(flowerTapTimeout);
+
+    // Cancel animation frame and stop render loop immediately
+    if (flowerAnimFrameId) {
+      cancelAnimationFrame(flowerAnimFrameId);
+      flowerAnimFrameId = null;
+    }
 
     // Smooth cinematic dissolve transition
     flowerGiftScreen.classList.remove('ready-to-tap');
@@ -1494,13 +1514,26 @@
     setTimeout(() => {
       flowerGiftScreen.classList.remove('active', 'state-initial-tap', 'assembling', 'assembled', 'dissolve-out');
       flowerGiftScreen.setAttribute('aria-hidden', 'true');
+      flowerGiftScreen.style.setProperty('display', 'none', 'important');
+      flowerGiftScreen.style.setProperty('visibility', 'hidden', 'important');
+      flowerGiftScreen.style.setProperty('pointer-events', 'none', 'important');
+      flowerGiftScreen.style.setProperty('opacity', '0', 'important');
+      flowerGiftScreen.style.setProperty('z-index', '-9999', 'important');
       flowerStage = 'idle';
-      if (flowerAnimFrameId) cancelAnimationFrame(flowerAnimFrameId);
+
       if (flowerCanvas) {
         const ctx = flowerCanvas.getContext('2d');
         if (ctx) ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
       }
-    }, 750);
+
+      // Hide all child cards inside flower-gift-screen so they can never leak or float
+      const allGiftCards = flowerGiftScreen.querySelectorAll('.gift-photo-card, .flower-bouquet-frame, .flower-stage-container, img');
+      allGiftCards.forEach(el => {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+      });
+    }, 450);
   }
 
   // Switcher pills & interactive photo frame

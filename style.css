@@ -4586,18 +4586,18 @@ button {
   width: 100dvw;
   height: 100vh;
   height: 100dvh;
-  z-index: 99998;
+  z-index: -9999 !important;
   background-color: #000000;
   background-image: radial-gradient(circle at 50% 36%, #1a0614 0%, #0d020a 55%, #000000 100%);
   overflow: hidden;
-  display: flex;
+  display: none !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: max(16px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom)) 16px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
   transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.7s ease, background 1.2s ease;
   user-select: none;
   -webkit-user-select: none;
@@ -4605,17 +4605,35 @@ button {
 }
 
 .flower-gift-screen.active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 99998 !important;
 }
 
 .flower-gift-screen.dissolve-out {
-  opacity: 0;
+  opacity: 0 !important;
   transform: scale(1.08);
   filter: blur(16px);
   transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), filter 0.75s ease;
-  pointer-events: none;
+  pointer-events: none !important;
+}
+
+/* KHI MÀN HÌNH MỞ QUÀ ĐÃ ĐÓNG: TRIỆT TIÊU TOÀN BỘ ẢNH, CANVAS VÀ PHẦN TỬ CON ĐỂ KHÔNG BAO GIỜ BỊ ĐÈ */
+.flower-gift-screen:not(.active) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}
+
+.flower-gift-screen:not(.active) * {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* GIAI ĐOẠN 1: MÀN HÌNH ĐEN CHẠM VÀO MÀN HÌNH ĐỂ MỞ QUÀ */
