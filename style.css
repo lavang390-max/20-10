@@ -125,7 +125,7 @@ button {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  z-index: 99999;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -287,6 +287,14 @@ button {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
   transition: background 0.15s ease, transform 0.1s ease;
   user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key-btn * {
+  pointer-events: none;
 }
 
 .key-btn:active {

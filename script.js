@@ -893,8 +893,11 @@
   }
 
   function handleKeypadPress(key) {
-    sound.init();
-    sound.playKeyClick();
+    try {
+      sound.init();
+      sound.playKeyClick();
+    } catch(e) {}
+
     if (enteredPasscode.length < 4) {
       enteredPasscode += key;
       updatePasscodeDots();
@@ -905,8 +908,11 @@
   }
 
   function handleDeletePasscode() {
-    sound.init();
-    sound.playKeyClick();
+    try {
+      sound.init();
+      sound.playKeyClick();
+    } catch(e) {}
+
     if (enteredPasscode.length > 0) {
       enteredPasscode = enteredPasscode.slice(0, -1);
       updatePasscodeDots();
@@ -918,7 +924,9 @@
     const expected = userConfig.passcode || '2010';
     if (enteredPasscode === expected) {
       // SUCCESS!
-      sound.playUnlockSound();
+      try {
+        sound.playUnlockSound();
+      } catch(e) {}
       lockIconWrap.classList.add('unlocked-anim');
       passcodeErrorMsg.style.color = '#55efc4';
       passcodeErrorMsg.textContent = 'Mật mã chính xác! Đang mở quà... 💖';
@@ -927,17 +935,23 @@
         lockScreen.classList.add('unlocked');
         
         // Start background music
-        playBackgroundAudio();
+        try {
+          playBackgroundAudio();
+        } catch(e) {}
         
         // Open Fullscreen Cinematic Flower Gift presentation
-        playFlowerGiftCinematic();
+        try {
+          playFlowerGiftCinematic();
+        } catch(e) {}
       }, 700);
 
     } else {
       // ERROR - VIBRATE & SHAKE
-      if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]);
-      }
+      try {
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
+      } catch(e) {}
       passcodeDots.classList.add('shake-error');
       passcodeErrorMsg.style.color = '#ff7675';
       passcodeErrorMsg.textContent = 'Mật khẩu sai rồi nha đồ ngốc! Thử lại đi nè 🥺';
@@ -950,30 +964,55 @@
     }
   }
 
-  // Keypad button listeners
+  // Keypad button listeners with instant touch & click responsiveness
   const keyButtons = document.querySelectorAll('.key-btn[data-key]');
   keyButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    let lastTime = 0;
+    const onKeyTrigger = (e) => {
+      const now = Date.now();
+      if (now - lastTime < 180) return;
+      lastTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
       const key = btn.getAttribute('data-key');
-      handleKeypadPress(key);
-    });
+      if (key) handleKeypadPress(key);
+    };
+    btn.addEventListener('click', onKeyTrigger);
+    btn.addEventListener('touchend', onKeyTrigger, { passive: false });
   });
 
   const btnDelete = document.getElementById('btn-delete');
   if (btnDelete) {
-    btnDelete.addEventListener('click', handleDeletePasscode);
+    let lastDelTime = 0;
+    const onDelTrigger = (e) => {
+      const now = Date.now();
+      if (now - lastDelTime < 180) return;
+      lastDelTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+      handleDeletePasscode();
+    };
+    btnDelete.addEventListener('click', onDelTrigger);
+    btnDelete.addEventListener('touchend', onDelTrigger, { passive: false });
   }
 
   const btnHint = document.getElementById('btn-hint');
   if (btnHint) {
-    btnHint.addEventListener('click', () => {
-      sound.init();
-      sound.playKeyClick();
+    let lastHintTime = 0;
+    const onHintTrigger = (e) => {
+      const now = Date.now();
+      if (now - lastHintTime < 250) return;
+      lastHintTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+      try {
+        sound.init();
+        sound.playKeyClick();
+      } catch(e) {}
       hintBubble.classList.toggle('show');
       setTimeout(() => {
         hintBubble.classList.remove('show');
       }, 4000);
-    });
+    };
+    btnHint.addEventListener('click', onHintTrigger);
+    btnHint.addEventListener('touchend', onHintTrigger, { passive: false });
   }
 
   // Keyboard support for passcode
@@ -2078,7 +2117,7 @@
   let isRecordingVideo = false;
   let recordingInterval = null;
   let capturedMediaData = null; // { type: 'photo' | 'video', base64: '...', rawBase64: '...' }
-  let cachedLocketItems = (function() {
+  cachedLocketItems = (function() {
     try {
       const raw = localStorage.getItem('romantic_gift_locket_feed');
       if (raw) {
@@ -3611,7 +3650,9 @@
     { id: 'mem-12', src: 'images/photo12.jpg', caption: 'Chúc mừng 20/10 người anh yêu nhất trần đời 💐', date: '20.10.2026 ❤️' }
   ];
 
-  let cachedMemories = [];
+  if (!Array.isArray(cachedMemories) || cachedMemories.length === 0) {
+    cachedMemories = [];
+  }
 
   // --- INDEXEDDB STORAGE FOR UNLIMITED LOCAL MEMORIES STORAGE ---
   const MEMORIES_IDB_NAME = 'LoveGiftMemoriesDB';
@@ -4173,7 +4214,7 @@
   const btnSubmitNewBucket = document.getElementById('btn-submit-new-bucket');
 
   let activeBucketFilter = 'all';
-  let cachedBucketList = (function() {
+  cachedBucketList = (function() {
     try {
       const raw = localStorage.getItem('romantic_gift_bucket_list') || localStorage.getItem('romantic_gift_user_bucket');
       if (raw) {
