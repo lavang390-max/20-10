@@ -1304,6 +1304,51 @@
         </div>
       </div>
 
+      <!-- CARD 9: ĐỒNG BỘ ĐA THIẾT BỊ 24/7 KHÔNG CẦN MÁY TÍNH (FIREBASE REALTIME CLOUD) -->
+      <div class="admin-card" style="border: 2px solid #55efc4; background: linear-gradient(135deg, rgba(16, 38, 50, 0.95), rgba(12, 22, 32, 0.98)); box-shadow: 0 15px 40px rgba(85, 239, 196, 0.22);">
+        <div class="admin-card-head">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="admin-card-icon">🔥</span>
+            <div>
+              <h2>9. Đồng Bộ Đám Mây 24/7 Không Cần Bật Máy Tính (Firebase Realtime)</h2>
+              <p style="font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 2px;">Cả 2 điện thoại tự động đồng bộ ảnh chụp, ảnh kỷ niệm, lời nhắn tức thì qua đám mây Google</p>
+            </div>
+          </div>
+          <span class="admin-badge" id="firebase-status-badge" style="background: rgba(85, 239, 196, 0.15); border-color: #55efc4; color: #55efc4;">
+            🟢 Trực Tuyến 24/7
+          </span>
+        </div>
+
+        <p style="font-size: 0.88rem; color: #f1f2f6; margin-bottom: 16px; line-height: 1.6;">
+          Khi kết nối <b>Firebase Realtime Database</b> (miễn phí 100% từ Google), <b>máy tính của anh tắt hoàn toàn</b> thì 2 chiếc điện thoại mở từ xa bằng 4G vẫn hoạt động đồng bộ 100%: bé chụp ảnh từ máy ảnh hoặc viết tâm sự thì điện thoại anh sẽ nhận được ngay lập tức!
+        </p>
+
+        <div class="admin-field">
+          <label for="admin-firebase-url">
+            Firebase Database URL (hoặc JSON Cấu Hình):
+            <span style="font-weight: 400; color: #55efc4; font-size: 0.8rem; margin-left: 8px;">
+              (Ví dụ: https://qua-tang-2010-default-rtdb.asia-southeast1.firebasedatabase.app/)
+            </span>
+          </label>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="admin-firebase-url" class="admin-input" placeholder="Dán link Database URL https://...firebaseio.com/ vào đây..." style="flex: 1; min-width: 260px;">
+            <button type="button" class="btn-admin btn-admin-success" id="btn-test-firebase" style="padding: 10px 18px; white-space: nowrap; background: linear-gradient(135deg, #00b894, #00cec9); border: none; font-weight: 700; color: #fff;">
+              ⚡ Kiểm Tra & Đồng Bộ Ngay
+            </button>
+          </div>
+          <div id="firebase-status-msg" style="font-size: 0.84rem; margin-top: 8px; min-height: 20px; font-weight: 600;"></div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(85, 239, 196, 0.3); border-radius: 14px; padding: 16px 20px; font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 1.7;">
+          <b style="color: #55efc4; font-size: 0.95rem;">📖 Hướng dẫn lấy link Firebase miễn phí trong 1 phút:</b><br>
+          1. Vào trang: <a href="https://console.firebase.google.com/" target="_blank" style="color: #ff9bbb; font-weight: 700; text-decoration: underline;">console.firebase.google.com</a> và đăng nhập bằng tài khoản Google.<br>
+          2. Bấm <b>"Add project" (Tạo dự án)</b> ➔ Đặt tên bất kỳ (ví dụ: <code>qua-tang-2010</code>) ➔ Bấm Tiếp tục.<br>
+          3. Ở cột bên trái, bấm <b>Build ➔ Realtime Database</b> ➔ Bấm nút <b>"Create Database"</b>.<br>
+          4. Chọn vị trí (ví dụ <b>Singapore <code>asia-southeast1</code></b> hoặc United States) ➔ Chọn <b>"Start in test mode"</b> (Chế độ thử nghiệm) ➔ Bấm <b>Enable</b>.<br>
+          5. Sao chép đường link URL xuất hiện ở đầu trang (dạng <code>https://...firebasedatabase.app/</code>) rồi dán vào ô bên trên, bấm <b>"⚡ Kiểm Tra & Đồng Bộ Ngay"</b> ➔ Bấm <b>"🚀 Đẩy Web"</b> là xong hoàn tất!
+        </div>
+      </div>
+
     </form>
   </div>
 
@@ -1328,6 +1373,10 @@
     <span id="toast-icon">💖</span>
     <span id="toast-text">Đã thực hiện thành công!</span>
   </div>
+
+  <!-- Firebase Cloud Realtime Sync SDK (24/7 Serverless Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- LOAD CONFIG FILE AND SEED DATA IF EXISTS -->
   <script src="data/seed_data.js?v=20261018_master_sync_v15"></script>
@@ -1382,7 +1431,8 @@
           { title: 'Một Điều Ước Vô Điều Kiện', note: 'Bất cứ điều gì bé sai bảo hôm nay, anh đều ngoan ngoãn nghe lời!', color: '#9d4edd' }
         ],
         letterBody: `Hellu bé - bé iu của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh và luôn đồng hành với anh.\n\nAnh cũng mong anh sẽ là chỗ dựa của bé như cách bé vẫn luôn bên cạnh anh. Để khi bé mệt mỏi hay bé buồn, bé biết rằng vẫn sẽ có một người sẵn sàng lắng nghe và sẻ chia, nắm tay bé đi tiếp trên những chặng đường sắp tới.\n\nChúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui. Và anh sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày.\n\nTuy món quà này hơi đơn sơ nhưng đây là công sức anh tranh thủ lúc rảnh làm trong mấy ngày vừa qua, mong là bé sẽ đón nhận món quá này từ anh nhá.`,
-        imgbbApiKey: ''
+        imgbbApiKey: '',
+        firebaseUrl: ''
       };
 
       // Current active admin configuration
@@ -1490,6 +1540,10 @@
       const inputImgbbKey = document.getElementById('admin-imgbb-key');
       const btnTestImgbb = document.getElementById('btn-test-imgbb');
       const imgbbStatusMsg = document.getElementById('imgbb-status-msg');
+      const inputFirebaseUrl = document.getElementById('admin-firebase-url');
+      const btnTestFirebase = document.getElementById('btn-test-firebase');
+      const firebaseStatusMsg = document.getElementById('firebase-status-msg');
+      const firebaseStatusBadge = document.getElementById('firebase-status-badge');
 
       // Toast utility
       const toastEl = document.getElementById('admin-toast');
@@ -1637,6 +1691,12 @@
         if (inputBfName) inputBfName.value = currentConfig.boyfriendName || 'khúc gỗ';
         if (inputLetterBody) inputLetterBody.value = currentConfig.letterBody || DEFAULT_CONFIG.letterBody;
         if (inputImgbbKey) inputImgbbKey.value = currentConfig.imgbbApiKey || '';
+        if (inputFirebaseUrl) inputFirebaseUrl.value = currentConfig.firebaseUrl || '';
+        if (currentConfig.firebaseUrl && firebaseStatusBadge) {
+          firebaseStatusBadge.textContent = '🟢 Đã Kết Nối 24/7';
+          firebaseStatusBadge.style.color = '#55efc4';
+          firebaseStatusBadge.style.borderColor = '#55efc4';
+        }
 
         if (inputStartDate && currentConfig.startDate) {
           try {
@@ -1750,6 +1810,7 @@
         currentConfig.boyfriendRealName = currentConfig.boyfriendName;
         currentConfig.letterBody = (inputLetterBody.value || DEFAULT_CONFIG.letterBody).trim();
         currentConfig.imgbbApiKey = (inputImgbbKey && inputImgbbKey.value.trim()) || '';
+        currentConfig.firebaseUrl = (inputFirebaseUrl && inputFirebaseUrl.value.trim()) || '';
 
         if (inputStartDate && inputStartDate.value) {
           currentConfig.startDate = new Date(inputStartDate.value).toISOString();
@@ -1836,7 +1897,7 @@
       }
 
       // Listen to inputs to auto-save and update link dynamically
-      const allInputs = [inputPasscode, inputPasscodeHint, inputAdminPin, inputGfName, inputBfName, inputStartDate, inputLetterBody, inputImgbbKey];
+      const allInputs = [inputPasscode, inputPasscodeHint, inputAdminPin, inputGfName, inputBfName, inputStartDate, inputLetterBody, inputImgbbKey, inputFirebaseUrl];
       allInputs.forEach(inp => {
         if (inp) {
           inp.addEventListener('input', triggerAutoSave);
@@ -2595,6 +2656,128 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             if (imgbbStatusMsg) {
               imgbbStatusMsg.textContent = '❌ Lỗi kết nối mạng đến ImgBB: ' + err.message;
               imgbbStatusMsg.style.color = '#ff7675';
+            }
+          }
+        });
+      }
+
+      // --- 8.2 TEST & CONNECT FIREBASE REALTIME CLOUD 24/7 ---
+      if (btnTestFirebase && inputFirebaseUrl) {
+        btnTestFirebase.addEventListener('click', async () => {
+          let rawVal = inputFirebaseUrl.value.trim();
+          if (!rawVal) {
+            alert('Vui lòng dán link Firebase Database URL trước khi kiểm tra!');
+            inputFirebaseUrl.focus();
+            return;
+          }
+
+          let cleanUrl = rawVal;
+          if (rawVal.includes('databaseURL')) {
+            const m = rawVal.match(/databaseURL\s*[:=]\s*["']([^"']+)["']/);
+            if (m) cleanUrl = m[1];
+          } else if (rawVal.startsWith('{')) {
+            try {
+              const parsed = JSON.parse(rawVal);
+              if (parsed.databaseURL) cleanUrl = parsed.databaseURL;
+            } catch(e) {}
+          }
+          cleanUrl = cleanUrl.trim().replace(/\/+$/, '');
+          if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+            cleanUrl = 'https://' + cleanUrl;
+          }
+          inputFirebaseUrl.value = cleanUrl;
+
+          if (firebaseStatusMsg) {
+            firebaseStatusMsg.textContent = '⏳ Đang kiểm tra kết nối đến Firebase Realtime Database...';
+            firebaseStatusMsg.style.color = '#f6c85f';
+          }
+
+          try {
+            const testUrl = cleanUrl + '/test_ping.json';
+            const res = await fetch(testUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ping: Date.now(), client: 'Admin_Laptop' })
+            });
+
+            if (res.ok) {
+              if (firebaseStatusMsg) {
+                firebaseStatusMsg.textContent = '✅ Kết nối Firebase thành công! Đang đồng bộ ảnh và dữ liệu lên Đám mây 24/7...';
+                firebaseStatusMsg.style.color = '#55efc4';
+              }
+              if (firebaseStatusBadge) {
+                firebaseStatusBadge.textContent = '🟢 Đã Kết Nối 24/7';
+                firebaseStatusBadge.style.color = '#55efc4';
+                firebaseStatusBadge.style.borderColor = '#55efc4';
+              }
+
+              // Auto-seed current database to Firebase if empty
+              try {
+                if (window.SEED_DATA) {
+                  const memCheck = await fetch(cleanUrl + '/memories.json?shallow=true').then(r => r.json()).catch(() => null);
+                  if (!memCheck && Array.isArray(window.SEED_DATA.memories)) {
+                    await fetch(cleanUrl + '/memories.json', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(window.SEED_DATA.memories)
+                    });
+                  }
+
+                  const locketCheck = await fetch(cleanUrl + '/locket.json?shallow=true').then(r => r.json()).catch(() => null);
+                  if (!locketCheck && Array.isArray(window.SEED_DATA.locket)) {
+                    await fetch(cleanUrl + '/locket.json', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(window.SEED_DATA.locket)
+                    });
+                  }
+
+                  const notesCheck = await fetch(cleanUrl + '/notes.json?shallow=true').then(r => r.json()).catch(() => null);
+                  if (!notesCheck && Array.isArray(window.SEED_DATA.notes)) {
+                    await fetch(cleanUrl + '/notes.json', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(window.SEED_DATA.notes)
+                    });
+                  }
+
+                  const bucketCheck = await fetch(cleanUrl + '/bucket.json?shallow=true').then(r => r.json()).catch(() => null);
+                  if (!bucketCheck && Array.isArray(window.SEED_DATA.bucketList)) {
+                    await fetch(cleanUrl + '/bucket.json', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(window.SEED_DATA.bucketList)
+                    });
+                  }
+                }
+              } catch(seedErr) {
+                console.warn('Firebase seeding notice:', seedErr);
+              }
+
+              localStorage.setItem('romantic_gift_firebase_url', cleanUrl);
+              await saveToLocalStorage();
+              updateGeneratedShareLink();
+
+              if (firebaseStatusMsg) {
+                firebaseStatusMsg.textContent = '🎉 ĐÃ HOÀN TẤT! Cả 2 điện thoại & laptop từ nay sẽ tự động đồng bộ 2 chiều 24/7 tức thì!';
+                firebaseStatusMsg.style.color = '#55efc4';
+              }
+              showToast('Đã kết nối và đồng bộ Firebase 24/7 thành công! 🔥✨', '✅');
+            } else {
+              const errTxt = await res.text().catch(() => '');
+              let hint = 'Vui lòng kiểm tra lại link Database URL.';
+              if (errTxt.includes('Permission denied')) {
+                hint = 'Lỗi quyền truy cập: Hãy vào tab Rules (Quy tắc) của Realtime Database và đặt ".read": true, ".write": true (Test mode).';
+              }
+              if (firebaseStatusMsg) {
+                firebaseStatusMsg.textContent = '❌ Không thể ghi vào Firebase: ' + hint;
+                firebaseStatusMsg.style.color = '#ff7675';
+              }
+            }
+          } catch(err) {
+            if (firebaseStatusMsg) {
+              firebaseStatusMsg.textContent = '❌ Lỗi kết nối mạng: ' + err.message + ' (Hãy đảm bảo link đúng định dạng https://...firebaseio.com hoặc .firebasedatabase.app)';
+              firebaseStatusMsg.style.color = '#ff7675';
             }
           }
         });

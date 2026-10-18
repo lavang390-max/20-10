@@ -29,7 +29,9 @@
     letterBody: `Hellu bé - bé iu của anh,\n\nNhân ngày Phụ Nữ Việt Nam 20/10, anh làm món quà nhỏ này dành riêng cho bé. Cảm ơn bé đã đến bên anh và luôn đồng hành với anh.\n\nAnh cũng mong anh sẽ là chỗ dựa của bé như cách bé vẫn luôn bên cạnh anh. Để khi bé mệt mỏi hay bé buồn, bé biết rằng vẫn sẽ có một người sẵn sàng lắng nghe và sẻ chia, nắm tay bé đi tiếp trên những chặng đường sắp tới.\n\nChúc bé của anh một ngày 20/10 thật hạnh phúc, luôn vui tươi, xinh đẹp và nhiều niềm vui. Và anh sẽ luôn ở bên cạnh, lắng nghe, chăm sóc và yêu thương bé nhiều hơn mỗi ngày.\n\nTuy món quà này hơi đơn sơ nhưng đây là công sức anh tranh thủ lúc rảnh làm trong mấy ngày vừa qua, mong là bé sẽ đón nhận món quá này từ anh nhá.`,
     imgbbApiKey: '',
     girlfriendRealName: 'bé mèo',
-    boyfriendRealName: 'khúc gỗ'
+    boyfriendRealName: 'khúc gỗ',
+    firebaseUrl: '',
+    firebaseConfig: null
   };
 
   // --- MULTI-DEVICE CLOUD SYNC ENGINE ---
@@ -96,6 +98,304 @@
     }
     return null;
   }
+
+  // ==========================================================
+  // 🔥 FIREBASE REALTIME CLOUD SYNC ENGINE (24/7 SERVERLESS)
+  // ==========================================================
+  const FirebaseSync = (function() {
+    let firebaseUrl = '';
+    let db = null;
+    let initialized = false;
+
+    function getCleanUrl() {
+      if (firebaseUrl) return firebaseUrl;
+      const url = (userConfig && userConfig.firebaseUrl) ||
+                  (window.COUPLE_CONFIG && window.COUPLE_CONFIG.firebaseUrl) ||
+                  localStorage.getItem('romantic_gift_firebase_url') || '';
+      if (!url) return '';
+      let clean = url.trim().replace(/\/+$/, '');
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
+      }
+      firebaseUrl = clean;
+      return firebaseUrl;
+    }
+
+    function isAvailable() {
+      return !!getCleanUrl();
+    }
+
+    function init() {
+      const url = getCleanUrl();
+      if (!url) return;
+
+      // 1. Try Firebase SDK if available globally
+      if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp({ databaseURL: url });
+          }
+          db = firebase.database();
+          initialized = true;
+          setupSdkListeners();
+          console.log('🔥 [Firebase Cloud] SDK Realtime active 24/7:', url);
+          return;
+        } catch(e) {
+          console.warn('Firebase SDK init notice, falling back to REST:', e);
+        }
+      }
+
+      // 2. Fallback: REST Polling engine
+      if (url) {
+        initialized = true;
+        console.log('🔥 [Firebase Cloud] REST Engine active 24/7:', url);
+        setupRestPolling();
+      }
+    }
+
+    function setupSdkListeners() {
+      if (!db) return;
+
+      // 1. Realtime Locket Moments (Máy Ảnh)
+      db.ref('locket').on('value', snapshot => {
+        const val = snapshot.val();
+        if (val) {
+          const list = Array.isArray(val) ? val : Object.values(val);
+          list.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+          cachedLocketItems = list.slice(0, 30);
+          try {
+            localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(cachedLocketItems));
+          } catch(e) {}
+          if (typeof renderLocketFeed === 'function') renderLocketFeed(cachedLocketItems);
+        }
+      });
+
+      // 2. Realtime Memories (Kho Kỷ Niệm)
+      db.ref('memories').on('value', snapshot => {
+        const val = snapshot.val();
+        if (val) {
+          const list = Array.isArray(val) ? val : Object.values(val);
+          list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          cachedMemories = list;
+          try {
+            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(list));
+          } catch(e) {}
+          if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
+        }
+      });
+
+      // 3. Realtime Notes (Nhật Ký Cảm Xúc)
+      db.ref('notes').on('value', snapshot => {
+        const val = snapshot.val();
+        if (val) {
+          const list = Array.isArray(val) ? val : Object.values(val);
+          list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          cachedNotes = list;
+          try {
+            localStorage.setItem('romantic_gift_user_notes', JSON.stringify(list));
+          } catch(e) {}
+          if (typeof renderNotesGrid === 'function') renderNotesGrid();
+        }
+      });
+
+      // 4. Realtime Bucket List
+      db.ref('bucket').on('value', snapshot => {
+        const val = snapshot.val();
+        if (val) {
+          const list = Array.isArray(val) ? val : Object.values(val);
+          cachedBucketList = list;
+          try {
+            localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(list));
+          } catch(e) {}
+          if (typeof renderBucketListUI === 'function') renderBucketListUI();
+        }
+      });
+    }
+
+    async function fetchCloudLocket() {
+      const url = getCleanUrl();
+      if (!url) return null;
+      try {
+        const res = await fetch(url + '/locket.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            const list = Array.isArray(data) ? data : Object.values(data);
+            return list;
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    async function pushLocket(moment) {
+      const url = getCleanUrl();
+      if (!url) return false;
+      if (db) {
+        try {
+          await db.ref('locket').push(moment);
+          return true;
+        } catch(e) {}
+      }
+      try {
+        const res = await fetch(url + '/locket.json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(moment)
+        });
+        return res.ok;
+      } catch(e) {
+        return false;
+      }
+    }
+
+    async function fetchCloudMemories() {
+      const url = getCleanUrl();
+      if (!url) return null;
+      try {
+        const res = await fetch(url + '/memories.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            const list = Array.isArray(data) ? data : Object.values(data);
+            return list;
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    async function pushMemory(memory) {
+      const url = getCleanUrl();
+      if (!url) return false;
+      if (db) {
+        try {
+          await db.ref('memories').push(memory);
+          return true;
+        } catch(e) {}
+      }
+      try {
+        const res = await fetch(url + '/memories.json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(memory)
+        });
+        return res.ok;
+      } catch(e) {
+        return false;
+      }
+    }
+
+    async function fetchCloudNotes() {
+      const url = getCleanUrl();
+      if (!url) return null;
+      try {
+        const res = await fetch(url + '/notes.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            const list = Array.isArray(data) ? data : Object.values(data);
+            return list;
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    async function pushNote(note) {
+      const url = getCleanUrl();
+      if (!url) return false;
+      if (db) {
+        try {
+          await db.ref('notes').push(note);
+          return true;
+        } catch(e) {}
+      }
+      try {
+        const res = await fetch(url + '/notes.json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(note)
+        });
+        return res.ok;
+      } catch(e) {
+        return false;
+      }
+    }
+
+    async function fetchCloudBucket() {
+      const url = getCleanUrl();
+      if (!url) return null;
+      try {
+        const res = await fetch(url + '/bucket.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            const list = Array.isArray(data) ? data : Object.values(data);
+            return list;
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    async function setCloudBucket(bucketList) {
+      const url = getCleanUrl();
+      if (!url) return false;
+      if (db) {
+        try {
+          await db.ref('bucket').set(bucketList);
+          return true;
+        } catch(e) {}
+      }
+      try {
+        const res = await fetch(url + '/bucket.json', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bucketList)
+        });
+        return res.ok;
+      } catch(e) {
+        return false;
+      }
+    }
+
+    function setupRestPolling() {
+      setInterval(async () => {
+        try {
+          const cloudLocket = await fetchCloudLocket();
+          if (cloudLocket && Array.isArray(cloudLocket) && cloudLocket.length > 0) {
+            cloudLocket.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+            if (JSON.stringify(cloudLocket) !== JSON.stringify(cachedLocketItems)) {
+              cachedLocketItems = cloudLocket;
+              renderLocketFeed(cachedLocketItems);
+            }
+          }
+          const cloudMem = await fetchCloudMemories();
+          if (cloudMem && Array.isArray(cloudMem) && cloudMem.length > 0) {
+            if (JSON.stringify(cloudMem) !== JSON.stringify(cachedMemories)) {
+              cachedMemories = cloudMem;
+              renderMemoriesGrid();
+            }
+          }
+        } catch(e) {}
+      }, 10000);
+    }
+
+    return {
+      init,
+      isAvailable,
+      getCleanUrl,
+      pushLocket,
+      fetchCloudLocket,
+      pushMemory,
+      fetchCloudMemories,
+      pushNote,
+      fetchCloudNotes,
+      setCloudBucket,
+      fetchCloudBucket
+    };
+  })();
 
   // Safe UTF-8 Base64 decoder for shared configuration from URL
   function decodeConfigFromUrl() {
@@ -2161,6 +2461,11 @@
 
       broadcastRealtime('BÉ_ACTION', { module: 'locket' });
 
+      // 4.1 Realtime Cloud Sync to Firebase (24/7 serverless)
+      if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+        FirebaseSync.pushLocket(newMoment);
+      }
+
       const targetDesc = recipientLabel ? `đến ${recipientLabel}` : 'thành công';
       updateCameraStatus('success', '✅ Gửi thành công!');
       showLocketToast(`Đã gửi khoảnh khắc ${targetDesc}! 💖📸`, '🎉');
@@ -2257,6 +2562,22 @@
         localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(cachedLocketItems));
       } catch(e) {}
       renderLocketFeed(cachedLocketItems);
+    }
+
+    // 2.1 Fetch from Firebase Cloud if available (24/7 Serverless)
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+      try {
+        const cloudItems = await FirebaseSync.fetchCloudLocket();
+        if (cloudItems && Array.isArray(cloudItems) && cloudItems.length > 0) {
+          cloudItems.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+          cachedLocketItems = cloudItems.slice(0, 30);
+          try {
+            localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(cachedLocketItems));
+          } catch(e) {}
+          renderLocketFeed(cachedLocketItems);
+          return;
+        }
+      } catch(e) {}
     }
 
     // 3. In background, fetch from server if backend is active
@@ -2416,6 +2737,16 @@
   // --- DATABASE API FOR NOTES ---
   async function fetchNotesFromDatabase() {
     let remoteNotes = null;
+
+    // 0. Fetch from Firebase Cloud if available (24/7 Serverless)
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+      try {
+        const cloudNotes = await FirebaseSync.fetchCloudNotes();
+        if (cloudNotes && Array.isArray(cloudNotes) && cloudNotes.length > 0) {
+          remoteNotes = cloudNotes;
+        }
+      } catch(e) {}
+    }
     try {
       const res = await fetch(getApiUrl('/api/notes?v=' + Date.now()));
       if (res.ok) {
@@ -2611,6 +2942,11 @@
       notes.unshift(savedNote);
       saveDiaryNotes(notes);
 
+      // Cloud Sync note to Firebase (24/7 serverless)
+      if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+        FirebaseSync.pushNote(savedNote);
+      }
+
       diaryTextarea.value = '';
       try {
         sound.playSuccessChime();
@@ -2747,6 +3083,16 @@
   // --- DATABASE API FOR MEMORIES ---
   async function fetchMemoriesFromDatabase() {
     let remoteMemories = [];
+
+    // 0. Fetch from Firebase Cloud if available (24/7 Serverless)
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+      try {
+        const cloudMem = await FirebaseSync.fetchCloudMemories();
+        if (cloudMem && Array.isArray(cloudMem) && cloudMem.length > 0) {
+          remoteMemories = cloudMem;
+        }
+      } catch(e) {}
+    }
 
     // 1. Fetch from live API
     try {
@@ -3117,6 +3463,11 @@
         memories.unshift(newMem);
         saveMemories(memories);
 
+        // Cloud sync memory to Firebase (24/7 serverless)
+        if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+          FirebaseSync.pushMemory(newMem);
+        }
+
         // Reset preview
         currentPendingImageData = null;
         currentSelectedMemoryFile = null;
@@ -3267,6 +3618,19 @@
       renderBucketList();
     }
 
+    // 1.1 Fetch from Firebase Cloud if available (24/7 Serverless)
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+      try {
+        const cloudBucket = await FirebaseSync.fetchCloudBucket();
+        if (cloudBucket && Array.isArray(cloudBucket) && cloudBucket.length > 0) {
+          cachedBucketList = cloudBucket;
+          localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(cloudBucket));
+          renderBucketList();
+          return;
+        }
+      } catch(e) {}
+    }
+
     // 2. Fetch from /api/bucket (local server)
     try {
       const res = await fetch(getApiUrl('/api/bucket?v=' + Date.now()));
@@ -3396,6 +3760,9 @@
     }
 
     localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(cachedBucketList));
+    if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+      FirebaseSync.setCloudBucket(cachedBucketList);
+    }
     renderBucketList();
 
     // Sync to backend database
@@ -3457,6 +3824,9 @@
 
       cachedBucketList.unshift(newWish);
       localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(cachedBucketList));
+      if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isAvailable()) {
+        FirebaseSync.setCloudBucket(cachedBucketList);
+      }
 
       // Reset form
       inputBucketTitle.value = '';
@@ -3879,6 +4249,11 @@
     syncMemoriesToUI();
     fetchBucketList();
     loadLocketFeed();
+  }
+
+  // Initialize Firebase Realtime Cloud Sync (24/7 Serverless)
+  if (typeof FirebaseSync !== 'undefined') {
+    FirebaseSync.init();
   }
 
   // Initial Sync with Database Server

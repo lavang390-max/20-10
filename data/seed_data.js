@@ -42,7 +42,9 @@ var SEED_DATA = {
     "imgbbApiKey": "c37810727a003ec9fc6a3b7ca28cd3b1",
     "girlfriendRealName": "bé mèo",
     "boyfriendRealName": "khúc gỗ",
-    "serverUrl": ""
+    "serverUrl": "",
+    "firebaseUrl": "",
+    "firebaseConfig": null
   },
   "notes": [
     {
