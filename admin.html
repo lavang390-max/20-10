@@ -1831,6 +1831,7 @@
 
       // Eagerly sync server config right away on page load
       syncServerConfigToAdmin(false);
+      if (typeof AdminFirebaseSync !== 'undefined') AdminFirebaseSync.init();
 
       function initAdminForm() {
         populateAdminFormFields(false);
@@ -1840,6 +1841,7 @@
         loadAdminMemories();
         loadAdminBucket();
         loadAdminLocket();
+        if (typeof AdminFirebaseSync !== 'undefined') AdminFirebaseSync.init();
       }
 
       // Update days preview
@@ -2158,43 +2160,12 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         }[tag] || tag));
       }
 
-      // --- 5. LIVE NOTES INBOX FROM DATABASE ---
-      async function loadAdminNotes() {
+      // --- 5. LIVE NOTES INBOX FROM DATABASE & FIREBASE REALTIME ---
+      function renderAdminNotesList(notes) {
         const listEl = document.getElementById('admin-notes-list');
         const badgeEl = document.getElementById('admin-notes-count-badge');
         if (!listEl) return;
-
-        let notes = [];
-        try {
-          const res = await fetch(getApiUrl('/api/notes?v=' + Date.now()));
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && Array.isArray(data.notes) && data.notes.length > 0) {
-              notes = data.notes;
-            }
-          }
-        } catch(e) {}
-
-        if (notes.length === 0) {
-          try {
-            const res = await fetch('data/db.json?v=' + Date.now());
-            if (res.ok) {
-              const db = await res.json();
-              if (db && Array.isArray(db.notes) && db.notes.length > 0) notes = db.notes;
-            }
-          } catch(e) {}
-        }
-
-        if (notes.length === 0) {
-          try {
-            const raw = localStorage.getItem('romantic_gift_user_notes');
-            if (raw) notes = JSON.parse(raw);
-          } catch(err){}
-        }
-
-        if (notes.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.notes)) {
-          notes = window.SEED_DATA.notes;
-        }
+        if (!Array.isArray(notes)) notes = [];
 
         if (badgeEl) badgeEl.textContent = `${notes.length} lời nhắn`;
         listEl.innerHTML = '';
@@ -2227,6 +2198,17 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               try {
                 await fetch(getApiUrl(`/api/notes/${encodeURIComponent(n.id)}`), { method: 'DELETE' });
               } catch(e) {}
+              try {
+                const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+                if (fbUrl) {
+                  const remaining = notes.filter(item => item.id !== n.id);
+                  await fetch(`${fbUrl}/notes.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(remaining)
+                  });
+                }
+              } catch(e) {}
               loadAdminNotes();
               broadcastToGirl('DATA_UPDATED', { module: 'notes' });
               showToast('Đã xóa lời nhắn', '🗑️');
@@ -2235,6 +2217,59 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
           listEl.appendChild(card);
         });
+      }
+
+      async function loadAdminNotes() {
+        let notes = [];
+        try {
+          const res = await fetch(getApiUrl('/api/notes?v=' + Date.now()));
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.notes) && data.notes.length > 0) {
+              notes = data.notes;
+            }
+          }
+        } catch(e) {}
+
+        // Fallback trực tiếp Firebase Cloud nếu server cục bộ chưa phản hồi
+        if (notes.length === 0) {
+          try {
+            const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+            if (fbUrl) {
+              const res = await fetch(`${fbUrl}/notes.json?v=` + Date.now());
+              if (res.ok) {
+                const val = await res.json();
+                if (val) {
+                  notes = (Array.isArray(val) ? val : Object.values(val)).filter(n => n && (n.text || n.mood));
+                  notes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (notes.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.notes) && db.notes.length > 0) notes = db.notes;
+            }
+          } catch(e) {}
+        }
+
+        if (notes.length === 0) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_user_notes');
+            if (raw) notes = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (notes.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.notes)) {
+          notes = window.SEED_DATA.notes;
+        }
+
+        renderAdminNotesList(notes);
       }
 
       // --- 6. LIVE MEMORIES MANAGER FROM DATABASE & INDEXEDDB ---
@@ -2287,44 +2322,12 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         } catch(e) {}
       }
 
-      async function loadAdminMemories() {
+      // --- 6. LIVE MEMORIES MANAGER FROM DATABASE & FIREBASE REALTIME ---
+      function renderAdminMemoriesList(memories) {
         const gridEl = document.getElementById('admin-memories-grid');
         const badgeEl = document.getElementById('admin-memories-count-badge');
         if (!gridEl) return;
-
-        let memories = [];
-        try {
-          const res = await fetch(getApiUrl('/api/memories?v=' + Date.now()));
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && Array.isArray(data.memories) && data.memories.length > 0) {
-              memories = data.memories;
-            }
-          }
-        } catch(e) {}
-
-        if (memories.length === 0) {
-          try {
-            const res = await fetch('data/db.json?v=' + Date.now());
-            if (res.ok) {
-              const db = await res.json();
-              if (db && Array.isArray(db.memories) && db.memories.length > 0) {
-                memories = db.memories;
-              }
-            }
-          } catch(e) {}
-        }
-
-        if (memories.length === 0) {
-          try {
-            const raw = localStorage.getItem('romantic_gift_user_memories');
-            if (raw) memories = JSON.parse(raw);
-          } catch(err){}
-        }
-
-        if (memories.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.memories)) {
-          memories = window.SEED_DATA.memories;
-        }
+        if (!Array.isArray(memories)) memories = [];
 
         if (badgeEl) badgeEl.textContent = `${memories.length} bức ảnh`;
         gridEl.innerHTML = '';
@@ -2352,21 +2355,17 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               delBtn.disabled = true;
               delBtn.textContent = '⏳ Đang xóa...';
 
-              // 1. Cập nhật mảng memories trong bộ nhớ cục bộ
               const remainingMemories = memories.filter(item => item.id !== m.id);
               try {
                 localStorage.setItem('romantic_gift_user_memories', JSON.stringify(remainingMemories));
               } catch(e) {}
 
-              // 2. Gửi lệnh xóa lên Server
               try {
                 await fetch(getApiUrl(`/api/memories/${encodeURIComponent(m.id)}`), { method: 'DELETE' });
               } catch(e) {}
 
-              // 3. Xóa khỏi IndexedDB
               await deleteMemoryFromAdminIDB(m.id);
 
-              // 4. Đồng bộ ngay lập tức lên Firebase Cloud 24/7 (xóa vĩnh viễn trên mọi thiết bị và GitHub Pages)
               try {
                 const fbUrl = getCleanFirebaseUrl(currentConfig.firebaseUrl);
                 if (fbUrl) {
@@ -2378,7 +2377,6 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
                 }
               } catch(fbErr) {}
 
-              // 5. Nạp lại giao diện Admin & thông báo sang trang của bé tức thì
               await loadAdminMemories();
               broadcastToGirl('DATA_UPDATED', { module: 'memories', deletedId: m.id });
               showToast('Đã xóa ảnh khỏi album và đồng bộ tức thì sang Bé!', '🗑️');
@@ -2387,6 +2385,67 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
           gridEl.appendChild(card);
         });
+      }
+
+      async function loadAdminMemories() {
+        let memories = [];
+        try {
+          const res = await fetch(getApiUrl('/api/memories?v=' + Date.now()));
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.memories) && data.memories.length > 0) {
+              memories = data.memories;
+            }
+          }
+        } catch(e) {}
+
+        // Fallback trực tiếp Firebase Cloud nếu server chưa phản hồi
+        if (memories.length === 0) {
+          try {
+            const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+            if (fbUrl) {
+              const res = await fetch(`${fbUrl}/memories.json?v=` + Date.now());
+              if (res.ok) {
+                const val = await res.json();
+                if (val) {
+                  memories = (Array.isArray(val) ? val : Object.values(val)).filter(m => m && (m.src || m.caption));
+                  memories.sort((a, b) => {
+                    const isDefA = a.id && a.id.startsWith('mem-') && !a.id.includes('_');
+                    const isDefB = b.id && b.id.startsWith('mem-') && !b.id.includes('_');
+                    if (isDefA && !isDefB) return 1;
+                    if (!isDefA && isDefB) return -1;
+                    return (b.createdAt || 0) - (a.createdAt || 0);
+                  });
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (memories.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.memories) && db.memories.length > 0) {
+                memories = db.memories;
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (memories.length === 0) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_user_memories');
+            if (raw) memories = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (memories.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.memories)) {
+          memories = window.SEED_DATA.memories;
+        }
+
+        renderAdminMemoriesList(memories);
       }
 
       // Upload memory from Admin
@@ -2454,56 +2513,16 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         });
       }
 
-      // --- 7. LIVE BUCKET LIST MANAGER FROM DATABASE ---
-      async function loadAdminBucket() {
+      // --- 7. LIVE LOVE BUCKET LIST FROM DATABASE & FIREBASE REALTIME ---
+      function renderAdminBucketListItems(items) {
         const listEl = document.getElementById('admin-bucket-list');
         const badgeEl = document.getElementById('admin-bucket-count-badge');
         if (!listEl) return;
+        if (!Array.isArray(items)) items = [];
 
-        let items = [];
-        let completedCount = 0;
-        let total = 0;
-        let percent = 0;
-
-        try {
-          const res = await fetch(getApiUrl('/api/bucket?v=' + Date.now()));
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && Array.isArray(data.items) && data.items.length > 0) {
-              items = data.items;
-              total = data.total;
-              completedCount = data.completedCount;
-              percent = data.percent;
-            }
-          }
-        } catch(e) {}
-
-        if (items.length === 0) {
-          try {
-            const res = await fetch('data/db.json?v=' + Date.now());
-            if (res.ok) {
-              const db = await res.json();
-              if (db && Array.isArray(db.bucketList) && db.bucketList.length > 0) {
-                items = db.bucketList;
-              }
-            }
-          } catch(e) {}
-        }
-
-        if (items.length === 0) {
-          try {
-            const raw = localStorage.getItem('romantic_gift_bucket_list') || localStorage.getItem('romantic_gift_user_bucket');
-            if (raw) items = JSON.parse(raw);
-          } catch(err){}
-        }
-
-        if (items.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.bucketList)) {
-          items = window.SEED_DATA.bucketList;
-        }
-
-        total = items.length;
-        completedCount = items.filter(i => i.completed).length;
-        percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+        const total = items.length;
+        const completedCount = items.filter(i => i.completed).length;
+        const percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
         if (badgeEl) badgeEl.textContent = `${completedCount} / ${total} điều (${percent}%)`;
         listEl.innerHTML = '';
@@ -2539,6 +2558,17 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
             try {
               await fetch(getApiUrl(`/api/bucket/${encodeURIComponent(item.id)}/toggle`), { method: 'PUT' });
             } catch(e) {}
+            try {
+              const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+              if (fbUrl) {
+                item.completed = chk.checked;
+                await fetch(`${fbUrl}/bucket.json`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(items)
+                });
+              }
+            } catch(e) {}
             loadAdminBucket();
             broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
             showToast(chk.checked ? 'Đã đánh dấu hoàn thành điều ước! 🎉' : 'Đã bỏ đánh dấu hoàn thành', '🎯');
@@ -2550,6 +2580,17 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               try {
                 await fetch(getApiUrl(`/api/bucket/${encodeURIComponent(item.id)}`), { method: 'DELETE' });
               } catch(e) {}
+              try {
+                const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+                if (fbUrl) {
+                  const remaining = items.filter(b => b.id !== item.id);
+                  await fetch(`${fbUrl}/bucket.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(remaining)
+                  });
+                }
+              } catch(e) {}
               loadAdminBucket();
               broadcastToGirl('DATA_UPDATED', { module: 'bucket' });
               showToast('Đã xóa điều ước khỏi Bucket List', '🗑️');
@@ -2558,6 +2599,60 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
           listEl.appendChild(row);
         });
+      }
+
+      async function loadAdminBucket() {
+        let items = [];
+        try {
+          const res = await fetch(getApiUrl('/api/bucket?v=' + Date.now()));
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.items) && data.items.length > 0) {
+              items = data.items;
+            }
+          }
+        } catch(e) {}
+
+        // Fallback trực tiếp Firebase Cloud nếu server chưa phản hồi
+        if (items.length === 0) {
+          try {
+            const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+            if (fbUrl) {
+              const res = await fetch(`${fbUrl}/bucket.json?v=` + Date.now());
+              if (res.ok) {
+                const val = await res.json();
+                if (val) {
+                  items = Array.isArray(val) ? val : Object.values(val);
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (items.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.bucketList) && db.bucketList.length > 0) {
+                items = db.bucketList;
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (items.length === 0) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_bucket_list') || localStorage.getItem('romantic_gift_user_bucket');
+            if (raw) items = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (items.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.bucketList)) {
+          items = window.SEED_DATA.bucketList;
+        }
+
+        renderAdminBucketListItems(items);
       }
 
       // Add Bucket Item from Admin
@@ -2607,44 +2702,12 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
       }
 
       // --- 4. LIVE LOCKET MOMENTS MANAGER FROM DATABASE ---
-      async function loadAdminLocket() {
+      // --- 8. LIVE LOCKET MOMENTS FROM DATABASE & FIREBASE REALTIME ---
+      function renderAdminLocketList(items) {
         const gridEl = document.getElementById('admin-locket-grid');
         const badgeEl = document.getElementById('admin-locket-count-badge');
         if (!gridEl) return;
-
-        let items = [];
-        try {
-          const res = await fetch(getApiUrl('/api/locket?v=' + Date.now()));
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && Array.isArray(data.items) && data.items.length > 0) {
-              items = data.items;
-            }
-          }
-        } catch(e) {}
-
-        if (items.length === 0) {
-          try {
-            const res = await fetch('data/db.json?v=' + Date.now());
-            if (res.ok) {
-              const db = await res.json();
-              if (db && Array.isArray(db.locket) && db.locket.length > 0) {
-                items = db.locket;
-              }
-            }
-          } catch(e) {}
-        }
-
-        if (items.length === 0) {
-          try {
-            const raw = localStorage.getItem('romantic_gift_locket_feed');
-            if (raw) items = JSON.parse(raw);
-          } catch(err){}
-        }
-
-        if (items.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.locket)) {
-          items = window.SEED_DATA.locket;
-        }
+        if (!Array.isArray(items)) items = [];
 
         if (badgeEl) badgeEl.textContent = `${items.length} khoảnh khắc`;
         gridEl.innerHTML = '';
@@ -2685,6 +2748,17 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
               try {
                 await fetch(getApiUrl(`/api/locket/${encodeURIComponent(m.id)}`), { method: 'DELETE' });
               } catch(e) {}
+              try {
+                const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+                if (fbUrl) {
+                  const remaining = items.filter(l => l.id !== m.id);
+                  await fetch(`${fbUrl}/locket.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(remaining)
+                  });
+                }
+              } catch(e) {}
               loadAdminLocket();
               broadcastToGirl('DATA_UPDATED', { module: 'locket' });
               showToast('Đã xóa khoảnh khắc', '🗑️');
@@ -2693,6 +2767,61 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
 
           gridEl.appendChild(card);
         });
+      }
+
+      async function loadAdminLocket() {
+        let items = [];
+        try {
+          const res = await fetch(getApiUrl('/api/locket?v=' + Date.now()));
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.items) && data.items.length > 0) {
+              items = data.items;
+            }
+          }
+        } catch(e) {}
+
+        // Fallback trực tiếp Firebase Cloud nếu server chưa phản hồi
+        if (items.length === 0) {
+          try {
+            const fbUrl = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+            if (fbUrl) {
+              const res = await fetch(`${fbUrl}/locket.json?v=` + Date.now());
+              if (res.ok) {
+                const val = await res.json();
+                if (val) {
+                  items = Array.isArray(val) ? val : Object.values(val);
+                  items.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (items.length === 0) {
+          try {
+            const res = await fetch('data/db.json?v=' + Date.now());
+            if (res.ok) {
+              const db = await res.json();
+              if (db && Array.isArray(db.locket) && db.locket.length > 0) {
+                items = db.locket;
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (items.length === 0) {
+          try {
+            const raw = localStorage.getItem('romantic_gift_locket_feed');
+            if (raw) items = JSON.parse(raw);
+          } catch(err){}
+        }
+
+        if (items.length === 0 && window.SEED_DATA && Array.isArray(window.SEED_DATA.locket)) {
+          items = window.SEED_DATA.locket;
+        }
+
+        renderAdminLocketList(items);
       }
 
       // Send Moment from Admin
@@ -2749,6 +2878,105 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         });
       }
 
+      // --- REALTIME FIREBASE 24/7 AUTO-SYNC FOR ADMIN ---
+      const AdminFirebaseSync = (function() {
+        let db = null;
+        let initialized = false;
+
+        function init() {
+          const url = getCleanFirebaseUrl(currentConfig && currentConfig.firebaseUrl);
+          if (!url) return;
+
+          if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+            try {
+              if (!firebase.apps.length) {
+                firebase.initializeApp({ databaseURL: url });
+              }
+              db = firebase.database();
+              if (!initialized) {
+                initialized = true;
+                setupListeners();
+                console.log('🔥 [Admin Firebase Realtime] Đã kích hoạt lắng nghe 24/7 tức thì:', url);
+              }
+              return;
+            } catch(e) {
+              console.warn('Firebase SDK init notice in Admin:', e);
+            }
+          }
+        }
+
+        function setupListeners() {
+          if (!db) return;
+
+          // 1. Realtime Notes (Nhật ký bé gửi)
+          db.ref('notes').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = (Array.isArray(val) ? val : Object.values(val)).filter(n => n && (n.text || n.mood));
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+              }
+              renderAdminNotesList(list);
+            } catch(err) {
+              console.warn('Firebase notes listener error in Admin:', err);
+            }
+          });
+
+          // 2. Realtime Memories (Kho ảnh kỷ niệm)
+          db.ref('memories').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = (Array.isArray(val) ? val : Object.values(val)).filter(m => m && (m.src || m.caption));
+                list.sort((a, b) => {
+                  const isDefA = a.id && a.id.startsWith('mem-') && !a.id.includes('_');
+                  const isDefB = b.id && b.id.startsWith('mem-') && !b.id.includes('_');
+                  if (isDefA && !isDefB) return 1;
+                  if (!isDefA && isDefB) return -1;
+                  return (b.createdAt || 0) - (a.createdAt || 0);
+                });
+              }
+              renderAdminMemoriesList(list);
+            } catch(err) {
+              console.warn('Firebase memories listener error in Admin:', err);
+            }
+          });
+
+          // 3. Realtime Bucket List (100 điều muốn làm)
+          db.ref('bucket').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = Array.isArray(val) ? val : Object.values(val);
+              }
+              renderAdminBucketListItems(list);
+            } catch(err) {
+              console.warn('Firebase bucket listener error in Admin:', err);
+            }
+          });
+
+          // 4. Realtime Locket Moments (Máy ảnh Locket)
+          db.ref('locket').on('value', snapshot => {
+            try {
+              const val = snapshot.val();
+              let list = [];
+              if (val) {
+                list = Array.isArray(val) ? val : Object.values(val);
+                list.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+              }
+              renderAdminLocketList(list);
+            } catch(err) {
+              console.warn('Firebase locket listener error in Admin:', err);
+            }
+          });
+        }
+
+        return { init };
+      })();
+
       const btnRefreshNotes = document.getElementById('btn-refresh-notes');
       const btnRefreshMemories = document.getElementById('btn-refresh-memories');
       const btnRefreshBucket = document.getElementById('btn-refresh-bucket');
@@ -2764,6 +2992,7 @@ window.COUPLE_CONFIG = ${JSON.stringify(data, null, 2)};
         loadAdminMemories();
         loadAdminBucket();
         loadAdminLocket();
+        if (typeof AdminFirebaseSync !== 'undefined') AdminFirebaseSync.init();
       }
 
       setInterval(refreshAllAdminData, 2500);

@@ -263,6 +263,131 @@ async function syncToFirebaseCloud(pathNode, data, customFbUrl = null) {
   }
 }
 
+// Đồng bộ 2 chiều: Kéo và hợp nhất dữ liệu mới nhất từ Firebase Cloud về Database cục bộ
+async function syncPullFromFirebaseCloud(customFbUrl = null) {
+  try {
+    const baseUrl = getCleanFirebaseUrl(customFbUrl);
+    if (!baseUrl) return false;
+    const res = await fetch(`${baseUrl}/.json?v=${Date.now()}`);
+    if (!res.ok) return false;
+    const cloudData = await res.json();
+    if (!cloudData || typeof cloudData !== 'object') return false;
+
+    const toArray = (val) => {
+      if (!val) return [];
+      if (Array.isArray(val)) return val.filter(Boolean);
+      return Object.keys(val).map(k => {
+        const item = val[k];
+        if (item && typeof item === 'object') {
+          if (!item.id) item.id = k;
+        }
+        return item;
+      }).filter(Boolean);
+    };
+
+    const currentDb = readDatabase();
+    let hasChanges = false;
+
+    // 1. Merge Notes (Nhật ký lời nhắn của bé)
+    if (cloudData.notes) {
+      const cloudNotes = toArray(cloudData.notes);
+      const noteMap = new Map();
+      (currentDb.notes || []).forEach(n => { if (n && n.id) noteMap.set(n.id, n); });
+      cloudNotes.forEach(cn => {
+        if (cn && cn.id && !noteMap.has(cn.id)) {
+          noteMap.set(cn.id, cn);
+          hasChanges = true;
+        }
+      });
+      const mergedNotes = Array.from(noteMap.values());
+      mergedNotes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      if (mergedNotes.length !== (currentDb.notes || []).length) {
+        currentDb.notes = mergedNotes;
+        hasChanges = true;
+      }
+    }
+
+    // 2. Merge Memories (Kho ảnh kỷ niệm)
+    if (cloudData.memories) {
+      const cloudMemories = toArray(cloudData.memories);
+      const memMap = new Map();
+      (currentDb.memories || []).forEach(m => { if (m && m.id) memMap.set(m.id, m); });
+      cloudMemories.forEach(cm => {
+        if (cm && cm.id && !memMap.has(cm.id)) {
+          memMap.set(cm.id, cm);
+          hasChanges = true;
+        }
+      });
+      const mergedMemories = Array.from(memMap.values());
+      mergedMemories.sort((a, b) => {
+        const isDefA = a.id && a.id.startsWith('mem-') && !a.id.includes('_');
+        const isDefB = b.id && b.id.startsWith('mem-') && !b.id.includes('_');
+        if (isDefA && !isDefB) return 1;
+        if (!isDefA && isDefB) return -1;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+      if (mergedMemories.length !== (currentDb.memories || []).length) {
+        currentDb.memories = mergedMemories;
+        hasChanges = true;
+      }
+    }
+
+    // 3. Merge Bucket List (100 điều muốn làm)
+    if (cloudData.bucket) {
+      const cloudBucket = toArray(cloudData.bucket);
+      const bucketMap = new Map();
+      (currentDb.bucketList || []).forEach(b => { if (b && b.id) bucketMap.set(b.id, b); });
+      cloudBucket.forEach(cb => {
+        if (cb && cb.id) {
+          if (!bucketMap.has(cb.id)) {
+            bucketMap.set(cb.id, cb);
+            hasChanges = true;
+          } else {
+            const existing = bucketMap.get(cb.id);
+            if (existing.completed !== cb.completed) {
+              existing.completed = cb.completed;
+              hasChanges = true;
+            }
+          }
+        }
+      });
+      const mergedBucket = Array.from(bucketMap.values());
+      if (hasChanges || mergedBucket.length !== (currentDb.bucketList || []).length) {
+        currentDb.bucketList = mergedBucket;
+        hasChanges = true;
+      }
+    }
+
+    // 4. Merge Locket Moments (Máy ảnh Locket)
+    if (cloudData.locket) {
+      const cloudLocket = toArray(cloudData.locket);
+      const locketMap = new Map();
+      (currentDb.locket || []).forEach(l => { if (l && l.id) locketMap.set(l.id, l); });
+      cloudLocket.forEach(cl => {
+        if (cl && cl.id && !locketMap.has(cl.id)) {
+          locketMap.set(cl.id, cl);
+          hasChanges = true;
+        }
+      });
+      const mergedLocket = Array.from(locketMap.values());
+      mergedLocket.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+      if (mergedLocket.length !== (currentDb.locket || []).length) {
+        currentDb.locket = mergedLocket;
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      writeDatabase(currentDb);
+      console.log('[Firebase Cloud] 🔄 Đã tự động kéo và hợp nhất dữ liệu mới nhất từ bé về Database');
+    }
+    return true;
+  } catch (err) {
+    console.warn('[Firebase Cloud] ⚠️ Lỗi khi kéo dữ liệu từ Firebase:', err.message);
+    return false;
+  }
+}
+
 // Multer Storage Configuration for uploaded photos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -656,6 +781,7 @@ app.post('/api/bucket', (req, res) => {
 
   db.bucketList.push(newItem);
   writeDatabase(db);
+  syncToFirebaseCloud('bucket', db.bucketList);
 
   console.log(`[Database] 🎯 Đã thêm điều ước mới: "${newItem.title}"`);
   res.status(201).json({ success: true, item: newItem });
@@ -681,6 +807,7 @@ app.put('/api/bucket/:id/toggle', (req, res) => {
   }
 
   writeDatabase(db);
+  syncToFirebaseCloud('bucket', db.bucketList);
   console.log(`[Database] 🎯 Bucket item "${item.title}" -> completed: ${item.completed}`);
   res.json({ success: true, item: item });
 });
@@ -696,9 +823,10 @@ app.delete('/api/bucket/:id', (req, res) => {
 
   if (db.bucketList.length !== initialLen) {
     writeDatabase(db);
+    syncToFirebaseCloud('bucket', db.bucketList);
     res.json({ success: true, message: 'Đã xóa thành công' });
   } else {
-    res.status(404).json({ success: false, message: 'Không tìm thấy mục' });
+    return res.status(404).json({ success: false, message: 'Không tìm thấy mục' });
   }
 });
 
@@ -780,6 +908,7 @@ app.post('/api/locket', uploadLocket.single('media'), (req, res) => {
 
   db.locket.unshift(newItem);
   writeDatabase(db);
+  syncToFirebaseCloud('locket', db.locket);
   console.log(`[Database] 💛 Đã lưu Locket mới (${newItem.type}): "${newItem.caption}" -> ${mediaUrl}`);
   res.status(201).json({ success: true, item: newItem });
 });
@@ -795,6 +924,7 @@ app.post('/api/locket/:id/react', (req, res) => {
 
   item.reactions = (item.reactions || 0) + 1;
   writeDatabase(db);
+  syncToFirebaseCloud('locket', db.locket);
   res.json({ success: true, reactions: item.reactions });
 });
 
@@ -818,7 +948,14 @@ app.delete('/api/locket/:id', (req, res) => {
 
   db.locket.splice(idx, 1);
   writeDatabase(db);
+  syncToFirebaseCloud('locket', db.locket);
   res.json({ success: true, message: 'Đã xóa khoảnh khắc Locket thành công' });
+});
+
+// API kích hoạt đồng bộ 2 chiều với Firebase Cloud tức thì
+app.all('/api/sync-firebase', async (req, res) => {
+  await syncPullFromFirebaseCloud();
+  res.json({ success: true, db: readDatabase() });
 });
 
 // ==========================================================
@@ -946,4 +1083,8 @@ app.listen(PORT, () => {
   console.log(`📁 Dữ liệu lưu tại:       ${DB_FILE}`);
   console.log(`🖼️ Thư mục ảnh upload:    ${UPLOADS_DIR}`);
   console.log('==========================================================');
+
+  // Khởi chạy đồng bộ 2 chiều tức thì với Firebase Cloud và đặt lịch định kỳ
+  syncPullFromFirebaseCloud();
+  setInterval(syncPullFromFirebaseCloud, 3000);
 });

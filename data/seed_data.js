@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
- * Tự động cập nhật: 2026-10-18T11:28:01.845Z
+ * Tự động cập nhật: 2026-10-18T18:07:51.004Z
  * ==========================================================
  */
 
@@ -55,6 +55,14 @@ var SEED_DATA = {
   },
   "notes": [
     {
+      "createdAt": 1792344807041,
+      "date": "00:33 • 19/10/2026",
+      "id": "note_1792344807041",
+      "mood": "😴",
+      "moodLabel": "Mệt mỏi / Cần sạc pin",
+      "text": "muon duoc anh om de sac pin"
+    },
+    {
       "id": "note_1792169949843_799",
       "mood": "🥰",
       "moodLabel": "Hạnh phúc",
@@ -92,6 +100,13 @@ var SEED_DATA = {
     }
   ],
   "memories": [
+    {
+      "caption": "đi metro nhó",
+      "createdAt": 1792344857229,
+      "date": "18/10/2026",
+      "id": "mem_1792344857229_807",
+      "src": "https://i.ibb.co/B5rn5CsK/032104bd374f.jpg"
+    },
     {
       "id": "mem_1792304694929_302",
       "src": "/uploads/memory_1792304694920_129191.jpg",
@@ -201,6 +216,16 @@ var SEED_DATA = {
       "completedDate": null,
       "note": "",
       "createdAt": 1792169991626
+    },
+    {
+      "category": "sweet",
+      "categoryLabel": "Lãng mạn",
+      "completed": false,
+      "createdAt": 1792299065181,
+      "icon": "🌸",
+      "id": "b_1792299065181",
+      "note": "",
+      "title": "Đi biển"
     }
   ],
   "locket": [
@@ -301,6 +326,104 @@ var SEED_DATA = {
       "createdAt": 1792028718907,
       "timeFormatted": "2 giờ trước",
       "reactions": 5
+    },
+    {
+      "caption": "Gửi người anh thương nhất 💕",
+      "filter": "normal",
+      "id": "cam_1792292727172_kyj2w",
+      "mediaUrl": "https://i.ibb.co/fdTQw2kM/004023e39f28.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ & Bảng Tin",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "💕",
+      "timeFormatted": "10:05 • Hôm nay",
+      "timestamp": "2026-10-18T03:05:25.609Z",
+      "type": "photo"
+    },
+    {
+      "caption": "hi anh",
+      "filter": "normal",
+      "id": "cam_1792298997562_2v0ar",
+      "mediaUrl": "https://i.ibb.co/spS9cpQK/82b3b3b435d7.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ & Bảng Tin",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "💕",
+      "timeFormatted": "11:49 • Hôm nay",
+      "timestamp": "2026-10-18T04:49:53.183Z",
+      "type": "photo"
+    },
+    {
+      "caption": "nho be",
+      "filter": "normal",
+      "id": "cam_1792322881810_3zb6n",
+      "mediaUrl": "https://i.ibb.co/C5JPTqfd/290beadb58df.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "🥺",
+      "timeFormatted": "18:27 • Hôm nay",
+      "timestamp": "2026-10-18T11:27:58.804Z",
+      "type": "photo"
+    },
+    {
+      "caption": "hi",
+      "filter": "normal",
+      "id": "cam_1792341994820_l25hi",
+      "mediaUrl": "https://i.ibb.co/JRKKyqMm/91ff97fe1899.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "🌸",
+      "timeFormatted": "23:46 • Hôm nay",
+      "timestamp": "2026-10-18T16:46:32.719Z",
+      "type": "photo"
+    },
+    {
+      "caption": "🫶",
+      "filter": "normal",
+      "id": "cam_1792342069764_pe2b9",
+      "mediaUrl": "https://i.ibb.co/KjvnFm4B/e1da187fdba7.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ & Bảng Tin",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "💕",
+      "timeFormatted": "23:47 • Hôm nay",
+      "timestamp": "2026-10-18T16:47:47.651Z",
+      "type": "photo"
+    },
+    {
+      "caption": "moi anh nha",
+      "filter": "normal",
+      "id": "cam_1792342238944_nuwsq",
+      "mediaUrl": "https://i.ibb.co/rKXQqMc9/dbdb1ebe5f21.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ & Bảng Tin",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "💕",
+      "timeFormatted": "23:50 • Hôm nay",
+      "timestamp": "2026-10-18T16:50:35.847Z",
+      "type": "photo"
+    },
+    {
+      "caption": "sắp xong ròi",
+      "filter": "normal",
+      "id": "cam_1792345560327_gll52",
+      "mediaUrl": "https://i.ibb.co/gMqRdSpv/728e87098b89.jpg",
+      "reactions": 1,
+      "recipient": "khúc gỗ & Bảng Tin",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "💕",
+      "timeFormatted": "00:45 • Hôm nay",
+      "timestamp": "2026-10-18T17:45:57.999Z",
+      "type": "photo"
     }
   ]
 };
