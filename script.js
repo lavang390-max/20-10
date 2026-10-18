@@ -99,6 +99,12 @@
     return null;
   }
 
+  // Shared Cached Data References (Available everywhere in scope)
+  let cachedLocketItems = [];
+  let cachedMemories = [];
+  let cachedNotes = [];
+  let cachedBucketList = [];
+
   // ==========================================================
   // 🔥 FIREBASE REALTIME CLOUD SYNC ENGINE (24/7 SERVERLESS)
   // ==========================================================
@@ -162,69 +168,89 @@
 
       // 1. Realtime Locket Moments (Máy Ảnh)
       db.ref('locket').on('value', snapshot => {
-        const val = snapshot.val();
-        if (val) {
-          const list = Array.isArray(val) ? val : Object.values(val);
-          list.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
-          cachedLocketItems = list.slice(0, 30);
-          try {
-            localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(cachedLocketItems));
-          } catch(e) {}
-          if (typeof renderLocketFeed === 'function') renderLocketFeed(cachedLocketItems);
+        try {
+          const val = snapshot.val();
+          if (val) {
+            const list = Array.isArray(val) ? val : Object.values(val);
+            list.sort((a, b) => (b.createdAt || b.timestamp || 0) - (a.createdAt || a.timestamp || 0));
+            cachedLocketItems = list.slice(0, 30);
+            try {
+              localStorage.setItem('romantic_gift_locket_feed', JSON.stringify(cachedLocketItems));
+            } catch(e) {}
+            if (typeof renderLocketFeed === 'function') renderLocketFeed(cachedLocketItems);
+          }
+        } catch(err) {
+          console.warn('Firebase locket listener error:', err);
         }
       });
 
       // 2. Realtime Memories (Kho Kỷ Niệm)
       db.ref('memories').on('value', snapshot => {
-        const val = snapshot.val();
-        if (val) {
-          const list = Array.isArray(val) ? val : Object.values(val);
-          list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-          cachedMemories = list;
-          try {
-            localStorage.setItem('romantic_gift_user_memories', JSON.stringify(list));
-          } catch(e) {}
-          if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
+        try {
+          const val = snapshot.val();
+          if (val) {
+            const list = Array.isArray(val) ? val : Object.values(val);
+            list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            cachedMemories = list;
+            try {
+              localStorage.setItem('romantic_gift_user_memories', JSON.stringify(list));
+            } catch(e) {}
+            if (typeof renderMemoriesGrid === 'function') renderMemoriesGrid();
+          }
+        } catch(err) {
+          console.warn('Firebase memories listener error:', err);
         }
       });
 
       // 3. Realtime Notes (Nhật Ký Cảm Xúc)
       db.ref('notes').on('value', snapshot => {
-        const val = snapshot.val();
-        if (val) {
-          const list = Array.isArray(val) ? val : Object.values(val);
-          list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-          cachedNotes = list;
-          try {
-            localStorage.setItem('romantic_gift_user_notes', JSON.stringify(list));
-          } catch(e) {}
-          if (typeof renderNotesGrid === 'function') renderNotesGrid();
+        try {
+          const val = snapshot.val();
+          if (val) {
+            const list = Array.isArray(val) ? val : Object.values(val);
+            list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            cachedNotes = list;
+            try {
+              localStorage.setItem('romantic_gift_user_notes', JSON.stringify(list));
+            } catch(e) {}
+            if (typeof renderDiaryNotes === 'function') renderDiaryNotes();
+          }
+        } catch(err) {
+          console.warn('Firebase notes listener error:', err);
         }
       });
 
       // 4. Realtime Bucket List
       db.ref('bucket').on('value', snapshot => {
-        const val = snapshot.val();
-        if (val) {
-          const list = Array.isArray(val) ? val : Object.values(val);
-          cachedBucketList = list;
-          try {
-            localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(list));
-          } catch(e) {}
-          if (typeof renderBucketListUI === 'function') renderBucketListUI();
+        try {
+          const val = snapshot.val();
+          if (val) {
+            const list = Array.isArray(val) ? val : Object.values(val);
+            cachedBucketList = list;
+            try {
+              localStorage.setItem('romantic_gift_bucket_list', JSON.stringify(list));
+            } catch(e) {}
+            if (typeof renderBucketList === 'function') renderBucketList();
+          }
+        } catch(err) {
+          console.warn('Firebase bucket listener error:', err);
         }
       });
 
       // 5. Realtime Couple Config (Ngày kỷ niệm yêu nhau, tên, v.v.)
       db.ref('config').on('value', snapshot => {
-        const val = snapshot.val();
-        if (val && typeof val === 'object' && val.startDate) {
-          userConfig = Object.assign({}, userConfig, val);
-          try {
-            localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
-          } catch(e) {}
-          if (typeof updateLiveCounter === 'function') updateLiveCounter();
-          if (typeof applyConfigToUI === 'function') applyConfigToUI();
+        try {
+          const val = snapshot.val();
+          if (val && typeof val === 'object' && val.startDate) {
+            userConfig = Object.assign({}, userConfig, val);
+            try {
+              localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
+            } catch(e) {}
+            if (typeof updateLiveCounter === 'function') updateLiveCounter();
+            if (typeof applyConfigToUI === 'function') applyConfigToUI();
+          }
+        } catch(err) {
+          console.warn('Firebase config listener error:', err);
         }
       });
     }
@@ -1477,18 +1503,23 @@
   // --- 4. SLIDE NAVIGATION & BOTTOM DOCK ---
   const slideSections = document.querySelectorAll('.slide-section');
   const dockButtons = document.querySelectorAll('.dock-btn');
+  const bottomDock = document.getElementById('bottom-dock');
   let currentSlide = 0;
   let previousSlide = 0;
 
   function goToSlide(index) {
-    sound.init();
-    sound.playKeyClick();
+    try {
+      sound.init();
+      sound.playKeyClick();
+    } catch(e) {}
+
     if (index < 0 || index >= slideSections.length) return;
     if (index !== currentSlide) {
       previousSlide = currentSlide;
     }
     currentSlide = index;
 
+    // Switch active slide
     slideSections.forEach((section, idx) => {
       if (idx === index) {
         section.classList.add('active');
@@ -1497,39 +1528,97 @@
       }
     });
 
+    // Update dock buttons & auto-center active tab
     dockButtons.forEach((btn, idx) => {
       if (idx === index) {
         btn.classList.add('active');
+        try {
+          btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } catch(e) {}
       } else {
         btn.classList.remove('active');
       }
     });
 
-    // Special trigger on enter slide
-    if (index === 1) {
-      initScratchCard();
-    } else if (index === 3) {
-      initLocketCamera();
-      loadLocketFeed();
-    } else if (index === 4) {
-      renderDiaryNotes();
-    } else if (index === 5) {
-      renderMemoriesGrid();
-      syncMemoriesToUI();
-    } else if (index === 6) {
-      renderBucketList();
-      fetchBucketList();
+    // Scroll window to top when changing slide
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) {}
+
+    // Special trigger on enter slide (protected with try-catch so failure in one never blocks navigation)
+    try {
+      if (index === 1) {
+        initScratchCard();
+      } else if (index === 3) {
+        initLocketCamera();
+        loadLocketFeed();
+      } else if (index === 4) {
+        renderDiaryNotes();
+        if (typeof syncNotesToUI === 'function') syncNotesToUI();
+      } else if (index === 5) {
+        renderMemoriesGrid();
+        syncMemoriesToUI();
+      } else if (index === 6) {
+        renderBucketList();
+        fetchBucketList();
+      }
+    } catch (err) {
+      console.warn('Slide enter trigger error:', err);
     }
 
     // Stop locket camera when navigating away from slide 3
     if (index !== 3) {
-      stopLocketCamera();
+      try {
+        stopLocketCamera();
+      } catch(e) {}
     }
   }
 
-  dockButtons.forEach((btn, idx) => {
-    btn.addEventListener('click', () => goToSlide(idx));
+  // Direct click handler on buttons
+  dockButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const target = parseInt(btn.getAttribute('data-slide'), 10);
+      if (!isNaN(target)) {
+        goToSlide(target);
+      }
+    });
   });
+
+  // Touch and tap delegator for immediate response on mobile
+  if (bottomDock) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    bottomDock.addEventListener('touchstart', (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    bottomDock.addEventListener('touchend', (e) => {
+      if (!e.changedTouches || !e.changedTouches[0]) return;
+      const touch = e.changedTouches[0];
+      const dx = Math.abs(touch.clientX - touchStartX);
+      const dy = Math.abs(touch.clientY - touchStartY);
+      const dt = Date.now() - touchStartTime;
+
+      // Clean tap detection (under 14px movement and within 400ms)
+      if (dx < 14 && dy < 14 && dt < 400) {
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const btn = el ? el.closest('.dock-btn') : null;
+        if (btn) {
+          const targetIndex = parseInt(btn.getAttribute('data-slide'), 10);
+          if (!isNaN(targetIndex)) {
+            e.preventDefault();
+            goToSlide(targetIndex);
+          }
+        }
+      }
+    }, { passive: false });
+  }
 
   const nextSlideButtons = document.querySelectorAll('.btn-next-slide');
   nextSlideButtons.forEach(btn => {
