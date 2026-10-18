@@ -127,12 +127,14 @@
 
   // 1. Base cache from localStorage (nếu có)
   // --- VERSIONED CACHE RESET TO ENSURE 100% UNIFIED DATA ACROSS ALL DEVICES ---
-  const CURRENT_SYNC_VERSION = '20261017_sync_v14';
+  const CURRENT_SYNC_VERSION = '20261018_master_sync_v15';
   try {
     if (localStorage.getItem('romantic_gift_sync_ver') !== CURRENT_SYNC_VERSION) {
       localStorage.removeItem('romantic_gift_user_memories');
       localStorage.removeItem('romantic_gift_locket_feed');
       localStorage.removeItem('romantic_gift_user_notes');
+      localStorage.removeItem('romantic_gift_bucket_list');
+      localStorage.removeItem('romantic_gift_user_bucket');
       localStorage.setItem('romantic_gift_sync_ver', CURRENT_SYNC_VERSION);
       if (window.indexedDB) {
         try {
@@ -996,13 +998,17 @@
     card.style.zIndex = highestZ;
     card.style.transform = `translate(-50%, -50%) rotate(${randomRot}deg)`;
 
+    const resolvedPolaroidSrc = resolveMediaUrl(data.src);
+    const safeCaption = escapeHTML(data.caption || 'Kỷ niệm đôi ta');
+    const safeDate = escapeHTML(data.date || '');
+
     card.innerHTML = `
       <div class="polaroid-tape"></div>
       <div class="polaroid-img-wrap">
-        <img src="${data.src}" alt="${data.caption}">
+        <img src="${resolvedPolaroidSrc}" alt="${safeCaption}" loading="lazy" onerror="this.onerror=null;this.src='images/photo1.jpg';">
       </div>
-      <p class="polaroid-caption">${data.caption}</p>
-      <p class="polaroid-date">${data.date}</p>
+      <p class="polaroid-caption">${safeCaption}</p>
+      <p class="polaroid-date">${safeDate}</p>
     `;
 
     // Make polaroid draggable
