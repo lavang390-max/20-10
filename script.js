@@ -986,12 +986,11 @@
   let flowerTapTimeout = null;
 
   // Build kinetic typography with dancing wavy characters
-  function initKineticTypography(recipientName) {
+  function initKineticTypography() {
     const headline = document.getElementById('kinetic-flower-headline');
     if (!headline) return;
     headline.innerHTML = '';
-    const name = recipientName || (userConfig && userConfig.girlfriendName) || 'Bé Mèo';
-    const words = ['Chúc', 'Mừng', name, 'Ngày', '20/10', '💖'];
+    const words = ['Chúc', 'Mừng', 'Bé', 'Ngày', '20/10', '💖'];
     let globalCharIdx = 0;
 
     words.forEach(word => {
@@ -1020,13 +1019,12 @@
       return;
     }
 
-    // Populate customized recipient name & boyfriend name
-    const gfName = (userConfig && userConfig.girlfriendName) || 'Bé Mèo';
+    // Populate customized boyfriend name
     const bfName = (userConfig && userConfig.boyfriendName) || 'Khúc Gỗ';
     const bfNameEl = document.getElementById('flower-bf-name');
     if (bfNameEl) bfNameEl.textContent = bfName;
 
-    initKineticTypography(gfName);
+    initKineticTypography();
 
     // Reset visual states to Phase 1: Pure black screen with "Chạm vào màn hình để mở quà"
     flowerStage = 'initial_tap';
