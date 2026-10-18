@@ -1675,6 +1675,23 @@
         }
       }
 
+      // Helper: Format Date or ISO string to local YYYY-MM-DDTHH:mm (avoiding UTC shift bug)
+      function formatLocalDateTime(dateInput) {
+        if (!dateInput) return '';
+        if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateInput)) {
+          return dateInput;
+        }
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return '';
+        const pad = (n) => String(n).padStart(2, '0');
+        const year = d.getFullYear();
+        const month = pad(d.getMonth() + 1);
+        const day = pad(d.getDate());
+        const hours = pad(d.getHours());
+        const minutes = pad(d.getMinutes());
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      }
+
       // Populate form fields with currentConfig
       function populateAdminFormFields(onlyIfUnfocused = false) {
         if (onlyIfUnfocused) {
@@ -1700,10 +1717,11 @@
 
         if (inputStartDate && currentConfig.startDate) {
           try {
-            const d = new Date(currentConfig.startDate);
-            const iso = d.toISOString().slice(0, 16);
-            inputStartDate.value = iso;
-            updateDaysPreview(d);
+            const formatted = formatLocalDateTime(currentConfig.startDate);
+            if (formatted) {
+              inputStartDate.value = formatted;
+              updateDaysPreview(new Date(currentConfig.startDate));
+            }
           } catch(e) {}
         }
 
@@ -1723,6 +1741,19 @@
             }
           }
         } catch(e) {}
+
+        if (!serverConfig) {
+          try {
+            const fbUrl = currentConfig.firebaseUrl || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+            const res = await fetch(fbUrl + '/config.json?v=' + Date.now());
+            if (res.ok) {
+              const fbData = await res.json();
+              if (fbData && typeof fbData === 'object' && (fbData.startDate || fbData.passcode)) {
+                serverConfig = fbData;
+              }
+            }
+          } catch(e) {}
+        }
 
         if (!serverConfig) {
           try {
@@ -1813,7 +1844,12 @@
         currentConfig.firebaseUrl = (inputFirebaseUrl && inputFirebaseUrl.value.trim()) || '';
 
         if (inputStartDate && inputStartDate.value) {
-          currentConfig.startDate = new Date(inputStartDate.value).toISOString();
+          try {
+            const d = new Date(inputStartDate.value);
+            if (!isNaN(d.getTime())) {
+              currentConfig.startDate = d.toISOString();
+            }
+          } catch(e) {}
         }
 
         const titleInputs = document.querySelectorAll('.input-prize-title');
@@ -1880,6 +1916,19 @@
             body: JSON.stringify(data)
           });
         } catch(err) {}
+
+        // Also sync directly to Firebase Cloud 24/7
+        try {
+          const fbUrl = data.firebaseUrl || (currentConfig && currentConfig.firebaseUrl) || 'https://qua-tang-2010-default-rtdb.firebaseio.com';
+          if (fbUrl) {
+            const cleanFb = fbUrl.trim().replace(/\/+$/, '');
+            fetch(cleanFb + '/config.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            }).catch(() => {});
+          }
+        } catch(fbErr) {}
       }
 
       // Debounced Auto-Save on any input change (400ms)
@@ -1901,8 +1950,20 @@
       allInputs.forEach(inp => {
         if (inp) {
           inp.addEventListener('input', triggerAutoSave);
+          inp.addEventListener('change', triggerAutoSave);
         }
       });
+
+      if (inputStartDate) {
+        const onDateChange = () => {
+          if (inputStartDate.value) {
+            updateDaysPreview(new Date(inputStartDate.value));
+          }
+          triggerAutoSave();
+        };
+        inputStartDate.addEventListener('input', onDateChange);
+        inputStartDate.addEventListener('change', onDateChange);
+      }
 
       // Copy link to clipboard
       function copyGirlLink() {

@@ -460,6 +460,18 @@ window.COUPLE_CONFIG = ${JSON.stringify(newConfig, null, 2)};
     console.warn('Lỗi ghi file config.js:', err);
   }
 
+  // Sync to Firebase Cloud 24/7 if configured
+  if (newConfig.firebaseUrl) {
+    try {
+      const fbUrl = newConfig.firebaseUrl.trim().replace(/\/+$/, '');
+      fetch(fbUrl + '/config.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newConfig)
+      }).catch(() => {});
+    } catch(e) {}
+  }
+
   console.log('[Database] 💾 Đã lưu và đồng bộ cấu hình cặp đôi thành công!');
   res.json({ success: true, message: 'Đã lưu cấu hình vào Database thành công', config: newConfig });
 });

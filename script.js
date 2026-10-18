@@ -214,6 +214,19 @@
           if (typeof renderBucketListUI === 'function') renderBucketListUI();
         }
       });
+
+      // 5. Realtime Couple Config (Ngày kỷ niệm yêu nhau, tên, v.v.)
+      db.ref('config').on('value', snapshot => {
+        const val = snapshot.val();
+        if (val && typeof val === 'object' && val.startDate) {
+          userConfig = Object.assign({}, userConfig, val);
+          try {
+            localStorage.setItem('romantic_gift_config_2010', JSON.stringify(userConfig));
+          } catch(e) {}
+          if (typeof updateLiveCounter === 'function') updateLiveCounter();
+          if (typeof applyConfigToUI === 'function') applyConfigToUI();
+        }
+      });
     }
 
     async function fetchCloudLocket() {
@@ -4004,6 +4017,23 @@
   const inputPasscode = document.getElementById('input-passcode');
   const inputLetterBody = document.getElementById('input-letter-body');
 
+  // Helper: Format Date or ISO string to local YYYY-MM-DDTHH:mm (avoiding UTC shift bug)
+  function formatLocalDateTime(dateInput) {
+    if (!dateInput) return '';
+    if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateInput)) {
+      return dateInput;
+    }
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
   function openSettings() {
     // SECURITY GATE: Only boyfriend can edit!
     const enteredPin = prompt('🔒 BẢO MẬT QUẢN TRỊ VIÊN:\nChỉ người tạo web mới có quyền chỉnh sửa.\nVui lòng nhập mã PIN bảo mật để mở cài đặt:');
@@ -4024,9 +4054,8 @@
 
     if (inputStartDate && userConfig.startDate) {
       try {
-        const d = new Date(userConfig.startDate);
-        const iso = d.toISOString().slice(0, 16);
-        inputStartDate.value = iso;
+        const formatted = formatLocalDateTime(userConfig.startDate);
+        if (formatted) inputStartDate.value = formatted;
       } catch (err) {}
     }
 
@@ -4064,7 +4093,12 @@
     userConfig.letterBody = inputLetterBody.value.trim() || DEFAULT_CONFIG.letterBody;
 
     if (inputStartDate.value) {
-      userConfig.startDate = new Date(inputStartDate.value).toISOString();
+      try {
+        const d = new Date(inputStartDate.value);
+        if (!isNaN(d.getTime())) {
+          userConfig.startDate = d.toISOString();
+        }
+      } catch(e) {}
     }
 
     // Save customized wheel prizes
