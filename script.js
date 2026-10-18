@@ -3668,7 +3668,8 @@
         mood: selectedMood,
         moodLabel: selectedMoodLabel,
         text: content,
-        date: dateStr
+        date: dateStr,
+        createdAt: Date.now()
       };
 
       // Save to database API

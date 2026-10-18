@@ -839,6 +839,21 @@ app.get('/api/sync-info', (req, res) => {
   });
 });
 
+// Cập nhật URL Cloudflare Tunnel động
+app.post('/api/tunnel', (req, res) => {
+  const { url } = req.body;
+  if (url && typeof url === 'string') {
+    cloudflareTunnelUrl = url.trim().replace(/\/+$/, '');
+    const db = readDatabase();
+    if (!db.config) db.config = {};
+    db.config.serverUrl = cloudflareTunnelUrl;
+    writeDatabase(db);
+    console.log(`[Tunnel] 🌐 Đã cập nhật đường truyền Cloudflare Tunnel: ${cloudflareTunnelUrl}`);
+    return res.json({ success: true, tunnelUrl: cloudflareTunnelUrl });
+  }
+  res.status(400).json({ success: false, message: 'URL đường truyền không hợp lệ' });
+});
+
 // ==========================================================
 // 7. API: TẠO MÃ QR CODE (QR CODE GENERATOR)
 // ==========================================================

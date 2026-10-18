@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
 title Trung Tam Quan Tri 20/10 - Danh Cho Anh
+cd /d "%~dp0"
 
 echo ==========================================================
 echo 💖 DANG KHOI DONG HE THONG DONG BO QUA TANG 20/10...
