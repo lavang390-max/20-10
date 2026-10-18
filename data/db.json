@@ -198,6 +198,20 @@
   ],
   "locket": [
     {
+      "id": "locket_1792322881845_453",
+      "type": "photo",
+      "mediaUrl": "https://i.ibb.co/C5JPTqfd/290beadb58df.jpg",
+      "caption": "nho be",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "🥺",
+      "filter": "normal",
+      "filterLabel": "Tự nhiên",
+      "createdAt": 1792322881845,
+      "timeFormatted": "18:28 • 18/10",
+      "reactions": 1
+    },
+    {
       "id": "locket_1792170352852_289",
       "type": "photo",
       "mediaUrl": "/uploads/locket_1792170352841_525002.jpg",

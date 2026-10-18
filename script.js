@@ -1777,6 +1777,7 @@
           }
         }
       } else if (index === 3) {
+        document.body.classList.add('camera-active');
         initLocketCamera();
         loadLocketFeed();
       } else if (index === 4) {
@@ -1795,6 +1796,7 @@
 
     // Stop locket camera when navigating away from slide 3
     if (index !== 3) {
+      document.body.classList.remove('camera-active');
       try {
         stopLocketCamera();
       } catch(e) {}
@@ -2458,15 +2460,20 @@
 
   // Close camera button: Return to previous screen & turn off camera
   if (btnCameraClose) {
-    btnCameraClose.addEventListener('click', (e) => {
-      e.stopPropagation();
+    const handleCloseCam = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       sound.init();
       sound.playKeyClick();
       stopLocketCamera();
       const targetSlide = (typeof previousSlide === 'number' && previousSlide !== 3) ? previousSlide : 0;
       goToSlide(targetSlide);
       showLocketToast('Đã đóng máy ảnh ✨', '📸');
-    });
+    };
+    btnCameraClose.addEventListener('click', handleCloseCam);
+    btnCameraClose.addEventListener('touchend', handleCloseCam);
   }
 
   // Tap-to-focus on camera viewfinder

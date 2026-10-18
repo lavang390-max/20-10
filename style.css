@@ -1814,14 +1814,16 @@ button {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 500;
+  z-index: 9500;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: max(16px, env(safe-area-inset-top, 16px)) 14px max(24px, env(safe-area-inset-bottom, 24px)) 14px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.35s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .custom-modal.show {
@@ -1976,6 +1978,18 @@ button {
   justify-content: center;
   padding-top: 16px;
   border-top: 1px solid #ebdcc1;
+}
+
+.letter-actions-dock .sub-btn {
+  background: #f0e6d2 !important;
+  border: 1px solid #d8c8ab !important;
+  color: #5c4323 !important;
+  font-weight: 600 !important;
+}
+
+.letter-actions-dock .sub-btn:hover {
+  background: #e6dac0 !important;
+  color: #3b2810 !important;
 }
 
 /* PRIZE MODAL */
@@ -3107,62 +3121,385 @@ button {
   display: block;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .slides-container {
+    padding-top: max(72px, calc(56px + env(safe-area-inset-top, 0px)));
+    padding-bottom: max(145px, calc(125px + env(safe-area-inset-bottom, 0px)));
+  }
+
+  /* Hide top-bar and bottom dock when full-screen camera is active */
+  body.camera-active .bottom-dock,
+  body.camera-active .top-bar,
+  body:has(#slide-locket.active) .bottom-dock,
+  body:has(#slide-locket.active) .top-bar,
+  #slide-locket.active ~ .bottom-dock {
+    display: none !important;
+  }
+
   .top-bar {
-    padding: 0 10px;
-    top: 10px;
+    padding: 0 12px;
+    top: 8px;
   }
   
   .settings-trigger-btn span {
     display: none;
   }
+
+  .vinyl-player {
+    padding: 4px 10px 4px 6px;
+    gap: 8px;
+    max-width: calc(100vw - 110px);
+  }
+
+  .vinyl-wrapper {
+    width: 36px;
+    height: 36px;
+  }
   
   .song-marquee {
-    max-width: 95px;
+    max-width: 90px;
+  }
+
+  .song-title {
+    font-size: 0.72rem;
+  }
+
+  .couple-hero-card {
+    padding: 22px 14px;
   }
   
   .countdown-grid {
-    gap: 6px;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .counter-card {
+    padding: 8px 3px;
+    min-width: 0;
+    flex: 1;
   }
   
   .counter-num {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
   }
   
   .counter-unit {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
   }
-  
+
+  /* Slide 1 Scratch Card Responsive */
   .scratch-card-wrapper {
-    min-height: 350px;
+    min-height: 330px;
+    max-width: 100%;
   }
-  
+
+  .real-cert-box {
+    min-height: 330px;
+    padding: 18px 14px 22px;
+  }
+
+  .real-cert-title {
+    font-size: 1.35rem;
+  }
+
+  .real-cert-name {
+    font-size: 1.85rem;
+  }
+
+  .real-cert-mission,
+  .real-cert-wish {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .scratch-footer-actions {
+    width: 100%;
+    max-width: 460px;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .scratch-footer-actions .btn-prev-slide,
+  .scratch-footer-actions .btn-gold {
+    flex: 1 1 calc(50% - 6px);
+    font-size: 0.8rem;
+    padding: 10px 10px;
+    justify-content: center;
+  }
+
+  .scratch-footer-actions .btn-next-slide {
+    flex: 1 1 100%;
+    font-size: 0.85rem;
+    padding: 11px 16px;
+    justify-content: center;
+  }
+
+  /* Slide 2 Polaroid Stage Responsive */
   .polaroid-stage {
-    height: 420px;
+    height: min(350px, 46vh);
+    max-width: 100%;
   }
   
   .polaroid-card {
-    width: 145px;
+    width: 135px;
+    padding: 7px 7px 11px 7px;
   }
   
   .polaroid-img-wrap {
-    height: 125px;
+    height: 115px;
   }
-  
-  .dock-label {
+
+  .polaroid-caption {
+    font-size: 0.72rem;
+  }
+
+  .polaroid-controls-bar {
+    width: 100%;
+    max-width: 460px;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .polaroid-controls-bar .luxury-btn,
+  .polaroid-controls-bar .action-pill-btn {
+    flex: 1 1 calc(50% - 6px);
+    font-size: 0.78rem;
+    padding: 8px 10px;
+    justify-content: center;
+  }
+
+  .polaroid-controls-bar .btn-next-slide {
+    flex: 1 1 100%;
+    font-size: 0.85rem;
+    padding: 11px 16px;
+    justify-content: center;
+  }
+
+  /* Slide 4 Diary Mood Responsive */
+  .diary-mood-selector,
+  .mood-pills-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    flex-wrap: nowrap !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .diary-mood-selector::-webkit-scrollbar,
+  .mood-pills-row::-webkit-scrollbar {
     display: none;
+  }
+
+  .mood-pill {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .diary-notes-list {
+    max-height: 220px;
+  }
+
+  /* Slide 5 Memories Grid & Forms */
+  .memories-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+    max-height: 360px;
+  }
+
+  .memory-thumb-wrap {
+    height: 110px;
+  }
+
+  .form-group-inline {
+    flex-wrap: wrap !important;
+    gap: 8px;
+  }
+
+  .form-group-inline > * {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Slide 6 Bucket List Responsive */
+  .bucket-hero-card {
+    padding: 16px 14px;
+  }
+
+  .bucket-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bucket-filter-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .bucket-filter-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bucket-filter-pill {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .btn-open-add-bucket {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bucket-list-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .bucket-item-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px 12px;
+  }
+
+  /* Slide 7 Letter Envelope & Modal Responsive */
+  .envelope-showcase {
+    max-width: 100%;
+    overflow: hidden;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .envelope-3d {
+    width: min(260px, 80vw);
+    height: 160px;
+  }
+
+  .letter-footer-bar,
+  .letter-slide-actions {
+    width: 100%;
+    max-width: 400px;
+    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .letter-footer-bar .luxury-btn,
+  .letter-slide-actions .luxury-btn {
+    flex: 1 1 calc(50% - 6px);
+    font-size: 0.8rem;
+    padding: 10px 10px;
+    justify-content: center;
+  }
+
+  /* Typewriter Letter Paper Modal Mobile Tuning */
+  .letter-paper-modal {
+    border-width: 6px !important;
+    padding: 16px 12px 14px !important;
+    width: min(94vw, 500px) !important;
+    max-height: 86vh !important;
+    margin: auto;
+  }
+
+  .letter-scroll-body {
+    padding: 6px 4px 12px;
+    max-height: 52vh;
+  }
+
+  .typewriter-content-wrap {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .letter-actions-dock {
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .letter-actions-dock .sub-btn {
+    flex: 1 1 calc(50% - 6px);
+    font-size: 0.75rem;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .letter-actions-dock .luxury-btn {
+    flex: 1 1 100%;
+    font-size: 0.82rem;
+    padding: 10px 12px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Winning Voucher Ticket Responsive */
+  .winning-voucher-ticket {
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .ticket-barcode {
+    border-left: none;
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    padding-left: 0;
+    padding-top: 8px;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  /* Bottom Dock on Mobile */
+  .bottom-dock {
+    padding: 5px 8px;
+    gap: 2px;
+    max-width: 98vw;
   }
   
   .dock-btn {
-    padding: 8px 12px;
+    padding: 6px 9px;
+  }
+  
+  .dock-label {
+    display: none !important;
   }
   
   .dock-icon {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .song-marquee {
+    max-width: 70px;
   }
 
-  .memories-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .countdown-grid {
+    gap: 3px;
+  }
+
+  .counter-card {
+    padding: 6px 2px;
+  }
+
+  .counter-num {
+    font-size: 1.15rem;
+  }
+
+  .counter-unit {
+    font-size: 0.55rem;
   }
 }
 

@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
- * Tự động cập nhật: 2026-10-18T09:25:17.092Z
+ * Tự động cập nhật: 2026-10-18T11:28:01.845Z
  * ==========================================================
  */
 
@@ -204,6 +204,20 @@ var SEED_DATA = {
     }
   ],
   "locket": [
+    {
+      "id": "locket_1792322881845_453",
+      "type": "photo",
+      "mediaUrl": "https://i.ibb.co/C5JPTqfd/290beadb58df.jpg",
+      "caption": "nho be",
+      "sender": "bé mèo",
+      "senderRole": "girlfriend",
+      "sticker": "🥺",
+      "filter": "normal",
+      "filterLabel": "Tự nhiên",
+      "createdAt": 1792322881845,
+      "timeFormatted": "18:28 • 18/10",
+      "reactions": 1
+    },
     {
       "id": "locket_1792170352852_289",
       "type": "photo",

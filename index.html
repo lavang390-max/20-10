@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Main Stylesheet (with cache buster) -->
-  <link rel="stylesheet" href="style.css?v=20261018_master_sync_v23">
+  <link rel="stylesheet" href="style.css?v=20261018_master_sync_v27">
 </head>
 <body>
   <!-- Ambient Floating Background Particles -->
@@ -1049,35 +1049,35 @@
          BOTTOM FLOATING LUXURY DOCK / NAVIGATION (8 SLIDES)
          ============================================== -->
     <nav class="bottom-dock" id="bottom-dock" aria-label="Điều hướng các phần">
-      <button class="dock-btn active" data-slide="0" title="Kỷ Niệm">
+      <button class="dock-btn active" id="dock-btn-timer" data-slide="0" title="Kỷ Niệm">
         <span class="dock-icon">⏱️</span>
         <span class="dock-label">Kỷ Niệm</span>
       </button>
-      <button class="dock-btn" data-slide="1" title="Thẻ Cào">
+      <button class="dock-btn" id="dock-btn-scratch" data-slide="1" title="Thẻ Cào">
         <span class="dock-icon">🎫</span>
         <span class="dock-label">Thẻ Cào</span>
       </button>
-      <button class="dock-btn" data-slide="2" title="Trạm Ảnh">
+      <button class="dock-btn" id="dock-btn-polaroid" data-slide="2" title="Trạm Ảnh">
         <span class="dock-icon">📸</span>
         <span class="dock-label">Trạm Ảnh</span>
       </button>
-      <button class="dock-btn" data-slide="3" title="Máy Ảnh">
+      <button class="dock-btn" id="dock-btn-camera" data-slide="3" title="Máy Ảnh">
         <span class="dock-icon">📷</span>
         <span class="dock-label">Máy Ảnh</span>
       </button>
-      <button class="dock-btn" data-slide="4" title="Góc Của Bé">
+      <button class="dock-btn" id="dock-btn-diary" data-slide="4" title="Góc Của Bé">
         <span class="dock-icon">💭</span>
         <span class="dock-label">Góc Của Bé</span>
       </button>
-      <button class="dock-btn" data-slide="5" title="Kho Ảnh">
+      <button class="dock-btn" id="dock-btn-memories" data-slide="5" title="Kho Ảnh">
         <span class="dock-icon">🖼️</span>
         <span class="dock-label">Kho Ảnh</span>
       </button>
-      <button class="dock-btn" data-slide="6" title="Bucket List">
+      <button class="dock-btn" id="dock-btn-bucket" data-slide="6" title="Bucket List">
         <span class="dock-icon">🎯</span>
         <span class="dock-label">Bucket List</span>
       </button>
-      <button class="dock-btn" data-slide="7" title="Bức Thư">
+      <button class="dock-btn" id="dock-btn-letter" data-slide="7" title="Bức Thư">
         <span class="dock-icon">💌</span>
         <span class="dock-label">Bức Thư</span>
       </button>
@@ -1233,10 +1233,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- System Seed Data (Offline & Static fallback for notes, memories, etc.) -->
-  <script src="data/seed_data.js?v=20261018_master_sync_v23"></script>
+  <script src="data/seed_data.js?v=20261018_master_sync_v27"></script>
   <!-- Couple Configuration File -->
-  <script src="config.js?v=20261018_master_sync_v23"></script>
+  <script src="config.js?v=20261018_master_sync_v27"></script>
   <!-- Main Application Script -->
-  <script src="script.js?v=20261018_master_sync_v23"></script>
+  <script src="script.js?v=20261018_master_sync_v27"></script>
 </body>
 </html>
