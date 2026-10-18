@@ -1,6 +1,7 @@
 /**
  * ==========================================================
  * DỮ LIỆU ĐỒNG BỘ TOÀN HỆ THỐNG (OFFLINE & ONLINE)
+ * Tự động cập nhật: 2026-10-18T09:25:17.092Z
  * ==========================================================
  */
 
@@ -78,15 +79,6 @@ var SEED_DATA = {
       "text": "nho anh",
       "date": "19:19 • 16/10/2026",
       "createdAt": 1792153151840,
-      "isRead": false
-    },
-    {
-      "id": "note_1792033486437_245",
-      "mood": "🥰",
-      "moodLabel": "Hạnh phúc",
-      "text": "Anh Anh oi, hom nay em rat vui va hanh phuc! Cam on anh vi mon qua 20/10 sieu xin xo nay nha",
-      "date": "10:04 • 15/10/2026",
-      "createdAt": 1792033486437,
       "isRead": false
     },
     {

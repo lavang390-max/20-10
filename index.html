@@ -430,12 +430,16 @@
           </div>
 
           <div class="scratch-footer-actions">
-            <button class="luxury-btn btn-gold" id="btn-reveal-all-scratch">
+            <button type="button" class="luxury-btn btn-prev-slide" data-goto="0" title="Quay lại Kỷ Niệm">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Quay Lại Kỷ Niệm</span>
+            </button>
+            <button type="button" class="luxury-btn btn-gold" id="btn-reveal-all-scratch">
               <span>✨ Mở nhanh chứng nhận</span>
             </button>
-            <button class="luxury-btn btn-next-slide" data-goto="2">
+            <button type="button" class="luxury-btn btn-next-slide" data-goto="2" title="Đến Trạm Ảnh Polaroid">
               <span>Đến Trạm Ảnh Polaroid 📸</span>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
@@ -463,15 +467,19 @@
           </div>
 
           <div class="polaroid-controls-bar">
-            <button class="action-pill-btn" id="btn-spawn-polaroid">
+            <button type="button" class="luxury-btn btn-prev-slide" data-goto="1" title="Quay lại Thẻ Cào">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Quay Lại Thẻ Cào</span>
+            </button>
+            <button type="button" class="action-pill-btn" id="btn-spawn-polaroid">
               <span>📸 Thêm 1 tấm ảnh</span>
             </button>
-            <button class="action-pill-btn btn-secondary" id="btn-clear-polaroids">
+            <button type="button" class="action-pill-btn btn-secondary" id="btn-clear-polaroids">
               <span>🧹 Dọn dẹp ảnh</span>
             </button>
-            <button class="luxury-btn btn-next-slide" data-goto="3">
+            <button type="button" class="luxury-btn btn-next-slide" data-goto="3" title="Mở Máy Ảnh Đôi Ta">
               <span>Mở Máy Ảnh Đôi Ta 📸</span>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
@@ -840,10 +848,14 @@
               </div>
             </div>
 
-            <div class="slide-nav-action" style="margin-top: 18px;">
-              <button class="luxury-btn btn-next-slide" data-goto="5">
+            <div class="slide-nav-action" style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+              <button type="button" class="luxury-btn btn-prev-slide" data-goto="3" title="Quay lại Máy Ảnh">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Quay Lại Máy Ảnh</span>
+              </button>
+              <button type="button" class="luxury-btn btn-next-slide" data-goto="5" title="Đến Kho Kỷ Niệm">
                 <span>Kho Kỷ Niệm Ảnh Đôi Ta 🖼️</span>
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
           </div>
@@ -903,10 +915,14 @@
               </div>
             </div>
 
-            <div class="slide-nav-action" style="margin-top: 20px;">
-              <button class="luxury-btn btn-next-slide" data-goto="6">
+            <div class="slide-nav-action" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+              <button type="button" class="luxury-btn btn-prev-slide" data-goto="4" title="Quay lại Góc Của Bé">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Quay Lại Góc Của Bé</span>
+              </button>
+              <button type="button" class="luxury-btn btn-next-slide" data-goto="6" title="Đến Love Bucket List">
                 <span>Love Bucket List 🎯</span>
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
           </div>
@@ -980,10 +996,14 @@
             <div class="admin-empty-state">Đang tải danh sách điều ước từ Database...</div>
           </div>
 
-          <div class="slide-nav-action" style="margin-top: 20px;">
-            <button class="luxury-btn btn-next-slide" data-goto="7">
+          <div class="slide-nav-action" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+            <button type="button" class="luxury-btn btn-prev-slide" data-goto="5" title="Quay lại Kho Ảnh">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Quay Lại Kho Ảnh</span>
+            </button>
+            <button type="button" class="luxury-btn btn-next-slide" data-goto="7" title="Đến Bức Thư Tình">
               <span>Mở Bức Thư Tình 20/10 💌</span>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
@@ -1011,8 +1031,12 @@
             <p class="envelope-tip">Chạm vào phong bì để mở ra bức thư ngọt ngào!</p>
           </div>
 
-          <div class="letter-footer-bar">
-            <button class="luxury-btn btn-gold" id="btn-open-letter-direct">
+          <div class="letter-footer-bar" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 18px;">
+            <button type="button" class="luxury-btn btn-prev-slide" data-goto="6" title="Quay lại Bucket List">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Quay Lại Bucket List</span>
+            </button>
+            <button type="button" class="luxury-btn btn-gold" id="btn-open-letter-direct">
               <span>💌 Đọc Bức Thư</span>
             </button>
           </div>

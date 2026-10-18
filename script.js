@@ -1687,23 +1687,31 @@
       sound.playKeyClick();
     } catch(e) {}
 
-    if (index < 0 || index >= slideSections.length) return;
+    const allSections = document.querySelectorAll('.slide-section');
+    if (index < 0 || index >= allSections.length) return;
     if (index !== currentSlide) {
       previousSlide = currentSlide;
     }
     currentSlide = index;
 
-    // Switch active slide
-    slideSections.forEach((section, idx) => {
+    // Switch active slide - explicit display & pointer-events to prevent ANY ghost overlap or blocked clicks
+    allSections.forEach((section, idx) => {
       if (idx === index) {
         section.classList.add('active');
+        section.style.display = 'flex';
+        section.style.opacity = '1';
+        section.style.pointerEvents = 'auto';
       } else {
         section.classList.remove('active');
+        section.style.display = 'none';
+        section.style.opacity = '0';
+        section.style.pointerEvents = 'none';
       }
     });
 
     // Update dock buttons & auto-center active tab
-    dockButtons.forEach((btn, idx) => {
+    const allDockBtns = document.querySelectorAll('.dock-btn');
+    allDockBtns.forEach((btn, idx) => {
       if (idx === index) {
         btn.classList.add('active');
         try {
@@ -1722,7 +1730,13 @@
     // Special trigger on enter slide (protected with try-catch so failure in one never blocks navigation)
     try {
       if (index === 1) {
-        initScratchCard();
+        setTimeout(initScratchCard, 50);
+      } else if (index === 2) {
+        if (typeof stagePlaceholderHint !== 'undefined' && stagePlaceholderHint) {
+          if (!polaroidsShelf || polaroidsShelf.children.length === 0) {
+            stagePlaceholderHint.style.opacity = '1';
+          }
+        }
       } else if (index === 3) {
         initLocketCamera();
         loadLocketFeed();
@@ -1748,23 +1762,76 @@
     }
   }
 
-  // Direct click handler on dock buttons
+  // Direct click & touch handlers on dock buttons
   dockButtons.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
+    let lastTapTime = 0;
+    const triggerDock = (e) => {
+      const now = Date.now();
+      if (now - lastTapTime < 280) return;
+      lastTapTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
       e.stopPropagation();
       const target = parseInt(btn.getAttribute('data-slide'), 10);
       if (!isNaN(target)) {
         goToSlide(target);
       }
-    });
+    };
+    btn.addEventListener('click', triggerDock);
+    btn.addEventListener('touchend', triggerDock, { passive: false });
   });
 
-  const nextSlideButtons = document.querySelectorAll('.btn-next-slide');
-  nextSlideButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+  // Touch and tap delegator for immediate horizontal dock response on mobile (iOS & Android)
+  if (bottomDock) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    bottomDock.addEventListener('touchstart', (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    bottomDock.addEventListener('touchend', (e) => {
+      if (!e.changedTouches || !e.changedTouches[0]) return;
+      const touch = e.changedTouches[0];
+      const dx = Math.abs(touch.clientX - touchStartX);
+      const dy = Math.abs(touch.clientY - touchStartY);
+      const dt = Date.now() - touchStartTime;
+
+      // Clean tap detection (under 14px movement and within 400ms)
+      if (dx < 14 && dy < 14 && dt < 400) {
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const btn = el ? el.closest('.dock-btn') : null;
+        if (btn) {
+          const targetIndex = parseInt(btn.getAttribute('data-slide'), 10);
+          if (!isNaN(targetIndex)) {
+            if (e.cancelable) e.preventDefault();
+            goToSlide(targetIndex);
+          }
+        }
+      }
+    }, { passive: false });
+  }
+
+  // Navigation handlers for both next-slide and prev-slide buttons
+  const slideNavButtons = document.querySelectorAll('.btn-next-slide, .btn-prev-slide');
+  slideNavButtons.forEach(btn => {
+    let lastNavTime = 0;
+    const handleNav = (e) => {
+      const now = Date.now();
+      if (now - lastNavTime < 280) return;
+      lastNavTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+      e.stopPropagation();
       const target = parseInt(btn.getAttribute('data-goto'), 10);
-      goToSlide(target);
-    });
+      if (!isNaN(target)) {
+        goToSlide(target);
+      }
+    };
+    btn.addEventListener('click', handleNav);
+    btn.addEventListener('touchend', handleNav, { passive: false });
   });
 
   // Compatibility stubs for wheel prizes
@@ -1944,10 +2011,23 @@
     scratchCanvas.addEventListener('touchend', () => {
       isScratching = false;
     });
+    scratchCanvas.addEventListener('touchcancel', () => {
+      isScratching = false;
+    });
   }
 
   if (btnRevealAllScratch) {
-    btnRevealAllScratch.addEventListener('click', revealFullScratch);
+    let lastRevealTime = 0;
+    const handleReveal = (e) => {
+      const now = Date.now();
+      if (now - lastRevealTime < 300) return;
+      lastRevealTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
+      e.stopPropagation();
+      revealFullScratch();
+    };
+    btnRevealAllScratch.addEventListener('click', handleReveal);
+    btnRevealAllScratch.addEventListener('touchend', handleReveal, { passive: false });
   }
 
   // --- 7. POLAROID PHOTO BOOTH UPGRADE (TOUCH HEARTS + PHOTOS) ---
@@ -2081,41 +2161,61 @@
       element.style.top = (initTop + dy) + 'px';
     });
 
-    element.addEventListener('pointerup', (e) => {
+    const endDrag = (e) => {
+      if (!isDragging) return;
       isDragging = false;
       try { element.releasePointerCapture(e.pointerId); } catch(err){}
-    });
+    };
+    element.addEventListener('pointerup', endDrag);
+    element.addEventListener('pointercancel', endDrag);
   }
 
   if (polaroidStage) {
-    polaroidStage.addEventListener('click', (e) => {
+    const handleStageSpawn = (e) => {
       if (e.target.closest('.polaroid-card') || e.target.closest('button')) return;
-      // Burst hearts at click location
-      burstHeartsAt(e.clientX, e.clientY);
-      // Spawn new polaroid photo at that spot
-      spawnPolaroidAt(e.clientX, e.clientY);
-    });
+      const clientX = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || (e.changedTouches && e.changedTouches[0] && e.changedTouches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || (e.changedTouches && e.changedTouches[0] && e.changedTouches[0].clientY);
+      if (clientX !== undefined && clientY !== undefined) {
+        burstHeartsAt(clientX, clientY);
+        spawnPolaroidAt(clientX, clientY);
+      }
+    };
+    polaroidStage.addEventListener('click', handleStageSpawn);
   }
 
   if (btnSpawnPolaroid) {
-    btnSpawnPolaroid.addEventListener('click', (e) => {
+    let lastSpawnTime = 0;
+    const handleSpawnBtn = (e) => {
+      const now = Date.now();
+      if (now - lastSpawnTime < 280) return;
+      lastSpawnTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
       e.stopPropagation();
       const rect = polaroidStage.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       burstHeartsAt(cx, cy);
       spawnPolaroidAt(cx, cy);
-    });
+    };
+    btnSpawnPolaroid.addEventListener('click', handleSpawnBtn);
+    btnSpawnPolaroid.addEventListener('touchend', handleSpawnBtn, { passive: false });
   }
 
   if (btnClearPolaroids) {
-    btnClearPolaroids.addEventListener('click', (e) => {
+    let lastClearTime = 0;
+    const handleClearBtn = (e) => {
+      const now = Date.now();
+      if (now - lastClearTime < 280) return;
+      lastClearTime = now;
+      if (e.cancelable && e.type === 'touchend') e.preventDefault();
       e.stopPropagation();
       sound.init();
       sound.playKeyClick();
       if (polaroidsShelf) polaroidsShelf.innerHTML = '';
       if (stagePlaceholderHint) stagePlaceholderHint.style.opacity = '1';
-    });
+    };
+    btnClearPolaroids.addEventListener('click', handleClearBtn);
+    btnClearPolaroids.addEventListener('touchend', handleClearBtn, { passive: false });
   }
 
   // --- HELPER FUNCTIONS ---
