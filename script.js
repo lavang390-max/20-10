@@ -1132,10 +1132,10 @@
     }
 
     if (viewType === 'flower') {
-      if (flowerBadgeText) flowerBadgeText.textContent = '💐 BÓ HOA ĐỘC BẢN 20/10 💐';
-      initKineticTypography(['Bó', 'Hoa', 'Nụ', 'Cười', 'Của', 'Bé', '🌸']);
+      if (flowerBadgeText) flowerBadgeText.textContent = '💐 BÓ HOA 20/10 💐';
+      initKineticTypography(['Bông', 'Hoa', 'Của', 'Anh', '🌸']);
       if (flowerDynamicSubtext) {
-        flowerDynamicSubtext.textContent = 'Bó hoa đặc biệt nhất vũ trụ được kết từ vạn khoảnh khắc đáng yêu của bé! Yêu bé nhất trần đời 🥰';
+        flowerDynamicSubtext.textContent = 'Bó hoa đặc biệt nhất vũ trụ được kết từ vạn khoảnh khắc đáng yêu của bé nè';
       }
       if (playSound) {
         try {
